@@ -1,4 +1,4 @@
--- Bunch V1 schema — run in the Supabase SQL editor for your project.
+-- Feyzawa V1 schema — run in the Supabase SQL editor for your project.
 -- Private by default: RLS enabled; users only see their own rows.
 
 -- ---------------------------------------------------------------------------

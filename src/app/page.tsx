@@ -21,7 +21,7 @@ export default async function HomePage() {
             Personal design hunt
           </p>
           <h1 className="brand-display mt-2 text-4xl leading-tight text-ink sm:text-5xl">
-            Bunch
+            Feyzawa
           </h1>
           <p className="mt-3 text-base text-ink-soft sm:text-lg">
             Real UX and product design roles from Greenhouse, Lever, and Ashby —

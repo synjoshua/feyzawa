@@ -1,8 +1,10 @@
-# Bunch
+# Feyzawa
 
 Personal UX / Product Design job board for early-career roles.
 
 Real listings from public **Greenhouse**, **Lever**, and **Ashby** job-board APIs (no paid API keys). Private application tracking via **Supabase**. Scheduled refresh every 12 hours on **Vercel Cron**.
+
+Repo path remains `joshua-narciso/bunch` (git remote unchanged).
 
 ## Stack
 
@@ -24,7 +26,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Setup (credentials you must create)
 
-Full walkthrough: see [`docs` in the Project store](./SETUP.md) or the Project doc `setup.md`.
+Full walkthrough: see [`SETUP.md`](./SETUP.md) or the Project doc `setup.md`.
 
 You need to create:
 

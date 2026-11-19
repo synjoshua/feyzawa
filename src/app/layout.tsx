@@ -13,7 +13,7 @@ const body = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Bunch — UX & Product Design roles",
+  title: "Feyzawa — UX & Product Design roles",
   description:
     "Early-career UX and product design job board with California focus, real ATS listings, and private application tracking.",
 };

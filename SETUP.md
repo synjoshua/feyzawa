@@ -1,10 +1,10 @@
-# Bunch setup guide
+# Feyzawa setup guide
 
 Joshua must create the external accounts and paste credentials into Vercel / `.env.local`. This agent cannot create your Supabase project or invent keys.
 
 ## 1. Supabase project
 
-1. Go to [https://supabase.com](https://supabase.com) and create a project (e.g. `bunch`).
+1. Go to [https://supabase.com](https://supabase.com) and create a project (e.g. `feyzawa`).
 2. Open **Project Settings → API**.
 3. Copy:
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`

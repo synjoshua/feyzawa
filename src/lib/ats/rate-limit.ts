@@ -20,7 +20,7 @@ export async function fetchWithRetry(
         ...init,
         headers: {
           Accept: "application/json",
-          "User-Agent": "BunchJobBoard/1.0 (+personal; respectful fetch)",
+          "User-Agent": "FeyzawaJobBoard/1.0 (+personal; respectful fetch)",
           ...(init?.headers ?? {}),
         },
         // Avoid Next.js fetch cache for live ATS pulls

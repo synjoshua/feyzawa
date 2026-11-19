@@ -13,7 +13,7 @@ export function SiteHeader({ active }: { active?: string }) {
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <Link href="/" className="group flex items-baseline gap-2 focus-ring rounded-sm">
           <span className="brand-display text-3xl text-ink sm:text-4xl">
-            Bunch
+            Feyzawa
           </span>
           <span className="hidden text-xs uppercase tracking-[0.18em] text-ink-soft/70 sm:inline">
             Design roles
