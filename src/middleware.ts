@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const protectedPaths = ["/tracker", "/watchlist"];
+  const protectedPaths = ["/tracker", "/watchlist", "/profile"];
   const isProtected = protectedPaths.some(
     (p) => path === p || path.startsWith(`${p}/`),
   );
@@ -48,7 +48,7 @@ export async function middleware(request: NextRequest) {
 
   if (path === "/login" && user) {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/tracker";
+    redirectUrl.pathname = "/profile";
     return NextResponse.redirect(redirectUrl);
   }
 

@@ -2,10 +2,12 @@ import { DenseHome } from "@/components/DenseHome";
 import { getCompanyAllowlist } from "@/lib/ats/allowlist";
 import { sortJobs } from "@/lib/ats/normalize";
 import { loadJobs } from "@/lib/jobs/store";
+import { getCurrentUser } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  const user = await getCurrentUser();
   const { jobs, updatedAt, source } = await loadJobs();
   const sorted = sortJobs(jobs);
   const companies = Array.from(
@@ -40,6 +42,7 @@ export default async function HomePage() {
         source={source}
         companies={companies}
         watchedCompanies={watchStrip}
+        signedIn={Boolean(user)}
       />
     </main>
   );

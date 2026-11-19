@@ -1,14 +1,19 @@
 import Link from "next/link";
+import { getCurrentUser } from "@/lib/supabase/server";
 
-const links = [
-  { href: "/", label: "Board" },
-  { href: "/tracker", label: "Tracker" },
-  { href: "/outreach", label: "Outreach" },
-  { href: "/watchlist", label: "Watchlist" },
-  { href: "/login", label: "Sign in" },
-];
+export async function SiteHeader({ active }: { active?: string }) {
+  const user = await getCurrentUser();
 
-export function SiteHeader({ active }: { active?: string }) {
+  const links = [
+    { href: "/", label: "Board" },
+    { href: "/tracker", label: "Tracker" },
+    { href: "/outreach", label: "Outreach" },
+    { href: "/watchlist", label: "Watchlist" },
+    user
+      ? { href: "/profile", label: "Profile" }
+      : { href: "/login", label: "Sign in" },
+  ];
+
   return (
     <header className="animate-fade border-b border-[var(--line)] bg-porcelain/55 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6">

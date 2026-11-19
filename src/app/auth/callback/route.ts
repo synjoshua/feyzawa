@@ -9,8 +9,8 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
-  const nextParam = searchParams.get("next") ?? "/tracker";
-  const next = nextParam.startsWith("/") ? nextParam : "/tracker";
+  const nextParam = searchParams.get("next") ?? "/profile";
+  const next = nextParam.startsWith("/") ? nextParam : "/profile";
 
   const forwardedHost = request.headers.get("x-forwarded-host");
   const proto = request.headers.get("x-forwarded-proto") ?? "https";

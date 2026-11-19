@@ -18,6 +18,7 @@ type Props = {
   source: string;
   companies: string[];
   watchedCompanies: string[];
+  signedIn?: boolean;
 };
 
 type QuickKey =
@@ -28,8 +29,7 @@ type QuickKey =
   | "confirmed"
   | "california"
   | "remote"
-  | "product"
-  | "ux";
+  | "product";
 
 const CATEGORY_CHIPS: { key: QuickKey; label: string }[] = [
   { key: "all", label: "All" },
@@ -40,7 +40,6 @@ const CATEGORY_CHIPS: { key: QuickKey; label: string }[] = [
   { key: "california", label: "California" },
   { key: "remote", label: "Remote" },
   { key: "product", label: "Product" },
-  { key: "ux", label: "UX / UI" },
 ];
 
 export function DenseHome({
@@ -49,6 +48,7 @@ export function DenseHome({
   source,
   companies,
   watchedCompanies,
+  signedIn = false,
 }: Props) {
   const [q, setQ] = useState("");
   const [chip, setChip] = useState<QuickKey>("all");
@@ -122,10 +122,6 @@ export function DenseHome({
           return job.isRemote;
         case "product":
           return /product/i.test(job.title);
-        case "ux":
-          return /\bux\b|\bui\b|interaction|experience designer/i.test(
-            job.title,
-          );
         default:
           return true;
       }
@@ -172,13 +168,26 @@ export function DenseHome({
     },
   ] as const;
 
+  const juniorCount = activeJobs.filter(
+    (j) =>
+      j.experienceBand === "junior" || j.experienceBand === "associate",
+  ).length;
+
   const gridTiles = [
     { label: "Confirmed", key: "confirmed" as QuickKey, count: confirmedCount },
-    { label: "New grad", key: "new_grad" as QuickKey, count: activeJobs.filter((j) => j.experienceBand === "new_grad").length },
-    { label: "Product", key: "product" as QuickKey, count: activeJobs.filter((j) => /product/i.test(j.title)).length },
-    { label: "UX / UI", key: "ux" as QuickKey, count: activeJobs.filter((j) => /\bux\b|\bui\b/i.test(j.title)).length },
+    {
+      label: "New grad",
+      key: "new_grad" as QuickKey,
+      count: activeJobs.filter((j) => j.experienceBand === "new_grad").length,
+    },
+    {
+      label: "Product",
+      key: "product" as QuickKey,
+      count: activeJobs.filter((j) => /product/i.test(j.title)).length,
+    },
+    { label: "Junior", key: "junior" as QuickKey, count: juniorCount },
     { label: "Watchlist", href: "/watchlist", count: watchedCompanies.length },
-    { label: "Sign in", href: "/login", count: null },
+    { label: "Outreach", href: "/outreach", count: null },
     { label: "All roles", key: "all" as QuickKey, count: activeJobs.length },
     {
       label: showClosed ? "Hide closed" : "Maybe closed",
@@ -239,10 +248,10 @@ export function DenseHome({
                 Outreach
               </Link>
               <Link
-                href="/login"
+                href={signedIn ? "/profile" : "/login"}
                 className="focus-ring rounded-full bg-porcelain/12 px-2.5 py-1.5 text-porcelain hover:bg-porcelain/20"
               >
-                Sign in
+                {signedIn ? "Profile" : "Sign in"}
               </Link>
             </nav>
           </div>
