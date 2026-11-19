@@ -189,50 +189,58 @@ export function DenseHome({
 
   return (
     <div className="pb-16">
-      {/* Oriental lacquer header — Charlie's Tea mood: ink + soft gold */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#2c2827] via-[#3f3530] to-[#2b2523] text-porcelain">
+      {/* Oriental lacquer header — smooth ink wash + soft brass light (no tile pattern) */}
+      <section className="relative overflow-hidden text-porcelain">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.12]"
+          className="pointer-events-none absolute inset-0"
           style={{
-            backgroundImage:
-              "radial-gradient(ellipse at 20% 0%, rgba(229,191,85,0.22), transparent 50%), radial-gradient(ellipse at 90% 40%, rgba(201,168,90,0.12), transparent 45%), url(\"data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M14 26c12-3 18 5 22 12 3-9 12-16 22-12-6 10-5 22-2 32-12-4-22-3-30 5-3-10-8-20-12-37z' fill='none' stroke='%23e5bf55' stroke-width='1'/%3E%3C/svg%3E\")",
-            backgroundSize: "auto, auto, 96px 96px",
+            background:
+              "radial-gradient(120% 80% at 12% -10%, rgba(229,191,85,0.28), transparent 42%), radial-gradient(90% 70% at 88% 30%, rgba(201,168,90,0.14), transparent 48%), linear-gradient(165deg, #3a322e 0%, #2c2827 42%, #241f1d 100%)",
+          }}
+        />
+        {/* Soft bottom fade so the lacquer meets the page cleanly */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-16"
+          style={{
+            background:
+              "linear-gradient(to bottom, transparent, rgba(36,31,29,0.85))",
           }}
         />
 
-        <div className="relative mx-auto max-w-6xl px-4 pt-4 sm:px-6">
-          <div className="flex items-center justify-between gap-3">
+        <div className="relative mx-auto max-w-6xl px-4 pt-5 sm:px-6">
+          <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-[0.28em] text-[#e5bf55]/80">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-[#e5bf55]/90">
                 Design hunt
               </p>
-              <h1 className="brand-mark truncate text-[2.6rem] leading-none text-porcelain sm:text-[3.25rem]">
+              <h1 className="brand-mark mt-1 truncate text-[2.75rem] leading-none text-porcelain sm:text-[3.4rem]">
                 Feyzawa
               </h1>
             </div>
-            <nav className="flex shrink-0 items-center gap-1 text-xs sm:text-sm">
+            <nav className="flex shrink-0 items-center gap-0.5 pt-1 text-xs sm:gap-1 sm:text-sm">
               <Link
                 href="/watchlist"
-                className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/85 hover:bg-white/10"
+                className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
               >
                 Watch
               </Link>
               <Link
                 href="/tracker"
-                className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/85 hover:bg-white/10"
+                className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
               >
                 Tracker
               </Link>
               <Link
                 href="/outreach"
-                className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/85 hover:bg-white/10"
+                className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
               >
                 Outreach
               </Link>
               <Link
                 href="/login"
-                className="focus-ring rounded-full bg-porcelain/15 px-2.5 py-1.5 text-porcelain hover:bg-porcelain/25"
+                className="focus-ring rounded-full bg-porcelain/12 px-2.5 py-1.5 text-porcelain hover:bg-porcelain/20"
               >
                 Sign in
               </Link>
@@ -241,7 +249,7 @@ export function DenseHome({
 
           <form
             onSubmit={runSearch}
-            className="mt-4 flex items-center gap-2 rounded-full bg-porcelain p-1 pl-4 shadow-soft"
+            className="mt-5 flex items-center gap-2 rounded-full bg-porcelain p-1 pl-4 shadow-soft"
           >
             <input
               value={q}
@@ -271,18 +279,18 @@ export function DenseHome({
             </button>
           </form>
 
-          <div className="mt-5 grid grid-cols-4 gap-2 pb-8 sm:gap-3">
+          <div className="mt-5 grid grid-cols-4 gap-2 pb-10 sm:gap-3">
             {shortcuts.map((item) =>
               "href" in item && item.href ? (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="focus-ring flex flex-col items-center gap-1.5 rounded-2xl bg-white/10 px-1 py-3 text-center backdrop-blur-sm transition hover:bg-white/18"
+                  className="focus-ring flex flex-col items-center gap-1.5 rounded-2xl border border-white/10 bg-black/20 px-1 py-3 text-center transition hover:border-white/20 hover:bg-black/30"
                 >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-porcelain/15 text-sm font-semibold">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#e5bf55]/15 text-sm font-semibold text-[#e5bf55]">
                     {item.sub}
                   </span>
-                  <span className="text-[11px] font-medium leading-tight sm:text-xs">
+                  <span className="text-[11px] font-medium leading-tight text-porcelain/90 sm:text-xs">
                     {item.label}
                   </span>
                 </Link>
@@ -291,12 +299,12 @@ export function DenseHome({
                   key={item.label}
                   type="button"
                   onClick={"onClick" in item ? item.onClick : undefined}
-                  className="focus-ring flex flex-col items-center gap-1.5 rounded-2xl bg-white/10 px-1 py-3 text-center backdrop-blur-sm transition hover:bg-white/18"
+                  className="focus-ring flex flex-col items-center gap-1.5 rounded-2xl border border-white/10 bg-black/20 px-1 py-3 text-center transition hover:border-white/20 hover:bg-black/30"
                 >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-porcelain/15 text-sm font-semibold">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#e5bf55]/15 text-sm font-semibold text-[#e5bf55]">
                     {item.sub}
                   </span>
-                  <span className="text-[11px] font-medium leading-tight sm:text-xs">
+                  <span className="text-[11px] font-medium leading-tight text-porcelain/90 sm:text-xs">
                     {item.label}
                   </span>
                 </button>
