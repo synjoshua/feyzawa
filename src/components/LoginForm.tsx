@@ -7,11 +7,16 @@ import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 export function LoginForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/tracker";
+  const callbackError = searchParams.get("error");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
     "idle",
   );
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(
+    callbackError === "auth_callback"
+      ? "Magic link expired or could not create a session. Request a new one, and open it in the same browser."
+      : "",
+  );
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
