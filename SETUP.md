@@ -27,7 +27,7 @@ Joshua must create the external accounts and paste credentials into Vercel / `.e
 
 1. Generate a long random string, e.g. `openssl rand -hex 32`.
 2. Set `CRON_SECRET` in Vercel and `.env.local`.
-3. Vercel Cron hits `GET /api/cron/refresh` every 12 hours (`vercel.json`).
+3. Vercel Cron hits `GET /api/cron/refresh` once daily at 15:00 UTC (`vercel.json`). Hobby plans only allow daily crons; use in-app **Refresh jobs** for on-demand updates.
 4. Vercel automatically sends `Authorization: Bearer <CRON_SECRET>` when `CRON_SECRET` is set in project env (ensure the secret matches).
 5. Manual trigger:
 
@@ -93,7 +93,7 @@ npm run dev
 
 1. Import the Git repo into Vercel.
 2. Set env vars from `.env.example`.
-3. Deploy. Cron schedule is already in `vercel.json` (`0 */12 * * *`).
+3. Deploy. Cron schedule is already in `vercel.json` (`0 15 * * *`, once daily — Hobby-compatible).
 4. After first deploy, trigger `/api/cron/refresh` once so Supabase has jobs (service role required for upserts).
 
 ## 6. Graceful failure behavior

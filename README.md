@@ -2,7 +2,7 @@
 
 Personal UX / Product Design job board for early-career roles.
 
-Real listings from public **Greenhouse**, **Lever**, and **Ashby** job-board APIs (no paid API keys). Private application tracking via **Supabase**. Scheduled refresh every 12 hours on **Vercel Cron**.
+Real listings from public **Greenhouse**, **Lever**, and **Ashby** job-board APIs (no paid API keys). Private application tracking via **Supabase**. Daily refresh on **Vercel Cron** (Hobby-compatible), plus in-app **Refresh jobs**.
 
 Repo path remains `joshua-narciso/bunch` (git remote unchanged).
 
