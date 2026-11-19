@@ -28,12 +28,12 @@ export default async function JobDetailPage({
       <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
         <Link
           href="/"
-          className="focus-ring text-sm text-moss-deep hover:underline"
+          className="focus-ring text-sm text-jade hover:underline"
         >
           ← Back to board
         </Link>
 
-        <article className="animate-rise mt-6 rounded-2xl border border-[var(--line)] bg-white/60 p-5 shadow-panel backdrop-blur-sm sm:p-8">
+        <article className="animate-pour tea-surface mt-6 rounded-tea p-5 sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-sm text-ink-soft">{job.companyName}</p>
@@ -93,7 +93,7 @@ export default async function JobDetailPage({
               href={job.applyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="focus-ring rounded-lg bg-moss px-4 py-2.5 text-sm font-medium text-white hover:bg-moss-deep"
+              className="focus-ring rounded-full bg-jade px-4 py-2.5 text-sm font-medium text-porcelain hover:bg-ink"
             >
               Open official apply page
             </a>

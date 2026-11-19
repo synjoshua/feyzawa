@@ -7,13 +7,13 @@ import {
 export function EligibilityBadge({ value }: { value: string }) {
   const styles =
     value === "confirmed"
-      ? "bg-moss/15 text-moss-deep ring-moss/20"
+      ? "bg-matcha/15 text-jade ring-matcha/25"
       : value === "possible"
-        ? "bg-amber/15 text-[#7a4a14] ring-amber/25"
-        : "bg-black/5 text-ink-soft ring-black/10";
+        ? "bg-chartreuse/25 text-[#5a6f28] ring-chartreuse/40"
+        : "bg-foam text-ink-soft ring-[var(--line)]";
   return (
     <span
-      className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide ring-1 ring-inset ${styles}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide ring-1 ring-inset ${styles}`}
     >
       {eligibilityLabel(value)}
     </span>
@@ -22,7 +22,7 @@ export function EligibilityBadge({ value }: { value: string }) {
 
 export function ExperienceBadge({ value }: { value: string }) {
   return (
-    <span className="inline-flex items-center rounded-md bg-white/80 px-2 py-0.5 text-[11px] font-medium text-ink-soft ring-1 ring-inset ring-[var(--line)]">
+    <span className="inline-flex items-center rounded-full bg-porcelain px-2.5 py-0.5 text-[11px] font-medium text-ink-soft ring-1 ring-inset ring-[var(--line)]">
       {experienceLabel(value)}
     </span>
   );
@@ -30,7 +30,7 @@ export function ExperienceBadge({ value }: { value: string }) {
 
 export function WorkStyleBadge({ value }: { value: string }) {
   return (
-    <span className="inline-flex items-center rounded-md bg-leaf/10 px-2 py-0.5 text-[11px] font-medium text-moss-deep ring-1 ring-inset ring-leaf/20">
+    <span className="inline-flex items-center rounded-full bg-leaf/10 px-2.5 py-0.5 text-[11px] font-medium text-jade ring-1 ring-inset ring-leaf/25">
       {workStyleLabel(value)}
     </span>
   );
@@ -39,7 +39,7 @@ export function WorkStyleBadge({ value }: { value: string }) {
 export function StatusBadge({ value }: { value: string }) {
   if (value === "potentially_closed") {
     return (
-      <span className="inline-flex items-center rounded-md bg-clay/10 px-2 py-0.5 text-[11px] font-medium text-clay ring-1 ring-inset ring-clay/20">
+      <span className="inline-flex items-center rounded-full bg-clay/10 px-2.5 py-0.5 text-[11px] font-medium text-clay ring-1 ring-inset ring-clay/20">
         Maybe closed
       </span>
     );

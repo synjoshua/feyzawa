@@ -71,7 +71,7 @@ export function WatchlistPanel({
       {message ? (
         <p className="text-sm text-amber">{message}</p>
       ) : null}
-      <ul className="divide-y divide-[var(--line)] overflow-hidden rounded-2xl border border-[var(--line)] bg-white/55 shadow-panel">
+      <ul className="tea-surface divide-y divide-[var(--line)] overflow-hidden rounded-tea">
         {allowlist.map((company) => {
           const watched = watchedNames.has(company.name);
           return (

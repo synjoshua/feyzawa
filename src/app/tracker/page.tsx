@@ -34,7 +34,8 @@ export default async function TrackerPage() {
       <SiteHeader active="/tracker" />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
         <div className="mb-8 max-w-2xl">
-          <h1 className="brand-display text-4xl text-ink">Application tracker</h1>
+          <p className="eyebrow">Private</p>
+          <h1 className="brand-mark mt-2 text-5xl text-ink">Tracker</h1>
           <p className="mt-2 text-sm text-ink-soft">
             Saved · Applied · Interviewing · Offer · Rejected. Notes are private
             to your signed-in account and never shown on the public board.
@@ -52,7 +53,7 @@ export default async function TrackerPage() {
         {user || !configured ? (
           <TrackerBoard initial={applications} configured={configured} />
         ) : (
-          <div className="rounded-2xl border border-[var(--line)] bg-white/60 p-6 text-sm text-ink-soft">
+          <div className="tea-surface rounded-tea p-6 text-sm text-ink-soft">
             Sign in required for private application history.
           </div>
         )}

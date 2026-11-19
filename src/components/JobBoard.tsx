@@ -38,9 +38,6 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
     const query = q.trim().toLowerCase();
     return initialJobs.filter((job) => {
       if (!showClosed && job.status !== "active") return false;
-      if (showClosed && job.status === "active") {
-        // when showClosed, still show all — no filter
-      }
       if (query) {
         const hay =
           `${job.title} ${job.companyName} ${job.locationText}`.toLowerCase();
@@ -102,8 +99,8 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
     (q ? 1 : 0);
 
   return (
-    <div className="space-y-6">
-      <section className="animate-rise stagger-1 rounded-2xl border border-[var(--line)] bg-white/55 p-4 shadow-panel backdrop-blur-sm sm:p-5">
+    <div className="space-y-5">
+      <section className="animate-pour stagger-1 tea-surface rounded-tea p-4 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <label className="relative flex-1">
             <span className="sr-only">Search</span>
@@ -111,13 +108,13 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search title, company, location…"
-              className="focus-ring w-full rounded-xl border border-[var(--line)] bg-white/80 px-4 py-3 text-sm text-ink placeholder:text-ink-soft/50"
+              className="focus-ring w-full rounded-full border border-[var(--line)] bg-porcelain/90 px-4 py-3 text-sm text-ink placeholder:text-ink-soft/45"
             />
           </label>
           <select
             value={company}
             onChange={(e) => setCompany(e.target.value)}
-            className="focus-ring rounded-xl border border-[var(--line)] bg-white/80 px-3 py-3 text-sm text-ink"
+            className="focus-ring rounded-full border border-[var(--line)] bg-porcelain/90 px-4 py-3 text-sm text-ink"
           >
             <option value="">All companies</option>
             {companies.map((c) => (
@@ -182,7 +179,7 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm text-ink-soft">
           <p>
             <span className="font-semibold text-ink">{filtered.length}</span> roles
-            {pending ? " · updating…" : null}
+            {pending ? " · steeping…" : null}
             {updatedAt ? (
               <span className="ml-2 text-xs">
                 verified {relativeTime(updatedAt)} · source {source}
@@ -195,7 +192,7 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
             <button
               type="button"
               onClick={clearFilters}
-              className="focus-ring rounded-md px-2 py-1 text-xs text-moss-deep underline-offset-2 hover:underline"
+              className="focus-ring rounded-md px-2 py-1 text-xs text-jade underline-offset-2 hover:underline"
             >
               Clear filters
             </button>
@@ -203,18 +200,18 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
         </div>
       </section>
 
-      <section className="animate-rise stagger-2 overflow-hidden rounded-2xl border border-[var(--line)] bg-white/50 shadow-panel backdrop-blur-sm">
+      <section className="animate-pour stagger-2 overflow-hidden rounded-tea border border-[var(--line)] bg-porcelain/75">
         {filtered.length === 0 ? (
           <div className="px-5 py-16 text-center">
-            <p className="brand-display text-2xl text-ink">No matching roles</p>
+            <p className="brand-display text-3xl text-ink">No matching roles</p>
             <p className="mx-auto mt-2 max-w-md text-sm text-ink-soft">
-              Honest empty state — nothing fabricated. Try clearing filters, or
-              refresh the allowlist boards after adding companies.
+              Honest empty cup — nothing fabricated. Clear filters or refresh
+              the allowlist boards.
             </p>
             <button
               type="button"
               onClick={clearFilters}
-              className="focus-ring mt-5 rounded-lg bg-moss px-4 py-2 text-sm text-white"
+              className="focus-ring mt-5 rounded-full bg-jade px-4 py-2 text-sm text-porcelain"
             >
               Clear filters
             </button>
@@ -228,7 +225,7 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
                         href={`/jobs/${job.id}`}
-                        className="focus-ring truncate text-base font-semibold text-ink hover:text-moss-deep"
+                        className="focus-ring truncate text-base font-medium text-ink hover:text-jade"
                       >
                         {job.title}
                       </Link>
@@ -243,7 +240,7 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
                       <ExperienceBadge value={job.experienceBand} />
                       <WorkStyleBadge value={job.workStyle} />
                     </div>
-                    <p className="pt-1 text-[11px] text-ink-soft/80">
+                    <p className="pt-1 text-[11px] text-ink-soft/75">
                       Last verified {relativeTime(job.lastVerifiedAt)}
                       {job.firstSeenAt !== job.lastSeenAt
                         ? ` · first seen ${relativeTime(job.firstSeenAt)}`
@@ -253,7 +250,7 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
                   <div className="flex shrink-0 items-center gap-2">
                     <Link
                       href={`/jobs/${job.id}`}
-                      className="focus-ring rounded-lg border border-[var(--line)] bg-white/70 px-3 py-2 text-xs font-medium text-ink-soft hover:bg-white"
+                      className="focus-ring rounded-full border border-[var(--line)] bg-foam/60 px-3.5 py-2 text-xs font-medium text-ink-soft hover:border-jade/30 hover:text-jade"
                     >
                       Details
                     </Link>
@@ -261,7 +258,7 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
                       href={job.applyUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="focus-ring rounded-lg bg-moss px-3 py-2 text-xs font-medium text-white hover:bg-moss-deep"
+                      className="focus-ring rounded-full bg-jade px-3.5 py-2 text-xs font-medium text-porcelain hover:bg-ink"
                     >
                       Apply
                     </a>
@@ -291,8 +288,8 @@ function Chip({
       onClick={onClick}
       className={`focus-ring rounded-full px-3 py-1 text-xs capitalize transition ${
         active
-          ? "bg-ink text-white"
-          : "bg-white/70 text-ink-soft ring-1 ring-inset ring-[var(--line)] hover:bg-white"
+          ? "bg-jade text-porcelain"
+          : "bg-foam/70 text-ink-soft ring-1 ring-inset ring-[var(--line)] hover:bg-porcelain"
       }`}
     >
       {label}

@@ -50,7 +50,8 @@ export default async function WatchlistPage() {
       <SiteHeader active="/watchlist" />
       <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
         <div className="mb-8">
-          <h1 className="brand-display text-4xl text-ink">Company watchlist</h1>
+          <p className="eyebrow">Companies</p>
+          <h1 className="brand-mark mt-2 text-5xl text-ink">Watchlist</h1>
           <p className="mt-2 text-sm text-ink-soft">
             Allowlisted boards with verified Greenhouse / Lever / Ashby tokens.
             Watching is personal once you sign in.

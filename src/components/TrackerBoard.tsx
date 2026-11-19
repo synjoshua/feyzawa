@@ -95,9 +95,9 @@ export function TrackerBoard({
 
   if (!configured) {
     return (
-      <div className="rounded-2xl border border-[var(--line)] bg-white/60 p-6 text-sm text-ink-soft">
+      <div className="tea-surface rounded-tea p-6 text-sm text-ink-soft">
         Supabase is not configured yet. Create a project, run{" "}
-        <code className="rounded bg-black/5 px-1">supabase/schema.sql</code>,
+        <code className="rounded bg-foam px-1">supabase/schema.sql</code>,
         and set the env vars documented in setup. Tracking stays private once
         auth is live.
       </div>
@@ -113,7 +113,7 @@ export function TrackerBoard({
         {STATUSES.map((status) => (
           <section
             key={status}
-            className="rounded-2xl border border-[var(--line)] bg-white/55 p-3 shadow-panel backdrop-blur-sm"
+            className="tea-surface rounded-tea p-3"
           >
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-ink-soft">
               {status} · {grouped[status].length}
@@ -175,7 +175,7 @@ export function TrackerBoard({
                         href={row.apply_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-moss-deep underline"
+                        className="text-xs text-jade underline"
                       >
                         Apply link
                       </a>

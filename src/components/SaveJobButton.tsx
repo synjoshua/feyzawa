@@ -62,7 +62,7 @@ export function SaveJobButton({ job }: { job: NormalizedJob }) {
         <span className="text-xs text-ink-soft">
           {message}{" "}
           {state === "error" && message.includes("Sign in") ? (
-            <a href="/login" className="text-moss-deep underline">
+            <a href="/login" className="text-jade underline">
               Sign in
             </a>
           ) : null}
