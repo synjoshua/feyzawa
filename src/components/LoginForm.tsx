@@ -68,7 +68,7 @@ export function LoginForm() {
       </button>
       {message ? (
         <p
-          className={`text-sm ${status === "error" ? "text-clay" : "text-jade"}`}
+          className={`text-sm ${status === "error" ? "text-clay" : "text-gold"}`}
         >
           {message}
         </p>

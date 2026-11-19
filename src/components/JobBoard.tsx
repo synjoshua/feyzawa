@@ -192,7 +192,7 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
             <button
               type="button"
               onClick={clearFilters}
-              className="focus-ring rounded-md px-2 py-1 text-xs text-jade underline-offset-2 hover:underline"
+              className="focus-ring rounded-md px-2 py-1 text-xs text-gold underline-offset-2 hover:underline"
             >
               Clear filters
             </button>
@@ -225,7 +225,7 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
                         href={`/jobs/${job.id}`}
-                        className="focus-ring truncate text-base font-medium text-ink hover:text-jade"
+                        className="focus-ring truncate text-base font-medium text-ink hover:text-gold"
                       >
                         {job.title}
                       </Link>
@@ -250,7 +250,7 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
                   <div className="flex shrink-0 items-center gap-2">
                     <Link
                       href={`/jobs/${job.id}`}
-                      className="focus-ring rounded-full border border-[var(--line)] bg-foam/60 px-3.5 py-2 text-xs font-medium text-ink-soft hover:border-jade/30 hover:text-jade"
+                      className="focus-ring rounded-full border border-[var(--line)] bg-foam/60 px-3.5 py-2 text-xs font-medium text-ink-soft hover:border-gold/40 hover:text-gold"
                     >
                       Details
                     </Link>

@@ -7,9 +7,9 @@ import {
 export function EligibilityBadge({ value }: { value: string }) {
   const styles =
     value === "confirmed"
-      ? "bg-matcha/15 text-jade ring-matcha/25"
+      ? "bg-chartreuse/25 text-[#7a5a14] ring-gold/35"
       : value === "possible"
-        ? "bg-chartreuse/25 text-[#5a6f28] ring-chartreuse/40"
+        ? "bg-leaf/15 text-[#8a5a18] ring-leaf/30"
         : "bg-foam text-ink-soft ring-[var(--line)]";
   return (
     <span
@@ -30,7 +30,7 @@ export function ExperienceBadge({ value }: { value: string }) {
 
 export function WorkStyleBadge({ value }: { value: string }) {
   return (
-    <span className="inline-flex items-center rounded-full bg-leaf/10 px-2.5 py-0.5 text-[11px] font-medium text-jade ring-1 ring-inset ring-leaf/25">
+    <span className="inline-flex items-center rounded-full bg-matcha/10 px-2.5 py-0.5 text-[11px] font-medium text-ink-soft ring-1 ring-inset ring-matcha/25">
       {workStyleLabel(value)}
     </span>
   );

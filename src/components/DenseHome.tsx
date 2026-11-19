@@ -164,22 +164,22 @@ export function DenseHome({
 
   return (
     <div className="pb-16">
-      {/* Jade utility header — brand + search + primary shortcuts */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-jade via-[#1a5c40] to-[#164f37] text-porcelain">
+      {/* Oriental lacquer header — Charlie's Tea mood: ink + soft gold */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#2c2827] via-[#3f3530] to-[#2b2523] text-porcelain">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
+          className="pointer-events-none absolute inset-0 opacity-[0.12]"
           style={{
             backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M14 26c12-3 18 5 22 12 3-9 12-16 22-12-6 10-5 22-2 32-12-4-22-3-30 5-3-10-8-20-12-37z' fill='none' stroke='%23fff' stroke-width='1'/%3E%3C/svg%3E\")",
-            backgroundSize: "96px 96px",
+              "radial-gradient(ellipse at 20% 0%, rgba(229,191,85,0.22), transparent 50%), radial-gradient(ellipse at 90% 40%, rgba(201,168,90,0.12), transparent 45%), url(\"data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M14 26c12-3 18 5 22 12 3-9 12-16 22-12-6 10-5 22-2 32-12-4-22-3-30 5-3-10-8-20-12-37z' fill='none' stroke='%23e5bf55' stroke-width='1'/%3E%3C/svg%3E\")",
+            backgroundSize: "auto, auto, 96px 96px",
           }}
         />
 
         <div className="relative mx-auto max-w-6xl px-4 pt-4 sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-[0.28em] text-porcelain/70">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-[#e5bf55]/80">
                 Design hunt
               </p>
               <h1 className="brand-mark truncate text-[2.6rem] leading-none text-porcelain sm:text-[3.25rem]">
@@ -286,7 +286,7 @@ export function DenseHome({
                 onClick={() => applyQuick(c.key)}
                 className={`focus-ring shrink-0 border-b-2 px-3 pb-2.5 text-sm transition ${
                   chip === c.key
-                    ? "border-jade font-semibold text-jade"
+                    ? "border-gold font-semibold text-ink"
                     : "border-transparent text-ink-soft hover:text-ink"
                 }`}
               >
@@ -304,7 +304,7 @@ export function DenseHome({
                     href={tile.href}
                     className="focus-ring flex flex-col items-center gap-1 rounded-xl bg-foam/80 px-1 py-3 text-center transition hover:bg-ceramic"
                   >
-                    <span className="text-base font-semibold text-jade sm:text-lg">
+                    <span className="text-base font-semibold text-ink sm:text-lg">
                       {tile.count ?? "→"}
                     </span>
                     <span className="text-[10px] leading-tight text-ink-soft sm:text-[11px]">
@@ -359,7 +359,7 @@ export function DenseHome({
 
         {/* Status strip */}
         <div className="animate-pour stagger-1 mt-3 flex items-center gap-3 rounded-2xl border border-[var(--line)] bg-porcelain/90 px-3 py-2.5 text-sm text-ink-soft shadow-soft">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-matcha/15 text-xs text-jade">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-matcha/15 text-xs text-gold">
             ●
           </span>
           <p className="min-w-0 flex-1 truncate">
@@ -380,7 +380,7 @@ export function DenseHome({
                   setShowClosed(false);
                 });
               }}
-              className="focus-ring shrink-0 text-xs text-jade underline-offset-2 hover:underline"
+              className="focus-ring shrink-0 text-xs text-gold underline-offset-2 hover:underline"
             >
               Reset
             </button>
@@ -411,7 +411,7 @@ export function DenseHome({
                       <div className="flex flex-wrap items-center gap-2">
                         <Link
                           href={`/jobs/${job.id}`}
-                          className="focus-ring truncate text-[15px] font-medium text-ink hover:text-jade"
+                          className="focus-ring truncate text-[15px] font-medium text-ink hover:text-gold"
                         >
                           {job.title}
                         </Link>
@@ -461,7 +461,7 @@ export function DenseHome({
         <section className="animate-pour stagger-3 mt-6">
           <div className="mb-2 flex items-baseline justify-between px-0.5">
             <h2 className="brand-display text-2xl text-ink">Company watch</h2>
-            <Link href="/watchlist" className="text-xs text-jade hover:underline">
+            <Link href="/watchlist" className="text-xs text-gold hover:underline">
               Manage →
             </Link>
           </div>
@@ -482,7 +482,7 @@ export function DenseHome({
                 className={`focus-ring shrink-0 rounded-2xl border px-3.5 py-2.5 text-left transition ${
                   company === name
                     ? "border-jade bg-jade text-porcelain"
-                    : "border-[var(--line)] bg-porcelain hover:border-jade/40"
+                    : "border-[var(--line)] bg-porcelain hover:border-gold/50"
                 }`}
               >
                 <p className="text-sm font-medium">{name}</p>
@@ -499,7 +499,7 @@ export function DenseHome({
         {/* Tracker entry */}
         <Link
           href="/tracker"
-          className="focus-ring mt-5 flex items-center gap-3 rounded-2xl border border-[var(--line)] bg-gradient-to-r from-foam to-porcelain px-4 py-3.5 shadow-soft transition hover:border-jade/35"
+          className="focus-ring mt-5 flex items-center gap-3 rounded-2xl border border-[var(--line)] bg-gradient-to-r from-foam to-porcelain px-4 py-3.5 shadow-soft transition hover:border-gold/45"
         >
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-jade text-sm font-semibold text-porcelain">
             T
@@ -512,7 +512,7 @@ export function DenseHome({
               Saved · Applied · Interviewing · Offer · Rejected — private notes
             </span>
           </span>
-          <span className="text-jade">→</span>
+          <span className="text-gold">→</span>
         </Link>
 
         {/* Full board remainder */}
@@ -532,7 +532,7 @@ export function DenseHome({
                   <div className="min-w-0">
                     <Link
                       href={`/jobs/${job.id}`}
-                      className="focus-ring text-sm font-medium text-ink hover:text-jade"
+                      className="focus-ring text-sm font-medium text-ink hover:text-gold"
                     >
                       {job.title}
                     </Link>

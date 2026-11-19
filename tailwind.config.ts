@@ -26,12 +26,13 @@ export default {
         "moss-deep": "var(--moss-deep)",
         amber: "var(--amber)",
         clay: "var(--clay)",
+        gold: "var(--gold)",
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
       boxShadow: {
-        panel: "0 24px 60px -36px rgba(12, 22, 17, 0.28)",
-        soft: "0 10px 30px -20px rgba(31, 107, 74, 0.35)",
+        panel: "0 24px 60px -36px rgba(43, 37, 35, 0.28)",
+        soft: "0 10px 30px -20px rgba(169, 110, 24, 0.28)",
       },
       fontFamily: {
         display: ["var(--font-display)", "Georgia", "serif"],

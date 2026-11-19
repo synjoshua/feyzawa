@@ -15,7 +15,7 @@ export function SiteHeader({ active }: { active?: string }) {
           href="/"
           className="group focus-ring flex items-baseline gap-3 rounded-sm"
         >
-          <span className="brand-mark text-[2rem] text-ink transition group-hover:text-jade sm:text-[2.35rem]">
+          <span className="brand-mark text-[2rem] text-ink transition group-hover:text-gold sm:text-[2.35rem]">
             Feyzawa
           </span>
           <span className="hidden text-[10px] uppercase tracking-[0.26em] text-ink-soft/65 sm:inline">

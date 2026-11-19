@@ -175,7 +175,7 @@ export function TrackerBoard({
                         href={row.apply_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-jade underline"
+                        className="text-xs text-gold underline"
                       >
                         Apply link
                       </a>

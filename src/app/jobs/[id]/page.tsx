@@ -28,7 +28,7 @@ export default async function JobDetailPage({
       <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
         <Link
           href="/"
-          className="focus-ring text-sm text-jade hover:underline"
+          className="focus-ring text-sm text-gold hover:underline"
         >
           ← Back to board
         </Link>
