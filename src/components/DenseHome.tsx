@@ -234,50 +234,40 @@ export function DenseHome({
 
   return (
     <div className="pb-16">
-      {/* Charlie's Tea mood: flat cream, mustard mark, minimal icons */}
-      <section className="relative overflow-hidden bg-[#f2e8de] text-ink">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.35]"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 12% 18%, rgba(229,191,85,0.35) 0 2px, transparent 3px), radial-gradient(circle at 88% 22%, rgba(43,37,35,0.12) 0 1.5px, transparent 2.5px), radial-gradient(circle at 70% 8%, rgba(229,191,85,0.4) 0 1.5px, transparent 2.5px)",
-            backgroundSize: "100% 100%",
-          }}
-        />
-
+      {/* Flat lacquer brown header — solid fill, no gradient */}
+      <section className="relative overflow-hidden bg-[#2c2827] text-porcelain">
         <div className="relative mx-auto max-w-6xl px-4 pt-6 sm:px-6">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-[0.28em] text-ink-soft">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-[#e5bf55]">
                 Design hunt
               </p>
-              <h1 className="brand-mark mt-1 truncate text-[2.85rem] leading-none text-ink sm:text-[3.5rem]">
-                <span className="gold-mark px-0.5">Feyzawa</span>
+              <h1 className="brand-mark mt-1 truncate text-[2.85rem] leading-none text-porcelain sm:text-[3.5rem]">
+                Feyzawa
               </h1>
             </div>
             <nav className="flex shrink-0 items-center gap-0.5 pt-1 text-xs sm:gap-1 sm:text-sm">
               <Link
                 href="/watchlist"
-                className="focus-ring rounded-full px-2.5 py-1.5 text-ink-soft hover:bg-black/[0.04] hover:text-ink"
+                className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
               >
                 Watch
               </Link>
               <Link
                 href="/tracker"
-                className="focus-ring rounded-full px-2.5 py-1.5 text-ink-soft hover:bg-black/[0.04] hover:text-ink"
+                className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
               >
                 Tracker
               </Link>
               <Link
                 href="/outreach"
-                className="focus-ring rounded-full px-2.5 py-1.5 text-ink-soft hover:bg-black/[0.04] hover:text-ink"
+                className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
               >
                 Outreach
               </Link>
               <Link
                 href={signedIn ? "/profile" : "/login"}
-                className="focus-ring rounded-full bg-[#e5bf55]/45 px-2.5 py-1.5 font-medium text-ink hover:bg-[#e5bf55]/65"
+                className="focus-ring rounded-full bg-[#e5bf55]/90 px-2.5 py-1.5 font-medium text-ink hover:bg-[#e5bf55]"
               >
                 {signedIn ? "Profile" : "Sign in"}
               </Link>
@@ -286,7 +276,7 @@ export function DenseHome({
 
           <form
             onSubmit={runSearch}
-            className="mt-6 flex items-center gap-2 rounded-full border border-[var(--line)] bg-porcelain p-1 pl-4 shadow-soft"
+            className="mt-6 flex items-center gap-2 rounded-full bg-porcelain p-1 pl-4 shadow-soft"
           >
             <input
               value={q}
@@ -320,21 +310,21 @@ export function DenseHome({
             {shortcuts.map((item) => {
               const inner = (
                 <>
-                  <span className="flex h-11 w-11 items-center justify-center text-[#6f675f]">
+                  <span className="flex h-11 w-11 items-center justify-center text-[#e5bf55]">
                     <ShortcutIcon name={item.icon} />
                   </span>
-                  <span className="text-[11px] font-medium leading-tight text-ink sm:text-xs">
+                  <span className="text-[11px] font-medium leading-tight text-porcelain/90 sm:text-xs">
                     {item.label}
                   </span>
                   {item.count !== null ? (
-                    <span className="text-[10px] tabular-nums text-ink-soft">
+                    <span className="text-[10px] tabular-nums text-porcelain/55">
                       {item.count}
                     </span>
                   ) : null}
                 </>
               );
               const className =
-                "focus-ring flex flex-col items-center gap-1 rounded-2xl px-1 py-2.5 text-center transition hover:bg-black/[0.03]";
+                "focus-ring flex flex-col items-center gap-1 rounded-2xl px-1 py-2.5 text-center transition hover:bg-white/5";
               return "href" in item && item.href ? (
                 <Link key={item.label} href={item.href} className={className}>
                   {inner}
