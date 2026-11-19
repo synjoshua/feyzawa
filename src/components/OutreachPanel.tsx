@@ -5,7 +5,9 @@ import {
   allRecruiters,
   fillTemplate,
   MESSAGE_TEMPLATES,
+  recruiterSearchPresets,
   saveUserRecruiter,
+  searchUrlForRecruiterSlot,
 } from "@/lib/outreach/recruiters";
 import {
   fetchOutreach,
@@ -176,8 +178,10 @@ export function OutreachPanel({
   return (
     <div className="space-y-6">
       <p className="text-xs text-ink-soft">
-        No LinkedIn scraping or auto-send. Paste profile URLs you find yourself,
-        draft here, copy, then message manually. Storage:{" "}
+        No scraping or auto-send. Use{" "}
+        <span className="font-medium text-ink">Search on LinkedIn</span> to open
+        a people search, copy a profile URL, paste it here, draft, then message
+        yourself. Storage:{" "}
         <span className="font-medium text-ink">
           {mode === "local" ? "this device" : "Supabase"}
         </span>
@@ -214,6 +218,31 @@ export function OutreachPanel({
               placeholder="Product Design Intern (2027)"
             />
           </label>
+
+          {company ? (
+            <div className="rounded-xl border border-gold/30 bg-chartreuse/15 p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink">
+                Find on LinkedIn
+              </p>
+              <p className="mt-1 text-[11px] text-ink-soft">
+                Opens LinkedIn search in a new tab. Pick someone → copy their
+                profile link → paste below.
+              </p>
+              <div className="mt-2 flex flex-col gap-1.5">
+                {recruiterSearchPresets(company).map((preset) => (
+                  <a
+                    key={preset.label}
+                    href={preset.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="focus-ring rounded-full border border-[var(--line)] bg-porcelain px-3 py-1.5 text-left text-xs font-medium text-ink hover:border-gold/50"
+                  >
+                    {preset.label} →
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <div>
             <div className="mb-2 flex items-center justify-between">
@@ -274,7 +303,7 @@ export function OutreachPanel({
                 </li>
               ) : (
                 companyRecruiters.map((r) => (
-                  <li key={r.id}>
+                  <li key={r.id} className="space-y-1">
                     <button
                       type="button"
                       onClick={() => pickRecruiter(r)}
@@ -291,6 +320,14 @@ export function OutreachPanel({
                         {r.linkedin_url ? "" : " · paste LinkedIn URL →"}
                       </p>
                     </button>
+                    <a
+                      href={searchUrlForRecruiterSlot(r)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block px-1 text-[11px] font-medium text-gold underline"
+                    >
+                      Search this title on LinkedIn
+                    </a>
                   </li>
                 ))
               )}
@@ -300,7 +337,9 @@ export function OutreachPanel({
 
         <div className="space-y-3">
           <label className="block text-sm">
-            <span className="text-ink-soft">LinkedIn profile URL</span>
+            <span className="text-ink-soft">
+              LinkedIn profile URL (paste after you find them)
+            </span>
             <input
               value={linkedinUrl}
               onChange={(e) => setLinkedinUrl(e.target.value)}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { NormalizedJob } from "@/lib/ats/types";
+import { linkedinPeopleSearchUrl } from "@/lib/outreach/recruiters";
 import { trackApplication } from "@/lib/tracking/client";
 
 export function TrackJobActions({ job }: { job: NormalizedJob }) {
@@ -68,6 +69,16 @@ export function TrackJobActions({ job }: { job: NormalizedJob }) {
           className="focus-ring rounded-full border border-gold/40 bg-chartreuse/15 px-4 py-2.5 text-sm font-medium text-ink"
         >
           Find recruiters
+        </a>
+        <a
+          href={linkedinPeopleSearchUrl(
+            `("product design" OR design OR university) (recruiter OR "talent acquisition") "${job.companyName}"`,
+          )}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="focus-ring rounded-full border border-[var(--line)] bg-porcelain px-4 py-2.5 text-sm font-medium text-ink"
+        >
+          Search LinkedIn
         </a>
       </div>
       {message ? (

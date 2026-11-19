@@ -154,3 +154,54 @@ export function saveUserRecruiter(
 export function allRecruiters(): RecruiterTarget[] {
   return [...listUserRecruiters(), ...CURATED_RECRUITERS];
 }
+
+/** Opens LinkedIn People search — no scrape; Joshua picks a profile and pastes the URL. */
+export function linkedinPeopleSearchUrl(
+  keywords: string,
+  opts?: { currentCompany?: string },
+): string {
+  const params = new URLSearchParams();
+  params.set("keywords", keywords.trim());
+  if (opts?.currentCompany?.trim()) {
+    // Free-text company in keywords is more reliable than facet IDs without auth.
+    const company = opts.currentCompany.trim();
+    if (!keywords.toLowerCase().includes(company.toLowerCase())) {
+      params.set("keywords", `${keywords.trim()} ${company}`.trim());
+    }
+  }
+  params.set("origin", "GLOBAL_SEARCH_HEADER");
+  return `https://www.linkedin.com/search/results/people/?${params.toString()}`;
+}
+
+export function recruiterSearchPresets(company: string): {
+  label: string;
+  href: string;
+}[] {
+  const c = company.trim();
+  if (!c) return [];
+  return [
+    {
+      label: "University / campus recruiter",
+      href: linkedinPeopleSearchUrl(
+        `university recruiter OR campus recruiter "${c}"`,
+      ),
+    },
+    {
+      label: "Design / product design recruiter",
+      href: linkedinPeopleSearchUrl(
+        `("product design" OR design) (recruiter OR "talent acquisition" OR "talent partner") "${c}"`,
+      ),
+    },
+    {
+      label: "Early career / new grad recruiter",
+      href: linkedinPeopleSearchUrl(
+        `("early career" OR "new grad" OR internship) (recruiter OR recruiting) "${c}"`,
+      ),
+    },
+  ];
+}
+
+export function searchUrlForRecruiterSlot(r: RecruiterTarget): string {
+  const hint = r.title_hint || r.full_name;
+  return linkedinPeopleSearchUrl(`${hint} "${r.company_name}"`);
+}
