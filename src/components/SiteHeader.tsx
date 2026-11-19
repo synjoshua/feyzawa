@@ -15,17 +15,17 @@ export async function SiteHeader({ active }: { active?: string }) {
   ];
 
   return (
-    <header className="animate-fade border-b border-[var(--line)] bg-porcelain/55 backdrop-blur-md">
+    <header className="bg-[#2c2827] text-porcelain">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
         <Link
           href="/"
           className="group focus-ring flex items-baseline gap-3 rounded-sm"
         >
-          <span className="brand-mark text-[2rem] text-ink transition group-hover:text-gold sm:text-[2.35rem]">
+          <span className="brand-mark text-[1.85rem] text-porcelain transition group-hover:text-[#e5bf55] sm:text-[2.1rem]">
             Feyzawa
           </span>
-          <span className="hidden text-[10px] uppercase tracking-[0.26em] text-ink-soft/65 sm:inline">
-            Design roles
+          <span className="hidden text-[10px] uppercase tracking-[0.26em] text-[#e5bf55]/80 sm:inline">
+            Design hunt
           </span>
         </Link>
         <nav className="flex items-center gap-0.5 sm:gap-1">
@@ -37,8 +37,8 @@ export async function SiteHeader({ active }: { active?: string }) {
                 href={link.href}
                 className={`focus-ring rounded-full px-3 py-1.5 text-sm transition ${
                   isActive
-                    ? "bg-jade text-porcelain"
-                    : "text-ink-soft hover:bg-foam/80"
+                    ? "bg-[#e5bf55] font-medium text-ink"
+                    : "text-porcelain/75 hover:bg-white/10 hover:text-porcelain"
                 }`}
               >
                 {link.label}

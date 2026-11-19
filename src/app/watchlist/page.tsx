@@ -1,4 +1,4 @@
-import { SiteHeader } from "@/components/SiteHeader";
+import { PageShell } from "@/components/PageShell";
 import { WatchlistPanel } from "@/components/WatchlistPanel";
 import { getCompanyAllowlist } from "@/lib/ats/allowlist";
 import { isSupabaseAuthConfigured } from "@/lib/supabase/admin";
@@ -46,24 +46,18 @@ export default async function WatchlistPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      <SiteHeader active="/watchlist" />
-      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
-        <div className="mb-8">
-          <p className="eyebrow">Companies</p>
-          <h1 className="brand-mark mt-2 text-5xl text-ink">Watchlist</h1>
-          <p className="mt-2 text-sm text-ink-soft">
-            Allowlisted boards with verified Greenhouse / Lever / Ashby tokens.
-            Watching is personal once you sign in.
-          </p>
-        </div>
-        <WatchlistPanel
-          allowlist={allowlist}
-          initial={initial}
-          configured={configured}
-          signedIn={Boolean(user)}
-        />
-      </main>
-    </div>
+    <PageShell
+      active="/watchlist"
+      eyebrow="Companies"
+      title="Watchlist"
+      description="Allowlisted boards with verified Greenhouse / Lever / Ashby tokens. Watching is personal once you sign in."
+    >
+      <WatchlistPanel
+        initial={initial}
+        allowlist={allowlist}
+        configured={configured}
+        signedIn={Boolean(user)}
+      />
+    </PageShell>
   );
 }

@@ -51,7 +51,7 @@ export function LoginForm() {
   return (
     <form
       onSubmit={onSubmit}
-      className="tea-surface mt-8 space-y-4 rounded-tea p-5"
+      className="mt-0 space-y-4 overflow-hidden rounded-[1.35rem] border border-[var(--line)] bg-porcelain p-5 shadow-panel"
     >
       <label className="block text-sm">
         <span className="text-ink-soft">Email</span>
