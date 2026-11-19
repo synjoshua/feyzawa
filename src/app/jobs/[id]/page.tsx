@@ -7,7 +7,7 @@ import {
   StatusBadge,
   WorkStyleBadge,
 } from "@/components/Badges";
-import { SaveJobButton } from "@/components/SaveJobButton";
+import { TrackJobActions } from "@/components/TrackJobActions";
 import { getJobById } from "@/lib/jobs/store";
 import { relativeTime } from "@/lib/format";
 
@@ -97,7 +97,7 @@ export default async function JobDetailPage({
             >
               Open official apply page
             </a>
-            <SaveJobButton job={job} />
+            <TrackJobActions job={job} />
           </div>
 
           {job.descriptionText ? (

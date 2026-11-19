@@ -10,7 +10,7 @@ Joshua must create the external accounts and paste credentials into Vercel / `.e
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
    - **anon public** key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - **service_role** key → `SUPABASE_SERVICE_ROLE_KEY` (server only; never ship to the browser)
-4. Open **SQL Editor**, paste and run the contents of [`supabase/schema.sql`](./supabase/schema.sql).
+4. Open **SQL Editor**, paste and run the contents of [`supabase/schema.sql`](./supabase/schema.sql) (includes `applications`, `watchlist`, and `outreach`).
 5. Auth: **Authentication → Providers** — enable **Email**. Magic links are used by `/login`.
 6. Under **Authentication → URL configuration**, add redirect URLs:
    - `http://localhost:3000/auth/callback`

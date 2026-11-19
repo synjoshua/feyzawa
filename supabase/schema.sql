@@ -116,6 +116,35 @@ create policy "users manage own watchlist"
   with check (auth.uid() = user_id);
 
 -- ---------------------------------------------------------------------------
+-- Outreach queue (private per user) — LinkedIn URLs are user-supplied only
+-- ---------------------------------------------------------------------------
+create table if not exists public.outreach (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  company_name text not null,
+  recruiter_id text,
+  recruiter_name text not null,
+  linkedin_url text default '',
+  role_title text default '',
+  job_id text,
+  status text not null check (status in ('queued', 'drafted', 'sent', 'connected', 'replied', 'closed')),
+  draft_message text default '',
+  notes text default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists outreach_user_idx on public.outreach (user_id);
+
+alter table public.outreach enable row level security;
+
+drop policy if exists "users manage own outreach" on public.outreach;
+create policy "users manage own outreach"
+  on public.outreach for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+-- ---------------------------------------------------------------------------
 -- Optional: allowlist only one email (set after you create your account)
 -- Uncomment and replace with Joshua's email to lock the app to a single user.
 -- ---------------------------------------------------------------------------

@@ -1,14 +1,11 @@
-import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
-import {
-  TrackerBoard,
-  type ApplicationRow,
-} from "@/components/TrackerBoard";
+import { TrackerBoard } from "@/components/TrackerBoard";
 import {
   createServerSupabaseClient,
   getCurrentUser,
 } from "@/lib/supabase/server";
 import { isSupabaseAuthConfigured } from "@/lib/supabase/admin";
+import type { ApplicationRecord } from "@/lib/tracking/types";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +13,7 @@ export default async function TrackerPage() {
   const configured = isSupabaseAuthConfigured();
   const user = await getCurrentUser();
 
-  let applications: ApplicationRow[] = [];
+  let applications: ApplicationRecord[] = [];
   if (configured && user) {
     const supabase = await createServerSupabaseClient();
     if (supabase) {
@@ -25,7 +22,7 @@ export default async function TrackerPage() {
         .select("*")
         .eq("user_id", user.id)
         .order("updated_at", { ascending: false });
-      applications = (data ?? []) as ApplicationRow[];
+      applications = (data ?? []) as ApplicationRecord[];
     }
   }
 
@@ -37,26 +34,11 @@ export default async function TrackerPage() {
           <p className="eyebrow">Private</p>
           <h1 className="brand-mark mt-2 text-5xl text-ink">Tracker</h1>
           <p className="mt-2 text-sm text-ink-soft">
-            Saved · Applied · Interviewing · Offer · Rejected. Notes are private
-            to your signed-in account and never shown on the public board.
+            Mark roles you saved or already applied to. Add manual entries for
+            anything off-board. Notes stay private.
           </p>
-          {!user && configured ? (
-            <p className="mt-3 text-sm text-amber">
-              <Link href="/login?next=/tracker" className="underline">
-                Sign in
-              </Link>{" "}
-              to load your private tracker.
-            </p>
-          ) : null}
         </div>
-
-        {user || !configured ? (
-          <TrackerBoard initial={applications} configured={configured} />
-        ) : (
-          <div className="tea-surface rounded-tea p-6 text-sm text-ink-soft">
-            Sign in required for private application history.
-          </div>
-        )}
+        <TrackerBoard initial={applications} configured={configured} />
       </main>
     </div>
   );

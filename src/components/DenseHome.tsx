@@ -200,6 +200,12 @@ export function DenseHome({
                 Tracker
               </Link>
               <Link
+                href="/outreach"
+                className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/85 hover:bg-white/10"
+              >
+                Outreach
+              </Link>
+              <Link
                 href="/login"
                 className="focus-ring rounded-full bg-porcelain/15 px-2.5 py-1.5 text-porcelain hover:bg-porcelain/25"
               >
@@ -427,12 +433,18 @@ export function DenseHome({
                         <WorkStyleBadge value={job.workStyle} />
                       </div>
                     </div>
-                    <div className="flex shrink-0 gap-2">
+                    <div className="flex shrink-0 flex-wrap gap-2">
                       <Link
                         href={`/jobs/${job.id}`}
                         className="focus-ring rounded-full border border-[var(--line)] px-3 py-1.5 text-xs text-ink-soft"
                       >
                         Details
+                      </Link>
+                      <Link
+                        href={`/jobs/${job.id}`}
+                        className="focus-ring rounded-full border border-gold/40 bg-chartreuse/15 px-3 py-1.5 text-xs text-ink"
+                      >
+                        Applied?
                       </Link>
                       <a
                         href={job.applyUrl}

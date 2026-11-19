@@ -1,21 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { relativeTime } from "@/lib/format";
+import {
+  fetchApplications,
+  patchApplication,
+  removeApplication,
+  trackApplication,
+} from "@/lib/tracking/client";
+import type { ApplicationRecord, ApplicationStatus } from "@/lib/tracking/types";
 
-export type ApplicationRow = {
-  id: string;
-  title_snapshot: string;
-  company_snapshot: string;
-  apply_url: string | null;
-  location_snapshot: string | null;
-  status: "saved" | "applied" | "interviewing" | "offer" | "rejected";
-  notes: string | null;
-  applied_at: string | null;
-  updated_at: string;
-};
+export type ApplicationRow = ApplicationRecord;
 
-const STATUSES: ApplicationRow["status"][] = [
+const STATUSES: ApplicationStatus[] = [
   "saved",
   "applied",
   "interviewing",
@@ -27,14 +24,36 @@ export function TrackerBoard({
   initial,
   configured,
 }: {
-  initial: ApplicationRow[];
+  initial: ApplicationRecord[];
   configured: boolean;
 }) {
-  const [rows, setRows] = useState(initial);
+  const [rows, setRows] = useState<ApplicationRecord[]>(initial);
+  const [mode, setMode] = useState<"supabase" | "local">(
+    configured ? "supabase" : "local",
+  );
   const [error, setError] = useState("");
+  const [showManual, setShowManual] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const result = await fetchApplications();
+      if (cancelled) return;
+      if (result.mode === "supabase" || result.applications.length > 0) {
+        setRows(result.applications);
+        setMode(result.mode);
+      } else if (initial.length === 0) {
+        setRows(result.applications);
+        setMode(result.mode);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [initial]);
 
   const grouped = useMemo(() => {
-    const map: Record<string, ApplicationRow[]> = {
+    const map: Record<ApplicationStatus, ApplicationRecord[]> = {
       saved: [],
       applied: [],
       interviewing: [],
@@ -47,74 +66,171 @@ export function TrackerBoard({
     return map;
   }, [rows]);
 
-  async function updateStatus(id: string, status: ApplicationRow["status"]) {
+  async function updateStatus(id: string, status: ApplicationStatus) {
     setError("");
-    const res = await fetch("/api/applications", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status }),
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError(data.error || "Update failed");
+    const result = await patchApplication(id, { status });
+    if (!result) {
+      setError("Update failed");
       return;
     }
-    const data = await res.json();
+    setMode(result.mode);
     setRows((prev) =>
-      prev.map((r) => (r.id === id ? (data.application as ApplicationRow) : r)),
+      prev.map((r) => (r.id === id ? result.application : r)),
     );
   }
 
   async function updateNotes(id: string, notes: string) {
     setError("");
-    const res = await fetch("/api/applications", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, notes }),
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError(data.error || "Could not save notes");
+    const result = await patchApplication(id, { notes });
+    if (!result) {
+      setError("Could not save notes");
       return;
     }
-    const data = await res.json();
+    setMode(result.mode);
     setRows((prev) =>
-      prev.map((r) => (r.id === id ? (data.application as ApplicationRow) : r)),
+      prev.map((r) => (r.id === id ? result.application : r)),
     );
   }
 
   async function remove(id: string) {
-    const res = await fetch(`/api/applications?id=${id}`, { method: "DELETE" });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError(data.error || "Delete failed");
+    const ok = await removeApplication(id);
+    if (!ok) {
+      setError("Delete failed");
       return;
     }
     setRows((prev) => prev.filter((r) => r.id !== id));
   }
 
-  if (!configured) {
-    return (
-      <div className="tea-surface rounded-tea p-6 text-sm text-ink-soft">
-        Supabase is not configured yet. Create a project, run{" "}
-        <code className="rounded bg-foam px-1">supabase/schema.sql</code>,
-        and set the env vars documented in setup. Tracking stays private once
-        auth is live.
-      </div>
-    );
+  async function onManual(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError("");
+    const fd = new FormData(e.currentTarget);
+    const title = String(fd.get("title") ?? "").trim();
+    const company = String(fd.get("company") ?? "").trim();
+    if (!title || !company) {
+      setError("Title and company are required");
+      return;
+    }
+    const result = await trackApplication({
+      title,
+      company,
+      applyUrl: String(fd.get("applyUrl") ?? "").trim() || null,
+      location: String(fd.get("location") ?? "").trim() || null,
+      status: String(fd.get("status") ?? "applied") as ApplicationStatus,
+      notes: String(fd.get("notes") ?? "").trim(),
+    });
+    setMode(result.mode);
+    setRows((prev) => [result.application, ...prev]);
+    e.currentTarget.reset();
+    setShowManual(false);
   }
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-xs text-ink-soft">
+          Storage:{" "}
+          <span className="font-medium text-ink">
+            {mode === "local" ? "this device (local)" : "Supabase (private)"}
+          </span>
+          {mode === "local" && configured
+            ? " — sign in to sync"
+            : mode === "local"
+              ? " — works without Supabase; set up keys to sync"
+              : ""}
+        </p>
+        <button
+          type="button"
+          onClick={() => setShowManual((v) => !v)}
+          className="focus-ring rounded-full bg-jade px-4 py-2 text-sm font-medium text-porcelain"
+        >
+          {showManual ? "Close" : "Add application"}
+        </button>
+      </div>
+
+      {showManual ? (
+        <form
+          onSubmit={onManual}
+          className="tea-surface grid gap-3 rounded-tea p-4 sm:grid-cols-2"
+        >
+          <p className="sm:col-span-2 text-sm text-ink-soft">
+            Tell Feyzawa about a role you already applied to (on or off the
+            board).
+          </p>
+          <label className="text-sm">
+            <span className="text-ink-soft">Title</span>
+            <input
+              name="title"
+              required
+              className="focus-ring mt-1 w-full rounded-full border border-[var(--line)] bg-porcelain px-3 py-2"
+              placeholder="Product Design Intern"
+            />
+          </label>
+          <label className="text-sm">
+            <span className="text-ink-soft">Company</span>
+            <input
+              name="company"
+              required
+              className="focus-ring mt-1 w-full rounded-full border border-[var(--line)] bg-porcelain px-3 py-2"
+              placeholder="Figma"
+            />
+          </label>
+          <label className="text-sm">
+            <span className="text-ink-soft">Apply URL</span>
+            <input
+              name="applyUrl"
+              type="url"
+              className="focus-ring mt-1 w-full rounded-full border border-[var(--line)] bg-porcelain px-3 py-2"
+              placeholder="https://…"
+            />
+          </label>
+          <label className="text-sm">
+            <span className="text-ink-soft">Location</span>
+            <input
+              name="location"
+              className="focus-ring mt-1 w-full rounded-full border border-[var(--line)] bg-porcelain px-3 py-2"
+              placeholder="San Francisco, CA"
+            />
+          </label>
+          <label className="text-sm">
+            <span className="text-ink-soft">Status</span>
+            <select
+              name="status"
+              defaultValue="applied"
+              className="focus-ring mt-1 w-full rounded-full border border-[var(--line)] bg-porcelain px-3 py-2"
+            >
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm sm:col-span-2">
+            <span className="text-ink-soft">Private notes</span>
+            <textarea
+              name="notes"
+              rows={2}
+              className="focus-ring mt-1 w-full rounded-xl border border-[var(--line)] bg-porcelain px-3 py-2"
+              placeholder="Date applied, referral, etc."
+            />
+          </label>
+          <button
+            type="submit"
+            className="focus-ring sm:col-span-2 rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-porcelain"
+          >
+            Add to tracker
+          </button>
+        </form>
+      ) : null}
+
       {error ? (
         <p className="rounded-lg bg-clay/10 px-3 py-2 text-sm text-clay">{error}</p>
       ) : null}
+
       <div className="grid gap-4 lg:grid-cols-5">
         {STATUSES.map((status) => (
-          <section
-            key={status}
-            className="tea-surface rounded-tea p-3"
-          >
+          <section key={status} className="tea-surface rounded-tea p-3">
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-ink-soft">
               {status} · {grouped[status].length}
             </h2>
@@ -122,7 +238,7 @@ export function TrackerBoard({
               {grouped[status].map((row) => (
                 <li
                   key={row.id}
-                  className="rounded-xl border border-[var(--line)] bg-white/80 p-3"
+                  className="rounded-xl border border-[var(--line)] bg-porcelain p-3"
                 >
                   <p className="text-sm font-semibold text-ink">
                     {row.title_snapshot}
@@ -141,7 +257,7 @@ export function TrackerBoard({
                       onChange={(e) =>
                         updateStatus(
                           row.id,
-                          e.target.value as ApplicationRow["status"],
+                          e.target.value as ApplicationStatus,
                         )
                       }
                       className="focus-ring w-full rounded-md border border-[var(--line)] bg-white px-2 py-1 text-xs"
@@ -169,7 +285,7 @@ export function TrackerBoard({
                       placeholder="Interview notes stay private…"
                     />
                   </label>
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
                     {row.apply_url ? (
                       <a
                         href={row.apply_url}
@@ -180,6 +296,12 @@ export function TrackerBoard({
                         Apply link
                       </a>
                     ) : null}
+                    <a
+                      href={`/outreach?company=${encodeURIComponent(row.company_snapshot)}&role=${encodeURIComponent(row.title_snapshot)}`}
+                      className="text-xs text-gold underline"
+                    >
+                      Recruiters
+                    </a>
                     <button
                       type="button"
                       onClick={() => remove(row.id)}
