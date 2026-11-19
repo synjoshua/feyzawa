@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition, type FormEvent } from "react";
 import type { NormalizedJob } from "@/lib/ats/types";
 import { relativeTime } from "@/lib/format";
@@ -54,6 +55,30 @@ export function DenseHome({
   const [company, setCompany] = useState("");
   const [showClosed, setShowClosed] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshMsg, setRefreshMsg] = useState("");
+  const router = useRouter();
+
+  async function refreshJobs() {
+    setRefreshing(true);
+    setRefreshMsg("Fetching Greenhouse / Lever / Ashby…");
+    try {
+      const res = await fetch("/api/jobs/refresh", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setRefreshMsg(data.error || "Refresh failed");
+        return;
+      }
+      setRefreshMsg(
+        `Updated · ${data.activeCount ?? 0} active design roles`,
+      );
+      router.refresh();
+    } catch {
+      setRefreshMsg("Network error while refreshing");
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   const activeJobs = useMemo(
     () => initialJobs.filter((j) => j.status === "active"),
@@ -363,34 +388,51 @@ export function DenseHome({
           </div>
         </section>
 
-        {/* Status strip */}
-        <div className="animate-pour stagger-1 mt-3 flex items-center gap-3 rounded-2xl border border-[var(--line)] bg-porcelain/90 px-3 py-2.5 text-sm text-ink-soft shadow-soft">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-matcha/15 text-xs text-gold">
+        {/* Status strip + live refresh */}
+        <div className="animate-pour stagger-1 mt-3 flex flex-wrap items-center gap-3 rounded-2xl border border-[var(--line)] bg-porcelain/90 px-3 py-2.5 text-sm text-ink-soft shadow-soft">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-chartreuse/25 text-xs text-gold">
             ●
           </span>
-          <p className="min-w-0 flex-1 truncate">
+          <p className="min-w-0 flex-1">
             <span className="font-semibold text-ink">{filtered.length}</span> roles
             {pending ? " · steeping…" : ""}
             {updatedAt
               ? ` · verified ${relativeTime(updatedAt)} · ${source}`
-              : " · run refresh for live ATS"}
+              : " · not refreshed yet"}
+            {refreshMsg ? (
+              <span className="mt-0.5 block text-xs text-ink">{refreshMsg}</span>
+            ) : (
+              <span className="mt-0.5 block text-xs">
+                Pull latest design listings from your company allowlist anytime.
+              </span>
+            )}
           </p>
-          {(q || chip !== "all" || company || showClosed) && (
+          <div className="flex shrink-0 items-center gap-2">
+            {(q || chip !== "all" || company || showClosed) && (
+              <button
+                type="button"
+                onClick={() => {
+                  startTransition(() => {
+                    setQ("");
+                    setChip("all");
+                    setCompany("");
+                    setShowClosed(false);
+                  });
+                }}
+                className="focus-ring text-xs text-gold underline-offset-2 hover:underline"
+              >
+                Reset
+              </button>
+            )}
             <button
               type="button"
-              onClick={() => {
-                startTransition(() => {
-                  setQ("");
-                  setChip("all");
-                  setCompany("");
-                  setShowClosed(false);
-                });
-              }}
-              className="focus-ring shrink-0 text-xs text-gold underline-offset-2 hover:underline"
+              onClick={refreshJobs}
+              disabled={refreshing}
+              className="focus-ring rounded-full bg-jade px-3.5 py-1.5 text-xs font-medium text-porcelain disabled:opacity-60"
             >
-              Reset
+              {refreshing ? "Refreshing…" : "Refresh jobs"}
             </button>
-          )}
+          </div>
         </div>
 
         {/* Featured / open roles */}
