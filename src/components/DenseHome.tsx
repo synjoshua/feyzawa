@@ -11,6 +11,12 @@ import {
   StatusBadge,
   WorkStyleBadge,
 } from "./Badges";
+import {
+  IconCalifornia,
+  IconIntern,
+  IconRemote,
+  IconTracker,
+} from "./HomeIcons";
 
 type Props = {
   initialJobs: NormalizedJob[];
@@ -148,25 +154,43 @@ export function DenseHome({
   const shortcuts = [
     {
       label: "Internships",
-      sub: `${internCount}`,
+      count: internCount,
+      icon: "intern" as const,
       onClick: () => applyQuick("intern"),
     },
     {
       label: "California",
-      sub: `${caCount}`,
+      count: caCount,
+      icon: "california" as const,
       onClick: () => applyQuick("california"),
     },
     {
       label: "Remote",
-      sub: `${remoteCount}`,
+      count: remoteCount,
+      icon: "remote" as const,
       onClick: () => applyQuick("remote"),
     },
     {
       label: "Tracker",
-      sub: "Apply",
+      count: null as number | null,
+      icon: "tracker" as const,
       href: "/tracker",
     },
-  ] as const;
+  ];
+
+  function ShortcutIcon({ name }: { name: (typeof shortcuts)[number]["icon"] }) {
+    const cls = "h-7 w-7";
+    switch (name) {
+      case "intern":
+        return <IconIntern className={cls} />;
+      case "california":
+        return <IconCalifornia className={cls} />;
+      case "remote":
+        return <IconRemote className={cls} />;
+      case "tracker":
+        return <IconTracker className={cls} />;
+    }
+  }
 
   const juniorCount = activeJobs.filter(
     (j) =>
@@ -198,58 +222,50 @@ export function DenseHome({
 
   return (
     <div className="pb-16">
-      {/* Oriental lacquer header — smooth ink wash + soft brass light (no tile pattern) */}
-      <section className="relative overflow-hidden text-porcelain">
+      {/* Charlie's Tea mood: flat cream, mustard mark, minimal icons */}
+      <section className="relative overflow-hidden bg-[#f2e8de] text-ink">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0"
+          className="pointer-events-none absolute inset-0 opacity-[0.35]"
           style={{
-            background:
-              "radial-gradient(120% 80% at 12% -10%, rgba(229,191,85,0.28), transparent 42%), radial-gradient(90% 70% at 88% 30%, rgba(201,168,90,0.14), transparent 48%), linear-gradient(165deg, #3a322e 0%, #2c2827 42%, #241f1d 100%)",
-          }}
-        />
-        {/* Soft bottom fade so the lacquer meets the page cleanly */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-16"
-          style={{
-            background:
-              "linear-gradient(to bottom, transparent, rgba(36,31,29,0.85))",
+            backgroundImage:
+              "radial-gradient(circle at 12% 18%, rgba(229,191,85,0.35) 0 2px, transparent 3px), radial-gradient(circle at 88% 22%, rgba(43,37,35,0.12) 0 1.5px, transparent 2.5px), radial-gradient(circle at 70% 8%, rgba(229,191,85,0.4) 0 1.5px, transparent 2.5px)",
+            backgroundSize: "100% 100%",
           }}
         />
 
-        <div className="relative mx-auto max-w-6xl px-4 pt-5 sm:px-6">
+        <div className="relative mx-auto max-w-6xl px-4 pt-6 sm:px-6">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-[0.28em] text-[#e5bf55]/90">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-ink-soft">
                 Design hunt
               </p>
-              <h1 className="brand-mark mt-1 truncate text-[2.75rem] leading-none text-porcelain sm:text-[3.4rem]">
-                Feyzawa
+              <h1 className="brand-mark mt-1 truncate text-[2.85rem] leading-none text-ink sm:text-[3.5rem]">
+                <span className="gold-mark px-0.5">Feyzawa</span>
               </h1>
             </div>
             <nav className="flex shrink-0 items-center gap-0.5 pt-1 text-xs sm:gap-1 sm:text-sm">
               <Link
                 href="/watchlist"
-                className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
+                className="focus-ring rounded-full px-2.5 py-1.5 text-ink-soft hover:bg-black/[0.04] hover:text-ink"
               >
                 Watch
               </Link>
               <Link
                 href="/tracker"
-                className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
+                className="focus-ring rounded-full px-2.5 py-1.5 text-ink-soft hover:bg-black/[0.04] hover:text-ink"
               >
                 Tracker
               </Link>
               <Link
                 href="/outreach"
-                className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
+                className="focus-ring rounded-full px-2.5 py-1.5 text-ink-soft hover:bg-black/[0.04] hover:text-ink"
               >
                 Outreach
               </Link>
               <Link
                 href={signedIn ? "/profile" : "/login"}
-                className="focus-ring rounded-full bg-porcelain/12 px-2.5 py-1.5 text-porcelain hover:bg-porcelain/20"
+                className="focus-ring rounded-full bg-[#e5bf55]/45 px-2.5 py-1.5 font-medium text-ink hover:bg-[#e5bf55]/65"
               >
                 {signedIn ? "Profile" : "Sign in"}
               </Link>
@@ -258,7 +274,7 @@ export function DenseHome({
 
           <form
             onSubmit={runSearch}
-            className="mt-5 flex items-center gap-2 rounded-full bg-porcelain p-1 pl-4 shadow-soft"
+            className="mt-6 flex items-center gap-2 rounded-full border border-[var(--line)] bg-porcelain p-1 pl-4 shadow-soft"
           >
             <input
               value={q}
@@ -270,7 +286,7 @@ export function DenseHome({
             <select
               value={company}
               onChange={(e) => setCompany(e.target.value)}
-              className="hidden max-w-[9rem] truncate rounded-full bg-foam px-2 py-1.5 text-xs text-ink sm:block"
+              className="hidden max-w-[9rem] truncate rounded-full bg-[#f2e8de] px-2 py-1.5 text-xs text-ink sm:block"
               aria-label="Company"
             >
               <option value="">Company</option>
@@ -288,44 +304,46 @@ export function DenseHome({
             </button>
           </form>
 
-          <div className="mt-5 grid grid-cols-4 gap-2 pb-6 sm:gap-3">
-            {shortcuts.map((item) =>
-              "href" in item && item.href ? (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="focus-ring flex flex-col items-center gap-1.5 rounded-2xl border border-white/10 bg-black/20 px-1 py-3 text-center transition hover:border-white/20 hover:bg-black/30"
-                >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#e5bf55]/15 text-sm font-semibold text-[#e5bf55]">
-                    {item.sub}
+          <div className="mt-7 grid grid-cols-4 gap-2 pb-8 sm:gap-4">
+            {shortcuts.map((item) => {
+              const inner = (
+                <>
+                  <span className="flex h-11 w-11 items-center justify-center text-[#6f675f]">
+                    <ShortcutIcon name={item.icon} />
                   </span>
-                  <span className="text-[11px] font-medium leading-tight text-porcelain/90 sm:text-xs">
+                  <span className="text-[11px] font-medium leading-tight text-ink sm:text-xs">
                     {item.label}
                   </span>
+                  {item.count !== null ? (
+                    <span className="text-[10px] tabular-nums text-ink-soft">
+                      {item.count}
+                    </span>
+                  ) : null}
+                </>
+              );
+              const className =
+                "focus-ring flex flex-col items-center gap-1 rounded-2xl px-1 py-2.5 text-center transition hover:bg-black/[0.03]";
+              return "href" in item && item.href ? (
+                <Link key={item.label} href={item.href} className={className}>
+                  {inner}
                 </Link>
               ) : (
                 <button
                   key={item.label}
                   type="button"
-                  onClick={"onClick" in item ? item.onClick : undefined}
-                  className="focus-ring flex flex-col items-center gap-1.5 rounded-2xl border border-white/10 bg-black/20 px-1 py-3 text-center transition hover:border-white/20 hover:bg-black/30"
+                  onClick={item.onClick}
+                  className={className}
                 >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#e5bf55]/15 text-sm font-semibold text-[#e5bf55]">
-                    {item.sub}
-                  </span>
-                  <span className="text-[11px] font-medium leading-tight text-porcelain/90 sm:text-xs">
-                    {item.label}
-                  </span>
+                  {inner}
                 </button>
-              ),
-            )}
+              );
+            })}
           </div>
         </div>
       </section>
 
       <div className="relative z-10 mx-auto max-w-6xl px-3 sm:px-6">
-        {/* Shortcut + category card — solid porcelain, no overlap over hero shortcuts */}
-        <section className="animate-pour -mt-3 overflow-hidden rounded-[1.35rem] border border-[var(--line)] bg-porcelain shadow-panel">
+        <section className="animate-pour overflow-hidden rounded-[1.35rem] border border-[var(--line)] bg-porcelain shadow-panel">
           <div className="flex gap-1 overflow-x-auto border-b border-[var(--line)] px-3 pt-3 scrollbar-thin">
             {CATEGORY_CHIPS.map((c) => (
               <button
