@@ -194,26 +194,43 @@ export function DenseHome({
     }
   }
 
-  const juniorCount = activeJobs.filter(
-    (j) =>
-      j.experienceBand === "junior" || j.experienceBand === "associate",
-  ).length;
-  const newGradCount = activeJobs.filter(
-    (j) => j.experienceBand === "new_grad",
-  ).length;
-  const productCount = activeJobs.filter((j) =>
-    /product/i.test(j.title),
-  ).length;
   const closedCount = initialJobs.filter(
     (j) => j.status === "potentially_closed",
   ).length;
 
-  const filterStats: { key: QuickKey; label: string; count: number }[] = [
-    { key: "confirmed", label: "Confirmed", count: confirmedCount },
-    { key: "new_grad", label: "New grad", count: newGradCount },
-    { key: "junior", label: "Junior", count: juniorCount },
-    { key: "product", label: "Product", count: productCount },
-  ];
+  function countForFilter(key: QuickKey): number {
+    switch (key) {
+      case "intern":
+        return internCount;
+      case "new_grad":
+        return activeJobs.filter((j) => j.experienceBand === "new_grad").length;
+      case "junior":
+        return activeJobs.filter(
+          (j) =>
+            j.experienceBand === "junior" || j.experienceBand === "associate",
+        ).length;
+      case "confirmed":
+        return confirmedCount;
+      case "california":
+        return caCount;
+      case "remote":
+        return remoteCount;
+      case "product":
+        return activeJobs.filter((j) => /product/i.test(j.title)).length;
+      case "all":
+      default:
+        return activeJobs.length;
+    }
+  }
+
+  // Same keys/order as chips (skip All) so highlight maps 1:1 left→right
+  const filterStats = CATEGORY_CHIPS.filter((c) => c.key !== "all").map(
+    (c) => ({
+      key: c.key,
+      label: c.label,
+      count: countForFilter(c.key),
+    }),
+  );
 
   return (
     <div className="pb-16">
@@ -363,7 +380,7 @@ export function DenseHome({
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-soft">
                 Role counts
               </p>
-              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
                 {filterStats.map((stat) => (
                   <button
                     key={stat.key}
