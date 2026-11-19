@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #141a16;
+  --ink-soft: #2a342e;
+  --fog: #e7ebe6;
+  --mist: #f3f5f1;
+  --paper: #eef1ec;
+  --moss: #2f6b4f;
+  --moss-deep: #1e4634;
+  --leaf: #4f8f6c;
+  --amber: #c47a2c;
+  --clay: #8c5a45;
+  --line: rgba(20, 26, 22, 0.12);
+  --glow: rgba(47, 107, 79, 0.18);
+  --background: var(--mist);
+  --foreground: var(--ink);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--foreground);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(79, 143, 108, 0.16), transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, rgba(196, 122, 44, 0.1), transparent 50%),
+    linear-gradient(180deg, #f7f8f5 0%, #eef1ec 42%, #e8ece6 100%);
+  min-height: 100vh;
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+::selection {
+  background: rgba(47, 107, 79, 0.22);
+}
+
+.grain {
+  position: relative;
+}
+
+.grain::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+.brand-display {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.03em;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-soft {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-rise {
+  animation: rise-in 0.55s ease-out both;
+}
+
+.animate-fade {
+  animation: fade-soft 0.7s ease-out both;
+}
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.12s; }
+.stagger-3 { animation-delay: 0.2s; }
+
+.job-row {
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.job-row:hover {
+  background-color: rgba(255, 255, 255, 0.55);
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--moss);
+  outline-offset: 2px;
+}
