@@ -314,9 +314,9 @@ export function DenseHome({
         </div>
       </section>
 
-      <div className="relative z-10 mx-auto -mt-5 max-w-6xl px-3 sm:px-6">
-        {/* Shortcut + category card */}
-        <section className="animate-pour tea-surface overflow-hidden rounded-[1.35rem] shadow-panel">
+      <div className="relative z-10 mx-auto -mt-6 max-w-6xl px-3 sm:px-6">
+        {/* Shortcut + category card — solid porcelain so it doesn't smear over lacquer */}
+        <section className="animate-pour overflow-hidden rounded-[1.35rem] border border-[var(--line)] bg-porcelain shadow-panel">
           <div className="flex gap-1 overflow-x-auto border-b border-[var(--line)] px-3 pt-3 scrollbar-thin">
             {CATEGORY_CHIPS.map((c) => (
               <button
