@@ -279,7 +279,7 @@ export function DenseHome({
             </button>
           </form>
 
-          <div className="mt-5 grid grid-cols-4 gap-2 pb-10 sm:gap-3">
+          <div className="mt-5 grid grid-cols-4 gap-2 pb-6 sm:gap-3">
             {shortcuts.map((item) =>
               "href" in item && item.href ? (
                 <Link
@@ -314,9 +314,9 @@ export function DenseHome({
         </div>
       </section>
 
-      <div className="relative z-10 mx-auto -mt-6 max-w-6xl px-3 sm:px-6">
-        {/* Shortcut + category card — solid porcelain so it doesn't smear over lacquer */}
-        <section className="animate-pour overflow-hidden rounded-[1.35rem] border border-[var(--line)] bg-porcelain shadow-panel">
+      <div className="relative z-10 mx-auto max-w-6xl px-3 sm:px-6">
+        {/* Shortcut + category card — solid porcelain, no overlap over hero shortcuts */}
+        <section className="animate-pour -mt-3 overflow-hidden rounded-[1.35rem] border border-[var(--line)] bg-porcelain shadow-panel">
           <div className="flex gap-1 overflow-x-auto border-b border-[var(--line)] px-3 pt-3 scrollbar-thin">
             {CATEGORY_CHIPS.map((c) => (
               <button
