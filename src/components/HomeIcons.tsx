@@ -33,3 +33,19 @@ export function IconTracker({ className = "h-6 w-6" }: IconProps) {
     </svg>
   );
 }
+
+export function IconWatch({ className = "h-6 w-6" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
+      <path d="M12 17.3 6.2 20.5l1.6-6.6L3 9.5l6.7-.6L12 2.8l2.3 6.1 6.7.6-4.8 4.4 1.6 6.6z" />
+    </svg>
+  );
+}
+
+export function IconOutreach({ className = "h-6 w-6" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
+      <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm-7.5 9a7.5 7.5 0 0 1 15 0v1H4.5v-1zM18 8h2v2h2v2h-2v2h-2v-2h-2v-2h2V8z" />
+    </svg>
+  );
+}

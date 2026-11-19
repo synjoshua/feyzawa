@@ -14,8 +14,10 @@ import {
 import {
   IconCalifornia,
   IconIntern,
+  IconOutreach,
   IconRemote,
   IconTracker,
+  IconWatch,
 } from "./HomeIcons";
 
 type Props = {
@@ -196,28 +198,21 @@ export function DenseHome({
     (j) =>
       j.experienceBand === "junior" || j.experienceBand === "associate",
   ).length;
+  const newGradCount = activeJobs.filter(
+    (j) => j.experienceBand === "new_grad",
+  ).length;
+  const productCount = activeJobs.filter((j) =>
+    /product/i.test(j.title),
+  ).length;
+  const closedCount = initialJobs.filter(
+    (j) => j.status === "potentially_closed",
+  ).length;
 
-  const gridTiles = [
-    { label: "Confirmed", key: "confirmed" as QuickKey, count: confirmedCount },
-    {
-      label: "New grad",
-      key: "new_grad" as QuickKey,
-      count: activeJobs.filter((j) => j.experienceBand === "new_grad").length,
-    },
-    {
-      label: "Product",
-      key: "product" as QuickKey,
-      count: activeJobs.filter((j) => /product/i.test(j.title)).length,
-    },
-    { label: "Junior", key: "junior" as QuickKey, count: juniorCount },
-    { label: "Watchlist", href: "/watchlist", count: watchedCompanies.length },
-    { label: "Outreach", href: "/outreach", count: null },
-    { label: "All roles", key: "all" as QuickKey, count: activeJobs.length },
-    {
-      label: showClosed ? "Hide closed" : "Maybe closed",
-      onToggleClosed: true,
-      count: initialJobs.filter((j) => j.status === "potentially_closed").length,
-    },
+  const filterStats: { key: QuickKey; label: string; count: number }[] = [
+    { key: "confirmed", label: "Confirmed", count: confirmedCount },
+    { key: "new_grad", label: "New grad", count: newGradCount },
+    { key: "junior", label: "Junior", count: juniorCount },
+    { key: "product", label: "Product", count: productCount },
   ];
 
   return (
@@ -344,6 +339,7 @@ export function DenseHome({
 
       <div className="relative z-10 mx-auto max-w-6xl px-3 sm:px-6">
         <section className="animate-pour overflow-hidden rounded-[1.35rem] border border-[var(--line)] bg-porcelain shadow-panel">
+          {/* Group 1: filter chips — one job, same control type */}
           <div className="flex gap-1 overflow-x-auto border-b border-[var(--line)] px-3 pt-3 scrollbar-thin">
             {CATEGORY_CHIPS.map((c) => (
               <button
@@ -361,65 +357,93 @@ export function DenseHome({
             ))}
           </div>
 
-          <div className="grid grid-cols-4 gap-2 p-3 sm:gap-3 sm:p-4">
-            {gridTiles.map((tile) => {
-              if ("href" in tile && tile.href) {
-                return (
-                  <Link
-                    key={tile.label}
-                    href={tile.href}
-                    className="focus-ring flex flex-col items-center gap-1 rounded-xl bg-foam/80 px-1 py-3 text-center transition hover:bg-ceramic"
-                  >
-                    <span className="text-base font-semibold text-ink sm:text-lg">
-                      {tile.count ?? "→"}
-                    </span>
-                    <span className="text-[10px] leading-tight text-ink-soft sm:text-[11px]">
-                      {tile.label}
-                    </span>
-                  </Link>
-                );
-              }
-              if ("onToggleClosed" in tile && tile.onToggleClosed) {
-                return (
+          <div className="space-y-5 p-4 sm:p-5">
+            {/* Group 2: role counts — similarity + proximity (all number tiles) */}
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-soft">
+                Role counts
+              </p>
+              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {filterStats.map((stat) => (
                   <button
-                    key={tile.label}
+                    key={stat.key}
                     type="button"
-                    onClick={() => setShowClosed((v) => !v)}
-                    className={`focus-ring flex flex-col items-center gap-1 rounded-xl px-1 py-3 text-center transition ${
-                      showClosed ? "bg-jade text-porcelain" : "bg-foam/80 hover:bg-ceramic"
+                    onClick={() => applyQuick(stat.key)}
+                    className={`focus-ring rounded-xl border px-3 py-3 text-left transition ${
+                      chip === stat.key
+                        ? "border-gold bg-[#e5bf55]/25"
+                        : "border-[var(--line)] bg-[#f2e8de]/50 hover:border-gold/40"
                     }`}
                   >
-                    <span className="text-base font-semibold sm:text-lg">
-                      {tile.count}
-                    </span>
-                    <span className="text-[10px] leading-tight sm:text-[11px]">
-                      {tile.label}
-                    </span>
+                    <p className="text-xl font-semibold tabular-nums text-ink">
+                      {stat.count}
+                    </p>
+                    <p className="mt-0.5 text-xs text-ink-soft">{stat.label}</p>
                   </button>
-                );
-              }
-              return (
-                <button
-                  key={tile.label}
-                  type="button"
-                  onClick={() =>
-                    applyQuick((tile as { key: QuickKey }).key)
-                  }
-                  className={`focus-ring flex flex-col items-center gap-1 rounded-xl px-1 py-3 text-center transition ${
-                    chip === (tile as { key: QuickKey }).key
-                      ? "bg-jade text-porcelain"
-                      : "bg-foam/80 hover:bg-ceramic"
-                  }`}
+                ))}
+              </div>
+            </div>
+
+            {/* Group 3: board scope — common region, separated from filters */}
+            <div className="flex flex-wrap items-center gap-2 border-t border-[var(--line)] pt-4">
+              <button
+                type="button"
+                onClick={() => applyQuick("all")}
+                className={`focus-ring rounded-full px-3.5 py-2 text-sm font-medium transition ${
+                  chip === "all" && !showClosed
+                    ? "bg-ink text-porcelain"
+                    : "border border-[var(--line)] bg-porcelain text-ink hover:border-gold/40"
+                }`}
+              >
+                All roles · {activeJobs.length}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowClosed((v) => !v)}
+                className={`focus-ring rounded-full px-3.5 py-2 text-sm transition ${
+                  showClosed
+                    ? "bg-ink text-porcelain"
+                    : "border border-[var(--line)] text-ink-soft hover:border-gold/40 hover:text-ink"
+                }`}
+              >
+                {showClosed ? "Hiding closed" : `Maybe closed · ${closedCount}`}
+              </button>
+            </div>
+
+            {/* Group 4: your tools — icons only, never mixed with counts */}
+            <div className="border-t border-[var(--line)] pt-4">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-soft">
+                Your tools
+              </p>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                <Link
+                  href="/watchlist"
+                  className="focus-ring flex flex-col items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[#f2e8de]/40 px-2 py-3 text-center transition hover:border-gold/45"
                 >
-                  <span className="text-base font-semibold sm:text-lg">
-                    {tile.count}
+                  <IconWatch className="h-6 w-6 text-[#6f675f]" />
+                  <span className="text-xs font-medium text-ink">Watchlist</span>
+                  <span className="text-[10px] text-ink-soft">
+                    {watchedCompanies.length} companies
                   </span>
-                  <span className="text-[10px] leading-tight sm:text-[11px]">
-                    {tile.label}
-                  </span>
-                </button>
-              );
-            })}
+                </Link>
+                <Link
+                  href="/outreach"
+                  className="focus-ring flex flex-col items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[#f2e8de]/40 px-2 py-3 text-center transition hover:border-gold/45"
+                >
+                  <IconOutreach className="h-6 w-6 text-[#6f675f]" />
+                  <span className="text-xs font-medium text-ink">Outreach</span>
+                  <span className="text-[10px] text-ink-soft">Recruiters</span>
+                </Link>
+                <Link
+                  href="/tracker"
+                  className="focus-ring flex flex-col items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[#f2e8de]/40 px-2 py-3 text-center transition hover:border-gold/45"
+                >
+                  <IconTracker className="h-6 w-6 text-[#6f675f]" />
+                  <span className="text-xs font-medium text-ink">Tracker</span>
+                  <span className="text-[10px] text-ink-soft">Applications</span>
+                </Link>
+              </div>
+            </div>
           </div>
         </section>
 
