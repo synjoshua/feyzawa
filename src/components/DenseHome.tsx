@@ -306,7 +306,7 @@ export function DenseHome({
             </button>
           </form>
 
-          <div className="mt-7 grid grid-cols-4 gap-2 pb-8 sm:gap-4">
+          <div className="mt-7 grid grid-cols-4 gap-2 pb-6 sm:gap-4">
             {shortcuts.map((item) => {
               const inner = (
                 <>
@@ -344,7 +344,7 @@ export function DenseHome({
         </div>
       </section>
 
-      <div className="relative z-10 mx-auto max-w-6xl px-3 sm:px-6">
+      <div className="relative z-10 mx-auto mt-5 max-w-6xl px-3 sm:mt-6 sm:px-6">
         <section className="animate-pour overflow-hidden rounded-[1.35rem] border border-[var(--line)] bg-porcelain shadow-panel">
           {/* Group 1: filter chips — one job, same control type */}
           <div className="flex gap-1 overflow-x-auto border-b border-[var(--line)] px-3 pb-0 pt-5 scrollbar-thin sm:pt-6">
