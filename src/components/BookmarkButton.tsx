@@ -8,7 +8,10 @@ import {
   trackApplication,
 } from "@/lib/tracking/client";
 import { resolveAppJobId } from "@/lib/tracking/app-utils";
-import type { ApplicationStatus } from "@/lib/tracking/types";
+import type {
+  ApplicationRecord,
+  ApplicationStatus,
+} from "@/lib/tracking/types";
 
 const PIPELINE: ApplicationStatus[] = [
   "applied",
@@ -26,17 +29,7 @@ type Props = {
   onChange?: (saved: boolean, id: string | null) => void;
 };
 
-function findSavedForJob(
-  applications: {
-    id: string;
-    job_id: string | null;
-    status: ApplicationStatus;
-    notes: string;
-    company_snapshot: string;
-    title_snapshot: string;
-  }[],
-  job: NormalizedJob,
-) {
+function findSavedForJob(applications: ApplicationRecord[], job: NormalizedJob) {
   return applications.find((a) => {
     if (a.status !== "saved") return false;
     const key = resolveAppJobId(a);
