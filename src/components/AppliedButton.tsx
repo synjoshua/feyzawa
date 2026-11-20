@@ -34,83 +34,82 @@ function labelFor(status: ApplicationStatus | null): string {
 
 type Props = {
   job: NormalizedJob;
-  /** Optional preloaded status from a parent fetch */
+  /** undefined = unknown (hydrate once); null = known not applied */
   initialStatus?: ApplicationStatus | null;
   initialId?: string | null;
-  /** null status = cleared / removed from tracker */
   onChange?: (status: ApplicationStatus | null, id: string | null) => void;
   className?: string;
 };
 
 export function AppliedButton({
   job,
-  initialStatus = null,
-  initialId = null,
+  initialStatus,
+  initialId,
   onChange,
   className = "",
 }: Props) {
-  const [status, setStatus] = useState<ApplicationStatus | null>(initialStatus);
-  const [appId, setAppId] = useState<string | null>(initialId);
+  const known = initialStatus !== undefined;
+  const [status, setStatus] = useState<ApplicationStatus | null>(
+    known ? initialStatus : null,
+  );
+  const [appId, setAppId] = useState<string | null>(
+    known ? (initialId ?? null) : null,
+  );
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (initialStatus) {
+    if (known) {
       setStatus(initialStatus);
-      setAppId(initialId);
+      setAppId(initialId ?? null);
       return;
     }
     let cancelled = false;
     (async () => {
       const { applications } = await fetchApplications();
       if (cancelled) return;
-      const pipeline = applications.find(
-        (a) => a.job_id === job.id && PIPELINE.includes(a.status),
-      );
-      const any = applications.find((a) => a.job_id === job.id);
-      const hit = pipeline ?? any;
+      const hit =
+        applications.find(
+          (a) => a.job_id === job.id && PIPELINE.includes(a.status),
+        ) ?? applications.find((a) => a.job_id === job.id);
       if (hit) {
         setStatus(hit.status);
         setAppId(hit.id);
-      } else {
-        setStatus(null);
-        setAppId(null);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [job.id, initialStatus, initialId]);
-
-  async function resolveId(): Promise<string | null> {
-    if (appId) return appId;
-    const { applications } = await fetchApplications();
-    return applications.find((a) => a.job_id === job.id)?.id ?? null;
-  }
+  }, [job.id, known, initialStatus, initialId]);
 
   async function clearApplied() {
+    const prevStatus = status;
+    const prevId = appId;
+    setStatus(null);
+    setAppId(null);
+    onChange?.(null, null);
     setBusy(true);
     try {
-      const id = await resolveId();
-      if (id) {
-        await removeApplication(id, job.id);
-      } else {
-        await removeApplication("", job.id);
-      }
-      setStatus(null);
-      setAppId(null);
-      onChange?.(null, null);
+      if (prevId) await removeApplication(prevId, job.id);
+      else await removeApplication("", job.id);
+    } catch {
+      setStatus(prevStatus);
+      setAppId(prevId);
+      onChange?.(prevStatus, prevId);
     } finally {
       setBusy(false);
     }
   }
 
   async function markApplied() {
+    const existingId = appId;
+    const tempId = existingId ?? `opt_applied_${job.id}`;
+    setStatus("applied");
+    setAppId(tempId);
+    onChange?.("applied", tempId);
     setBusy(true);
     try {
-      const id = await resolveId();
-
-      if (id) {
-        const result = await patchApplication(id, { status: "applied" });
+      if (existingId && !existingId.startsWith("opt_")) {
+        const result = await patchApplication(existingId, { status: "applied" });
         if (result) {
           setStatus(result.application.status);
           setAppId(result.application.id);
@@ -130,6 +129,10 @@ export function AppliedButton({
       setStatus(application.status);
       setAppId(application.id);
       onChange?.(application.status, application.id);
+    } catch {
+      setStatus(null);
+      setAppId(null);
+      onChange?.(null, null);
     } finally {
       setBusy(false);
     }
@@ -159,13 +162,7 @@ export function AppliedButton({
           : "border border-gold/40 bg-chartreuse/15 text-ink hover:border-gold hover:bg-chartreuse/25"
       } ${className}`}
     >
-      {busy
-        ? marked
-          ? "Removing…"
-          : "Saving…"
-        : marked
-          ? `${labelFor(status)} ✓`
-          : "Mark applied"}
+      {marked ? `${labelFor(status)} ✓` : "Mark applied"}
     </button>
   );
 }

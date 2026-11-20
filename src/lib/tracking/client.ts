@@ -7,6 +7,7 @@ import {
   deleteLocalOutreach,
   listLocalApplications,
   listLocalOutreach,
+  replaceLocalApplication,
   updateLocalApplication,
   updateLocalOutreach,
 } from "./local-store";
@@ -211,27 +212,21 @@ export async function trackApplication(input: {
     notes,
   };
 
-  try {
-    let res = await postApplication(body);
-
-    // Retry without job_id if the live DB still has the jobs FK
-    if (!res.ok && input.jobId) {
-      res = await postApplication({ ...body, jobId: null });
+  // Cloud upsert in the background — UI already has the local row
+  void (async () => {
+    try {
+      let res = await postApplication(body);
+      if (!res.ok && input.jobId) {
+        res = await postApplication({ ...body, jobId: null });
+      }
+      if (res.ok) {
+        const data = await res.json();
+        replaceLocalApplication(local.id, mapApp(data.application));
+      }
+    } catch {
+      // keep local-only until next sync
     }
-
-    if (res.ok) {
-      const data = await res.json();
-      const remote = mapApp(data.application);
-      createLocalApplication({
-        ...input,
-        status: remote.status,
-        notes: withBoardJobNote(remote.notes, input.jobId),
-      });
-      return { application: remote, mode: "supabase" };
-    }
-  } catch {
-    // fall through
-  }
+  })();
 
   return { application: local, mode: "local" };
 }

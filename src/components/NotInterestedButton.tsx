@@ -8,10 +8,7 @@ import {
   trackApplication,
 } from "@/lib/tracking/client";
 import { resolveAppJobId } from "@/lib/tracking/app-utils";
-import type {
-  ApplicationRecord,
-  ApplicationStatus,
-} from "@/lib/tracking/types";
+import type { ApplicationStatus } from "@/lib/tracking/types";
 
 const PIPELINE: ApplicationStatus[] = [
   "applied",
@@ -23,83 +20,77 @@ const PIPELINE: ApplicationStatus[] = [
 type Props = {
   job: NormalizedJob;
   className?: string;
+  /** undefined = unknown (fetch); null = known not active */
   initialId?: string | null;
   initialActive?: boolean;
   onChange?: (active: boolean, id: string | null) => void;
 };
 
-function findNotInterested(
-  applications: ApplicationRecord[],
-  job: NormalizedJob,
-) {
-  return applications.find((a) => {
-    if (a.status !== "not_interested") return false;
-    const key = resolveAppJobId(a);
-    if (key && key === job.id) return true;
-    return (
-      a.company_snapshot.toLowerCase() === job.companyName.toLowerCase() &&
-      a.title_snapshot.toLowerCase() === job.title.toLowerCase()
-    );
-  });
-}
-
 export function NotInterestedButton({
   job,
   className = "",
-  initialId = null,
-  initialActive = false,
+  initialId,
+  initialActive,
   onChange,
 }: Props) {
+  const known = initialActive !== undefined;
   const [appId, setAppId] = useState<string | null>(
-    initialActive ? initialId : null,
+    known && initialActive ? (initialId ?? null) : null,
   );
   const [busy, setBusy] = useState(false);
   const [hint, setHint] = useState("");
 
   useEffect(() => {
-    setAppId(initialActive ? initialId : null);
-  }, [initialActive, initialId]);
-
-  useEffect(() => {
-    if (initialActive && initialId) return;
+    if (known) {
+      setAppId(initialActive ? (initialId ?? null) : null);
+      return;
+    }
     let cancelled = false;
     (async () => {
       const { applications } = await fetchApplications();
       if (cancelled) return;
-      const hit = findNotInterested(applications, job);
+      const hit = applications.find((a) => {
+        if (a.status !== "not_interested") return false;
+        const key = resolveAppJobId(a);
+        if (key && key === job.id) return true;
+        return (
+          a.company_snapshot.toLowerCase() === job.companyName.toLowerCase() &&
+          a.title_snapshot.toLowerCase() === job.title.toLowerCase()
+        );
+      });
       setAppId(hit?.id ?? null);
     })();
     return () => {
       cancelled = true;
     };
-  }, [job.id, job.companyName, job.title, initialActive, initialId]);
+  }, [known, initialActive, initialId, job.id, job.companyName, job.title]);
 
   async function toggle() {
     if (busy) return;
     setBusy(true);
     setHint("");
+
+    // Undo — hide from list / clear immediately
+    if (appId) {
+      const prev = appId;
+      setAppId(null);
+      onChange?.(false, null);
+      const ok = await removeApplication(prev, job.id);
+      if (!ok) {
+        setAppId(prev);
+        onChange?.(true, prev);
+        setHint("Could not undo");
+      }
+      setBusy(false);
+      return;
+    }
+
+    // Mark — parent can remove from board before the network returns
+    const tempId = `opt_skip_${job.id}`;
+    setAppId(tempId);
+    onChange?.(true, tempId);
+
     try {
-      if (appId) {
-        const ok = await removeApplication(appId, job.id);
-        if (!ok) {
-          setHint("Could not undo");
-          return;
-        }
-        setAppId(null);
-        onChange?.(false, null);
-        return;
-      }
-
-      const { applications } = await fetchApplications();
-      const existing = applications.find((a) => {
-        const key = resolveAppJobId(a);
-        return key === job.id || a.job_id === job.id;
-      });
-      if (existing && PIPELINE.includes(existing.status)) {
-        setHint("Already in tracker");
-        return;
-      }
-
       const { application } = await trackApplication({
         jobId: job.id,
         title: job.title,
@@ -108,14 +99,23 @@ export function NotInterestedButton({
         location: job.locationText,
         status: "not_interested",
       });
-      if (application.status !== "not_interested") {
-        setHint("Already in tracker");
+      if (PIPELINE.includes(application.status)) {
+        setAppId(null);
         onChange?.(false, null);
+        setHint("Already in tracker");
+        return;
+      }
+      if (application.status !== "not_interested") {
+        setAppId(null);
+        onChange?.(false, null);
+        setHint("Already in tracker");
         return;
       }
       setAppId(application.id);
       onChange?.(true, application.id);
     } catch {
+      setAppId(null);
+      onChange?.(false, null);
       setHint("Could not update");
     } finally {
       setBusy(false);
@@ -164,7 +164,7 @@ function CircleCrossIcon({ filled }: { filled: boolean }) {
       <path
         d="M9 9l6 6M15 9l-6 6"
         fill="none"
-        stroke={filled ? "var(--porcelain, #f7f3ec)" : "currentColor"}
+        stroke={filled ? "var(--porcelain, #fffdf8)" : "currentColor"}
         strokeWidth="1.75"
         strokeLinecap="round"
       />

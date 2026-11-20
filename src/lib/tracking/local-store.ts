@@ -144,6 +144,30 @@ export function deleteLocalApplication(id: string): boolean {
   return true;
 }
 
+/** Swap a local optimistic row for the cloud record (same job). */
+export function replaceLocalApplication(
+  localId: string,
+  remote: ApplicationRecord,
+): void {
+  const all = listLocalApplications();
+  const idx = all.findIndex((a) => a.id === localId);
+  const row: ApplicationRecord = { ...remote, source: "local" };
+  if (idx >= 0) {
+    all[idx] = row;
+  } else {
+    const byJob = remote.job_id
+      ? all.findIndex(
+          (a) =>
+            a.job_id === remote.job_id ||
+            (a.notes ?? "").includes(`board_job_id:${remote.job_id}`),
+        )
+      : -1;
+    if (byJob >= 0) all[byJob] = row;
+    else all.unshift(row);
+  }
+  writeJson(APP_KEY, all);
+}
+
 export function listLocalOutreach(): OutreachRecord[] {
   return readJson<OutreachRecord[]>(OUT_KEY, []).map((o) => ({
     ...o,

@@ -8,10 +8,7 @@ import {
   trackApplication,
 } from "@/lib/tracking/client";
 import { resolveAppJobId } from "@/lib/tracking/app-utils";
-import type {
-  ApplicationRecord,
-  ApplicationStatus,
-} from "@/lib/tracking/types";
+import type { ApplicationStatus } from "@/lib/tracking/types";
 
 const PIPELINE: ApplicationStatus[] = [
   "applied",
@@ -23,78 +20,73 @@ const PIPELINE: ApplicationStatus[] = [
 type Props = {
   job: NormalizedJob;
   className?: string;
-  /** Preloaded saved application id from parent */
+  /** undefined = unknown; null = known unsaved */
   initialSavedId?: string | null;
-  /** Called after save/unsave so parent can refresh */
   onChange?: (saved: boolean, id: string | null) => void;
 };
-
-function findSavedForJob(applications: ApplicationRecord[], job: NormalizedJob) {
-  return applications.find((a) => {
-    if (a.status !== "saved") return false;
-    const key = resolveAppJobId(a);
-    if (key && key === job.id) return true;
-    return (
-      a.company_snapshot.toLowerCase() === job.companyName.toLowerCase() &&
-      a.title_snapshot.toLowerCase() === job.title.toLowerCase()
-    );
-  });
-}
 
 export function BookmarkButton({
   job,
   className = "",
-  initialSavedId = null,
+  initialSavedId,
   onChange,
 }: Props) {
-  const [savedId, setSavedId] = useState<string | null>(initialSavedId);
+  const known = initialSavedId !== undefined;
+  const [savedId, setSavedId] = useState<string | null>(
+    known ? initialSavedId : null,
+  );
   const [busy, setBusy] = useState(false);
   const [hint, setHint] = useState("");
 
   useEffect(() => {
-    setSavedId(initialSavedId);
-  }, [initialSavedId]);
-
-  useEffect(() => {
-    if (initialSavedId) return;
+    if (known) {
+      setSavedId(initialSavedId ?? null);
+      return;
+    }
     let cancelled = false;
     (async () => {
       const { applications } = await fetchApplications();
       if (cancelled) return;
-      const hit = findSavedForJob(applications, job);
+      const hit = applications.find((a) => {
+        if (a.status !== "saved") return false;
+        const key = resolveAppJobId(a);
+        if (key && key === job.id) return true;
+        return (
+          a.company_snapshot.toLowerCase() === job.companyName.toLowerCase() &&
+          a.title_snapshot.toLowerCase() === job.title.toLowerCase()
+        );
+      });
       setSavedId(hit?.id ?? null);
     })();
     return () => {
       cancelled = true;
     };
-  }, [job.id, job.companyName, job.title, initialSavedId]);
+  }, [known, initialSavedId, job.id, job.companyName, job.title]);
 
   async function toggle() {
     if (busy) return;
     setBusy(true);
     setHint("");
+
+    if (savedId) {
+      const prev = savedId;
+      setSavedId(null);
+      onChange?.(false, null);
+      const ok = await removeApplication(prev, job.id);
+      if (!ok) {
+        setSavedId(prev);
+        onChange?.(true, prev);
+        setHint("Could not remove");
+      }
+      setBusy(false);
+      return;
+    }
+
+    const tempId = `opt_save_${job.id}`;
+    setSavedId(tempId);
+    onChange?.(true, tempId);
+
     try {
-      if (savedId) {
-        const ok = await removeApplication(savedId, job.id);
-        if (!ok) {
-          setHint("Could not remove");
-          return;
-        }
-        setSavedId(null);
-        onChange?.(false, null);
-        return;
-      }
-
-      const { applications } = await fetchApplications();
-      const existing = applications.find((a) => {
-        const key = resolveAppJobId(a);
-        return key === job.id || a.job_id === job.id;
-      });
-      if (existing && PIPELINE.includes(existing.status)) {
-        setHint("Already in tracker");
-        return;
-      }
-
       const { application } = await trackApplication({
         jobId: job.id,
         title: job.title,
@@ -103,14 +95,17 @@ export function BookmarkButton({
         location: job.locationText,
         status: "saved",
       });
-      if (application.status !== "saved") {
-        setHint("Already in tracker");
+      if (PIPELINE.includes(application.status) || application.status !== "saved") {
+        setSavedId(null);
         onChange?.(false, null);
+        setHint("Already in tracker");
         return;
       }
       setSavedId(application.id);
       onChange?.(true, application.id);
     } catch {
+      setSavedId(null);
+      onChange?.(false, null);
       setHint("Sign in to save across devices");
     } finally {
       setBusy(false);
