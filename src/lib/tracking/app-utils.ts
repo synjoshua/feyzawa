@@ -27,16 +27,30 @@ export function matchApplicationToJobId(
   app: ApplicationRecord,
   jobs: NormalizedJob[],
 ): string | null {
-  const fromId = resolveAppJobId(app);
-  if (fromId) return fromId;
+  return matchApplicationToJobIds(app, jobs)[0] ?? null;
+}
+
+/**
+ * ATS boards (esp. Lever) often list the same title multiple times with
+ * different source IDs. Soft marks should hide / status every sibling.
+ */
+export function matchApplicationToJobIds(
+  app: ApplicationRecord,
+  jobs: NormalizedJob[],
+): string[] {
   const company = app.company_snapshot.trim().toLowerCase();
   const title = app.title_snapshot.trim().toLowerCase();
-  const hit = jobs.find(
-    (j) =>
-      j.companyName.toLowerCase() === company &&
-      j.title.toLowerCase() === title,
-  );
-  return hit?.id ?? null;
+  const bySnap = jobs
+    .filter(
+      (j) =>
+        j.companyName.toLowerCase() === company &&
+        j.title.toLowerCase() === title,
+    )
+    .map((j) => j.id);
+  if (bySnap.length > 0) return Array.from(new Set(bySnap));
+
+  const fromId = resolveAppJobId(app);
+  return fromId ? [fromId] : [];
 }
 
 export function buildAppByJobMap(
@@ -53,19 +67,20 @@ export function buildAppByJobMap(
   const soft = new Set(["saved", "not_interested"]);
 
   for (const a of applications) {
-    const jobKey = matchApplicationToJobId(a, jobs);
-    if (!jobKey) continue;
-    const prev = next.get(jobKey);
-    if (!prev) {
-      next.set(jobKey, { id: a.id, status: a.status });
-      continue;
-    }
-    if (pipeline.has(a.status) && soft.has(prev.status)) {
-      next.set(jobKey, { id: a.id, status: a.status });
-    } else if (pipeline.has(prev.status) && soft.has(a.status)) {
-      // keep pipeline
-    } else {
-      next.set(jobKey, { id: a.id, status: a.status });
+    const jobKeys = matchApplicationToJobIds(a, jobs);
+    for (const jobKey of jobKeys) {
+      const prev = next.get(jobKey);
+      if (!prev) {
+        next.set(jobKey, { id: a.id, status: a.status });
+        continue;
+      }
+      if (pipeline.has(a.status) && soft.has(prev.status)) {
+        next.set(jobKey, { id: a.id, status: a.status });
+      } else if (pipeline.has(prev.status) && soft.has(a.status)) {
+        // keep pipeline
+      } else {
+        next.set(jobKey, { id: a.id, status: a.status });
+      }
     }
   }
   return next;
