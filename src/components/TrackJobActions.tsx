@@ -1,15 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { NormalizedJob } from "@/lib/ats/types";
 import { linkedinPeopleSearchUrl } from "@/lib/outreach/recruiters";
-import { trackApplication } from "@/lib/tracking/client";
+import { fetchApplications, trackApplication } from "@/lib/tracking/client";
+import type { ApplicationStatus } from "@/lib/tracking/types";
+
+const PIPELINE: ApplicationStatus[] = [
+  "applied",
+  "interviewing",
+  "offer",
+  "rejected",
+];
 
 export function TrackJobActions({ job }: { job: NormalizedJob }) {
   const [busy, setBusy] = useState<"saved" | "applied" | null>(null);
   const [done, setDone] = useState<"saved" | "applied" | null>(null);
+  const [pipelineStatus, setPipelineStatus] =
+    useState<ApplicationStatus | null>(null);
   const [message, setMessage] = useState("");
   const [mode, setMode] = useState<"supabase" | "local" | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { applications } = await fetchApplications();
+      if (cancelled) return;
+      const hit = applications.find((a) => a.job_id === job.id);
+      if (!hit) return;
+      if (PIPELINE.includes(hit.status)) {
+        setDone("applied");
+        setPipelineStatus(hit.status);
+        setMessage(
+          hit.status === "applied"
+            ? "Already in your tracker as applied"
+            : `Already tracked as ${hit.status}`,
+        );
+      } else if (hit.status === "saved") {
+        setDone("saved");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [job.id]);
 
   async function track(status: "saved" | "applied") {
     setBusy(status);
@@ -24,6 +58,7 @@ export function TrackJobActions({ job }: { job: NormalizedJob }) {
         status,
       });
       setDone(status);
+      if (status === "applied") setPipelineStatus("applied");
       setMode(result.mode);
       setMessage(
         status === "applied"
@@ -41,25 +76,51 @@ export function TrackJobActions({ job }: { job: NormalizedJob }) {
     }
   }
 
+  const appliedLabel =
+    pipelineStatus === "interviewing"
+      ? "Interviewing ✓"
+      : pipelineStatus === "offer"
+        ? "Offer ✓"
+        : pipelineStatus === "rejected"
+          ? "Rejected ✓"
+          : "Applied ✓";
+
   return (
     <div className="flex flex-col gap-2">
+      {pipelineStatus ? (
+        <p className="rounded-xl border border-jade/30 bg-jade/10 px-3 py-2 text-sm font-medium text-ink">
+          You already {pipelineStatus === "applied" ? "applied" : `marked this as ${pipelineStatus}`}
+          {" · "}
+          <a href="/tracker" className="text-gold underline">
+            Open tracker
+          </a>
+        </p>
+      ) : null}
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
           onClick={() => track("saved")}
-          disabled={busy !== null || done === "saved"}
+          disabled={busy !== null || done === "saved" || done === "applied"}
           className="focus-ring rounded-full border border-[var(--line)] bg-porcelain px-4 py-2.5 text-sm font-medium text-ink disabled:opacity-60"
         >
-          {done === "saved" ? "Saved" : busy === "saved" ? "Saving…" : "Save"}
+          {done === "saved" || done === "applied"
+            ? "Saved"
+            : busy === "saved"
+              ? "Saving…"
+              : "Save"}
         </button>
         <button
           type="button"
           onClick={() => track("applied")}
           disabled={busy !== null || done === "applied"}
-          className="focus-ring rounded-full bg-jade px-4 py-2.5 text-sm font-medium text-porcelain disabled:opacity-60"
+          className={`focus-ring rounded-full px-4 py-2.5 text-sm font-medium disabled:opacity-90 ${
+            done === "applied"
+              ? "bg-jade text-porcelain"
+              : "bg-jade px-4 text-porcelain"
+          }`}
         >
           {done === "applied"
-            ? "Applied ✓"
+            ? appliedLabel
             : busy === "applied"
               ? "Saving…"
               : "I already applied"}

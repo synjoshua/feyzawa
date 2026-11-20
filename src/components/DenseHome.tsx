@@ -2,9 +2,22 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+  type FormEvent,
+} from "react";
 import type { NormalizedJob } from "@/lib/ats/types";
 import { relativeTime } from "@/lib/format";
+import { fetchApplications } from "@/lib/tracking/client";
+import type { ApplicationStatus } from "@/lib/tracking/types";
+import {
+  AppliedBadge,
+  AppliedButton,
+  isPipelineStatus,
+} from "./AppliedButton";
 import {
   ExperienceBadge,
   StatusBadge,
@@ -58,7 +71,27 @@ export function DenseHome({
   const [pending, startTransition] = useTransition();
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMsg, setRefreshMsg] = useState("");
+  const [appByJob, setAppByJob] = useState<
+    Map<string, { id: string; status: ApplicationStatus }>
+  >(new Map());
   const router = useRouter();
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { applications } = await fetchApplications();
+      if (cancelled) return;
+      const next = new Map<string, { id: string; status: ApplicationStatus }>();
+      for (const a of applications) {
+        if (!a.job_id || !isPipelineStatus(a.status)) continue;
+        next.set(a.job_id, { id: a.id, status: a.status });
+      }
+      setAppByJob(next);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function refreshJobs() {
     setRefreshing(true);
@@ -486,57 +519,90 @@ export function DenseHome({
                 No matching roles — reset filters or refresh allowlist boards.
               </li>
             ) : (
-              filtered.map((job) => (
-                <li key={job.id} className="job-row">
-                  <div className="flex flex-col gap-2.5 px-3.5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-4">
-                    <div className="flex min-w-0 items-start gap-3">
-                      <CompanyLogo companyName={job.companyName} />
-                      <div className="min-w-0 space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Link
-                            href={`/jobs/${job.id}`}
-                            className="focus-ring text-[15px] font-medium text-ink hover:text-gold"
-                          >
-                            {job.title}
-                          </Link>
-                          <StatusBadge value={job.status} />
-                        </div>
-                        <p className="text-xs text-ink-soft sm:text-sm">
-                          {job.companyName}
-                          {job.locationText ? ` · ${job.locationText}` : ""}
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          <ExperienceBadge value={job.experienceBand} />
-                          <WorkStyleBadge value={job.workStyle} />
+              filtered.map((job) => {
+                const tracked = appByJob.get(job.id);
+                const applied = tracked
+                  ? isPipelineStatus(tracked.status)
+                  : false;
+                return (
+                  <li
+                    key={job.id}
+                    className={`job-row ${applied ? "bg-jade/8" : ""}`}
+                  >
+                    <div
+                      className={`flex flex-col gap-2.5 px-3.5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-4 ${
+                        applied ? "border-l-[3px] border-l-jade" : ""
+                      }`}
+                    >
+                      <div className="flex min-w-0 items-start gap-3">
+                        <CompanyLogo companyName={job.companyName} />
+                        <div className="min-w-0 space-y-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Link
+                              href={`/jobs/${job.id}`}
+                              className="focus-ring text-[15px] font-medium text-ink hover:text-gold"
+                            >
+                              {job.title}
+                            </Link>
+                            {tracked ? (
+                              <AppliedBadge status={tracked.status} />
+                            ) : null}
+                            <StatusBadge value={job.status} />
+                          </div>
+                          <p className="text-xs text-ink-soft sm:text-sm">
+                            {job.companyName}
+                            {job.locationText ? ` · ${job.locationText}` : ""}
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            <ExperienceBadge value={job.experienceBand} />
+                            <WorkStyleBadge value={job.workStyle} />
+                          </div>
                         </div>
                       </div>
+                      <div className="flex shrink-0 flex-wrap items-center gap-2">
+                        <BookmarkButton job={job} />
+                        <Link
+                          href={`/jobs/${job.id}`}
+                          className="focus-ring rounded-full border border-[var(--line)] px-3 py-1.5 text-xs text-ink-soft"
+                        >
+                          Details
+                        </Link>
+                        <AppliedButton
+                          job={job}
+                          initialStatus={tracked?.status ?? null}
+                          initialId={tracked?.id ?? null}
+                          onChange={(status, id) => {
+                            setAppByJob((prev) => {
+                              const next = new Map(prev);
+                              next.set(job.id, { id, status });
+                              return next;
+                            });
+                          }}
+                        />
+                        {applied ? (
+                          <a
+                            href={job.applyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="focus-ring rounded-full border border-[var(--line)] px-3 py-1.5 text-xs text-ink-soft"
+                          >
+                            Open listing
+                          </a>
+                        ) : (
+                          <a
+                            href={job.applyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="focus-ring rounded-full bg-jade px-3 py-1.5 text-xs font-medium text-porcelain"
+                          >
+                            Apply
+                          </a>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex shrink-0 flex-wrap items-center gap-2">
-                      <BookmarkButton job={job} />
-                      <Link
-                        href={`/jobs/${job.id}`}
-                        className="focus-ring rounded-full border border-[var(--line)] px-3 py-1.5 text-xs text-ink-soft"
-                      >
-                        Details
-                      </Link>
-                      <Link
-                        href={`/jobs/${job.id}`}
-                        className="focus-ring rounded-full border border-gold/40 bg-chartreuse/15 px-3 py-1.5 text-xs text-ink"
-                      >
-                        Applied?
-                      </Link>
-                      <a
-                        href={job.applyUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="focus-ring rounded-full bg-jade px-3 py-1.5 text-xs font-medium text-porcelain"
-                      >
-                        Apply
-                      </a>
-                    </div>
-                  </div>
-                </li>
-              ))
+                  </li>
+                );
+              })
             )}
           </ul>
         </section>

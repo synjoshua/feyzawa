@@ -1,9 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import type { NormalizedJob } from "@/lib/ats/types";
 import { relativeTime } from "@/lib/format";
+import { fetchApplications } from "@/lib/tracking/client";
+import type { ApplicationStatus } from "@/lib/tracking/types";
+import {
+  AppliedBadge,
+  AppliedButton,
+  isPipelineStatus,
+} from "./AppliedButton";
 import {
   ExperienceBadge,
   StatusBadge,
@@ -32,6 +39,26 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
   const [internOnly, setInternOnly] = useState(false);
   const [showClosed, setShowClosed] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [appByJob, setAppByJob] = useState<
+    Map<string, { id: string; status: ApplicationStatus }>
+  >(new Map());
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { applications } = await fetchApplications();
+      if (cancelled) return;
+      const next = new Map<string, { id: string; status: ApplicationStatus }>();
+      for (const a of applications) {
+        if (!a.job_id || !isPipelineStatus(a.status)) continue;
+        next.set(a.job_id, { id: a.id, status: a.status });
+      }
+      setAppByJob(next);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -204,57 +231,89 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
           </div>
         ) : (
           <ul className="divide-y divide-[var(--line)]">
-            {filtered.map((job) => (
-              <li key={job.id} className="job-row">
-                <div className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-5">
-                  <div className="flex min-w-0 items-start gap-3">
-                    <CompanyLogo companyName={job.companyName} />
-                    <div className="min-w-0 space-y-1.5">
-                    <div className="flex flex-wrap items-center gap-2">
+            {filtered.map((job) => {
+              const tracked = appByJob.get(job.id);
+              const applied = tracked
+                ? isPipelineStatus(tracked.status)
+                : false;
+              return (
+                <li
+                  key={job.id}
+                  className={`job-row ${applied ? "bg-jade/8" : ""}`}
+                >
+                  <div
+                    className={`flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-5 ${
+                      applied ? "border-l-[3px] border-l-jade" : ""
+                    }`}
+                  >
+                    <div className="flex min-w-0 items-start gap-3">
+                      <CompanyLogo companyName={job.companyName} />
+                      <div className="min-w-0 space-y-1.5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link
+                            href={`/jobs/${job.id}`}
+                            className="focus-ring text-base font-medium text-ink hover:text-gold"
+                          >
+                            {job.title}
+                          </Link>
+                          {tracked ? (
+                            <AppliedBadge status={tracked.status} />
+                          ) : null}
+                          <StatusBadge value={job.status} />
+                        </div>
+                        <p className="text-sm text-ink-soft">
+                          {job.companyName}
+                          {job.locationText ? ` · ${job.locationText}` : ""}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          <ExperienceBadge value={job.experienceBand} />
+                          <WorkStyleBadge value={job.workStyle} />
+                        </div>
+                        <p className="pt-1 text-[11px] text-ink-soft/75">
+                          Last verified {relativeTime(job.lastVerifiedAt)}
+                          {job.firstSeenAt !== job.lastSeenAt
+                            ? ` · first seen ${relativeTime(job.firstSeenAt)}`
+                            : ""}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <BookmarkButton job={job} />
                       <Link
                         href={`/jobs/${job.id}`}
-                        className="focus-ring text-base font-medium text-ink hover:text-gold"
+                        className="focus-ring rounded-full border border-[var(--line)] bg-foam/60 px-3.5 py-2 text-xs font-medium text-ink-soft hover:border-gold/40 hover:text-gold"
                       >
-                        {job.title}
+                        Details
                       </Link>
-                      <StatusBadge value={job.status} />
-                    </div>
-                    <p className="text-sm text-ink-soft">
-                      {job.companyName}
-                      {job.locationText ? ` · ${job.locationText}` : ""}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      <ExperienceBadge value={job.experienceBand} />
-                      <WorkStyleBadge value={job.workStyle} />
-                    </div>
-                    <p className="pt-1 text-[11px] text-ink-soft/75">
-                      Last verified {relativeTime(job.lastVerifiedAt)}
-                      {job.firstSeenAt !== job.lastSeenAt
-                        ? ` · first seen ${relativeTime(job.firstSeenAt)}`
-                        : ""}
-                    </p>
+                      <AppliedButton
+                        job={job}
+                        initialStatus={tracked?.status ?? null}
+                        initialId={tracked?.id ?? null}
+                        onChange={(status, id) => {
+                          setAppByJob((prev) => {
+                            const next = new Map(prev);
+                            next.set(job.id, { id, status });
+                            return next;
+                          });
+                        }}
+                      />
+                      <a
+                        href={job.applyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`focus-ring rounded-full px-3.5 py-2 text-xs font-medium ${
+                          applied
+                            ? "border border-[var(--line)] text-ink-soft"
+                            : "bg-jade text-porcelain hover:bg-ink"
+                        }`}
+                      >
+                        {applied ? "Open listing" : "Apply"}
+                      </a>
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <BookmarkButton job={job} />
-                    <Link
-                      href={`/jobs/${job.id}`}
-                      className="focus-ring rounded-full border border-[var(--line)] bg-foam/60 px-3.5 py-2 text-xs font-medium text-ink-soft hover:border-gold/40 hover:text-gold"
-                    >
-                      Details
-                    </Link>
-                    <a
-                      href={job.applyUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="focus-ring rounded-full bg-jade px-3.5 py-2 text-xs font-medium text-porcelain hover:bg-ink"
-                    >
-                      Apply
-                    </a>
-                  </div>
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
