@@ -50,6 +50,7 @@ export function buildAppByJobMap(
     "offer",
     "rejected",
   ]);
+  const soft = new Set(["saved", "not_interested"]);
 
   for (const a of applications) {
     const jobKey = matchApplicationToJobId(a, jobs);
@@ -59,9 +60,9 @@ export function buildAppByJobMap(
       next.set(jobKey, { id: a.id, status: a.status });
       continue;
     }
-    if (pipeline.has(a.status) && prev.status === "saved") {
+    if (pipeline.has(a.status) && soft.has(prev.status)) {
       next.set(jobKey, { id: a.id, status: a.status });
-    } else if (pipeline.has(prev.status) && a.status === "saved") {
+    } else if (pipeline.has(prev.status) && soft.has(a.status)) {
       // keep pipeline
     } else {
       next.set(jobKey, { id: a.id, status: a.status });

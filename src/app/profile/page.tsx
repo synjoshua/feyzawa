@@ -16,11 +16,13 @@ const STATUS_ORDER: ApplicationStatus[] = [
   "interviewing",
   "offer",
   "saved",
+  "not_interested",
   "rejected",
 ];
 
 const STATUS_LABEL: Record<ApplicationStatus, string> = {
   saved: "Saved",
+  not_interested: "Not interested",
   applied: "Applied",
   interviewing: "Interviewing",
   offer: "Offer",

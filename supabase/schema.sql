@@ -62,7 +62,7 @@ create table if not exists public.applications (
   company_snapshot text not null,
   apply_url text,
   location_snapshot text,
-  status text not null check (status in ('saved', 'applied', 'interviewing', 'offer', 'rejected')),
+  status text not null check (status in ('saved', 'not_interested', 'applied', 'interviewing', 'offer', 'rejected')),
   notes text default '',
   applied_at timestamptz,
   created_at timestamptz not null default now(),

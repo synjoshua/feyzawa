@@ -74,6 +74,7 @@ export function createLocalApplication(input: {
     "offer",
     "rejected",
   ]);
+  const SOFT = new Set(["saved", "not_interested"]);
   // If same job_id already tracked, update instead of duplicate
   if (row.job_id) {
     const idx = all.findIndex(
@@ -83,8 +84,8 @@ export function createLocalApplication(input: {
     );
     if (idx >= 0) {
       const prev = all[idx];
-      // Don't let bookmark (saved) downgrade applied / pipeline status
-      if (status === "saved" && PIPELINE.has(prev.status)) {
+      // Don't let bookmark / not-interested downgrade applied / pipeline status
+      if (SOFT.has(status) && PIPELINE.has(prev.status)) {
         return { ...prev, source: "local" as const };
       }
       const merged = {

@@ -65,6 +65,7 @@ const PIPELINE_RANK: Record<string, number> = {
   applied: 3,
   rejected: 2,
   saved: 1,
+  not_interested: 1,
 };
 
 function pickBetterApp(

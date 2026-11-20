@@ -29,6 +29,10 @@ const STATUS_META: Record<
     label: "Saved",
     className: "border-[#d4c4b0] bg-[#f2e8de] text-ink-soft",
   },
+  not_interested: {
+    label: "Not interested",
+    className: "border-[#b0a69a]/50 bg-[#ebe6df] text-ink-soft",
+  },
   applied: {
     label: "Applied",
     className: "border-[#2c2827]/20 bg-[#2c2827] text-porcelain",
@@ -141,6 +145,7 @@ export function TrackerBoard({
   const counts = useMemo(() => {
     const map: Record<ApplicationStatus, number> = {
       saved: 0,
+      not_interested: 0,
       applied: 0,
       interviewing: 0,
       offer: 0,
@@ -151,8 +156,11 @@ export function TrackerBoard({
   }, [rows]);
 
   const visible = useMemo(() => {
+    // Not-interested lives under Saved → Not interested, not the tracker table
     const list =
-      filter === "all" ? rows : rows.filter((r) => r.status === filter);
+      filter === "all"
+        ? rows.filter((r) => r.status !== "not_interested")
+        : rows.filter((r) => r.status === filter);
     return [...list].sort(
       (a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at),
     );

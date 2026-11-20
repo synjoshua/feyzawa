@@ -29,6 +29,7 @@ import {
 } from "./Badges";
 import { BookmarkButton } from "./BookmarkButton";
 import { CompanyLogo } from "./CompanyLogo";
+import { NotInterestedButton } from "./NotInterestedButton";
 import { HEADER_BRAND, HeaderFrame } from "./HeaderFrame";
 import {
   IconOutreach,
@@ -135,6 +136,8 @@ export function DenseHome({
     const query = q.trim().toLowerCase();
     const list = initialJobs.filter((job) => {
       if (job.status !== "active") return false;
+      // Hide roles marked not interested — they live under Saved → Not interested
+      if (appByJob.get(job.id)?.status === "not_interested") return false;
       if (query) {
         const hay =
           `${job.title} ${job.companyName} ${job.locationText}`.toLowerCase();
@@ -586,6 +589,31 @@ export function DenseHome({
                               if (saved && id) {
                                 next.set(job.id, { id, status: "saved" });
                               } else if (next.get(job.id)?.status === "saved") {
+                                next.delete(job.id);
+                              }
+                              return next;
+                            });
+                          }}
+                        />
+                        <NotInterestedButton
+                          job={job}
+                          initialActive={tracked?.status === "not_interested"}
+                          initialId={
+                            tracked?.status === "not_interested"
+                              ? tracked.id
+                              : null
+                          }
+                          onChange={(active, id) => {
+                            setAppByJob((prev) => {
+                              const next = new Map(prev);
+                              if (active && id) {
+                                next.set(job.id, {
+                                  id,
+                                  status: "not_interested",
+                                });
+                              } else if (
+                                next.get(job.id)?.status === "not_interested"
+                              ) {
                                 next.delete(job.id);
                               }
                               return next;

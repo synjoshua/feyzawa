@@ -18,6 +18,7 @@ import {
 } from "./Badges";
 import { BookmarkButton } from "./BookmarkButton";
 import { CompanyLogo } from "./CompanyLogo";
+import { NotInterestedButton } from "./NotInterestedButton";
 
 type Props = {
   initialJobs: NormalizedJob[];
@@ -50,7 +51,14 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
       if (cancelled) return;
       const next = new Map<string, { id: string; status: ApplicationStatus }>();
       for (const a of applications) {
-        if (!a.job_id || !isPipelineStatus(a.status)) continue;
+        if (!a.job_id) continue;
+        if (
+          !isPipelineStatus(a.status) &&
+          a.status !== "saved" &&
+          a.status !== "not_interested"
+        ) {
+          continue;
+        }
         next.set(a.job_id, { id: a.id, status: a.status });
       }
       setAppByJob(next);
@@ -64,6 +72,7 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
     const query = q.trim().toLowerCase();
     const list = initialJobs.filter((job) => {
       if (!showClosed && job.status !== "active") return false;
+      if (appByJob.get(job.id)?.status === "not_interested") return false;
       if (query) {
         const hay =
           `${job.title} ${job.companyName} ${job.locationText}`.toLowerCase();
@@ -79,8 +88,12 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
       return true;
     });
     return [...list].sort((a, b) => {
-      const rank = (id: string) =>
-        appByJob.get(id) && isPipelineStatus(appByJob.get(id)!.status) ? 1 : 0;
+      const rank = (id: string) => {
+        const status = appByJob.get(id)?.status;
+        if (status === "saved") return 0;
+        if (status && isPipelineStatus(status)) return 2;
+        return 1;
+      };
       return rank(a.id) - rank(b.id);
     });
   }, [
@@ -291,8 +304,49 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
                         </p>
                       </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      <BookmarkButton job={job} />
+                    <div className="flex shrink-0 flex-wrap items-center gap-2">
+                      <BookmarkButton
+                        job={job}
+                        initialSavedId={
+                          tracked?.status === "saved" ? tracked.id : null
+                        }
+                        onChange={(saved, id) => {
+                          setAppByJob((prev) => {
+                            const next = new Map(prev);
+                            if (saved && id) {
+                              next.set(job.id, { id, status: "saved" });
+                            } else if (next.get(job.id)?.status === "saved") {
+                              next.delete(job.id);
+                            }
+                            return next;
+                          });
+                        }}
+                      />
+                      <NotInterestedButton
+                        job={job}
+                        initialActive={tracked?.status === "not_interested"}
+                        initialId={
+                          tracked?.status === "not_interested"
+                            ? tracked.id
+                            : null
+                        }
+                        onChange={(active, id) => {
+                          setAppByJob((prev) => {
+                            const next = new Map(prev);
+                            if (active && id) {
+                              next.set(job.id, {
+                                id,
+                                status: "not_interested",
+                              });
+                            } else if (
+                              next.get(job.id)?.status === "not_interested"
+                            ) {
+                              next.delete(job.id);
+                            }
+                            return next;
+                          });
+                        }}
+                      />
                       <Link
                         href={`/jobs/${job.id}`}
                         className="focus-ring rounded-full border border-[var(--line)] bg-foam/60 px-3.5 py-2 text-xs font-medium text-ink-soft hover:border-gold/40 hover:text-gold"
@@ -301,8 +355,16 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
                       </Link>
                       <AppliedButton
                         job={job}
-                        initialStatus={tracked?.status ?? null}
-                        initialId={tracked?.id ?? null}
+                        initialStatus={
+                          tracked && isPipelineStatus(tracked.status)
+                            ? tracked.status
+                            : null
+                        }
+                        initialId={
+                          tracked && isPipelineStatus(tracked.status)
+                            ? tracked.id
+                            : null
+                        }
                         onChange={(status, id) => {
                           setAppByJob((prev) => {
                             const next = new Map(prev);

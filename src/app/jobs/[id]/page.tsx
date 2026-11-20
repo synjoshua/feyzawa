@@ -7,6 +7,7 @@ import {
   WorkStyleBadge,
 } from "@/components/Badges";
 import { BookmarkButton } from "@/components/BookmarkButton";
+import { NotInterestedButton } from "@/components/NotInterestedButton";
 import { TrackJobActions } from "@/components/TrackJobActions";
 import { getJobById } from "@/lib/jobs/store";
 import { relativeTime } from "@/lib/format";
@@ -79,6 +80,7 @@ export default async function JobDetailPage({
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <BookmarkButton job={job} />
+          <NotInterestedButton job={job} />
           <a
             href={job.applyUrl}
             target="_blank"

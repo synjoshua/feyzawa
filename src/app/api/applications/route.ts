@@ -5,6 +5,7 @@ export const runtime = "nodejs";
 
 const STATUSES = new Set([
   "saved",
+  "not_interested",
   "applied",
   "interviewing",
   "offer",
@@ -68,6 +69,7 @@ export async function POST(request: Request) {
     "offer",
     "rejected",
   ]);
+  const SOFT = new Set(["saved", "not_interested"]);
 
   function withBoardNote(notes: string, id: string | null) {
     if (!id) return notes;
@@ -99,8 +101,8 @@ export async function POST(request: Request) {
       );
 
     if (existing) {
-      // Never let a bookmark (saved) downgrade an applied / pipeline role.
-      if (status === "saved" && PIPELINE.has(String(existing.status))) {
+      // Never let bookmark / not-interested downgrade an applied / pipeline role.
+      if (SOFT.has(status) && PIPELINE.has(String(existing.status))) {
         return NextResponse.json({ application: existing });
       }
 

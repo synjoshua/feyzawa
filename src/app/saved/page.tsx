@@ -13,7 +13,7 @@ export default async function SavedPage() {
       active="/saved"
       eyebrow="Bookmarks"
       title="Saved"
-      description="Roles you bookmarked. Toggle the bookmark on any listing to add or remove. Bookmarked roles also float to the top of Open roles."
+      description="Bookmarked roles and ones you marked not interested. Bookmarks float to the top of Open roles; not interested hides them from the board."
     >
       {!user ? (
         <p className="rounded-2xl border border-[var(--line)] bg-porcelain p-5 text-sm text-ink-soft shadow-panel">

@@ -1,5 +1,6 @@
 export type ApplicationStatus =
   | "saved"
+  | "not_interested"
   | "applied"
   | "interviewing"
   | "offer"
