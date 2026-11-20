@@ -311,7 +311,7 @@ export function DenseHome({
               <div className="mt-2 grid grid-cols-3 gap-2">
                 <Link
                   href="/watchlist"
-                  className="focus-ring flex flex-col items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[#f2e8de]/40 px-2 py-3 text-center transition hover:border-gold/45"
+                  className="focus-ring flex flex-col items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[#f2e8de]/40 px-2 py-3 text-center transition hover:border-gold hover:bg-[#e5bf55]/20"
                 >
                   <IconWatch className="h-6 w-6 text-[#6f675f]" />
                   <span className="text-xs font-medium text-ink">Watchlist</span>
@@ -321,7 +321,7 @@ export function DenseHome({
                 </Link>
                 <Link
                   href="/outreach"
-                  className="focus-ring flex flex-col items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[#f2e8de]/40 px-2 py-3 text-center transition hover:border-gold/45"
+                  className="focus-ring flex flex-col items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[#f2e8de]/40 px-2 py-3 text-center transition hover:border-gold hover:bg-[#e5bf55]/20"
                 >
                   <IconOutreach className="h-6 w-6 text-[#6f675f]" />
                   <span className="text-xs font-medium text-ink">Outreach</span>
@@ -329,7 +329,7 @@ export function DenseHome({
                 </Link>
                 <Link
                   href="/tracker"
-                  className="focus-ring flex flex-col items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[#f2e8de]/40 px-2 py-3 text-center transition hover:border-gold/45"
+                  className="focus-ring flex flex-col items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[#f2e8de]/40 px-2 py-3 text-center transition hover:border-gold hover:bg-[#e5bf55]/20"
                 >
                   <IconTracker className="h-6 w-6 text-[#6f675f]" />
                   <span className="text-xs font-medium text-ink">Tracker</span>
