@@ -81,8 +81,6 @@ export default async function JobDetailPage({
         </dl>
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
-          <BookmarkButton job={job} />
-          <NotInterestedButton job={job} />
           <a
             href={job.applyUrl}
             target="_blank"
@@ -92,6 +90,10 @@ export default async function JobDetailPage({
             Open official apply page
           </a>
           <TrackJobActions job={job} />
+          <div className="ml-auto flex items-center gap-2">
+            <BookmarkButton job={job} />
+            <NotInterestedButton job={job} />
+          </div>
         </div>
 
         {job.descriptionText ? (
