@@ -62,7 +62,7 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
-    return initialJobs.filter((job) => {
+    const list = initialJobs.filter((job) => {
       if (!showClosed && job.status !== "active") return false;
       if (query) {
         const hay =
@@ -78,6 +78,11 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
       if (internOnly && !job.isInternship) return false;
       return true;
     });
+    return [...list].sort((a, b) => {
+      const rank = (id: string) =>
+        appByJob.get(id) && isPipelineStatus(appByJob.get(id)!.status) ? 1 : 0;
+      return rank(a.id) - rank(b.id);
+    });
   }, [
     initialJobs,
     q,
@@ -88,6 +93,7 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
     remoteOnly,
     internOnly,
     showClosed,
+    appByJob,
   ]);
 
   function toggle(list: string[], value: string, setter: (v: string[]) => void) {
@@ -239,20 +245,28 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
               return (
                 <li
                   key={job.id}
-                  className={`job-row ${applied ? "bg-jade/8" : ""}`}
+                  className={`job-row ${
+                    applied ? "bg-[#ebe6df]/70 opacity-60" : ""
+                  }`}
                 >
                   <div
                     className={`flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-5 ${
-                      applied ? "border-l-[3px] border-l-jade" : ""
+                      applied ? "border-l-[3px] border-l-[#b0a69a]" : ""
                     }`}
                   >
-                    <div className="flex min-w-0 items-start gap-3">
+                    <div
+                      className={`flex min-w-0 items-start gap-3 ${
+                        applied ? "grayscale" : ""
+                      }`}
+                    >
                       <CompanyLogo companyName={job.companyName} />
                       <div className="min-w-0 space-y-1.5">
                         <div className="flex flex-wrap items-center gap-2">
                           <Link
                             href={`/jobs/${job.id}`}
-                            className="focus-ring text-base font-medium text-ink hover:text-gold"
+                            className={`focus-ring text-base font-medium hover:text-gold ${
+                              applied ? "text-ink-soft" : "text-ink"
+                            }`}
                           >
                             {job.title}
                           </Link>
