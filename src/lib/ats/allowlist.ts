@@ -946,6 +946,12 @@ export const DEFAULT_COMPANY_ALLOWLIST: CompanyAllowlistEntry[] = [
     boardToken: "tldraw",
     careersUrl: "https://tldraw.dev/",
   },
+  {
+    name: "Baseten",
+    provider: "ashby",
+    boardToken: "baseten",
+    careersUrl: "https://www.baseten.co/careers/",
+  },
 ];
 
 /** Built-in + env seed list (no dynamic discovery). */
