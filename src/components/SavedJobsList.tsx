@@ -76,7 +76,7 @@ export function SavedJobsList() {
         <p className="px-4 py-12 text-center text-sm text-ink-soft">
           {tab === "saved"
             ? "No bookmarks yet. Tap the bookmark icon on any role on the board."
-            : "Nothing marked not interested yet. Use Not interested on a role to hide it from Open roles."}
+            : "Nothing marked not interested yet. Those roles leave Open roles completely — tap Add back here to restore them."}
         </p>
       ) : (
         <ul className="divide-y divide-[var(--line)]">
@@ -117,9 +117,13 @@ export function SavedJobsList() {
                 <button
                   type="button"
                   onClick={() => remove(row)}
-                  className="focus-ring rounded-full border border-[var(--line)] px-3 py-1.5 text-xs text-ink-soft hover:border-clay hover:text-clay"
+                  className={`focus-ring rounded-full border px-3 py-1.5 text-xs ${
+                    tab === "not_interested"
+                      ? "border-gold/40 bg-chartreuse/15 font-medium text-ink hover:border-gold"
+                      : "border-[var(--line)] text-ink-soft hover:border-clay hover:text-clay"
+                  }`}
                 >
-                  {tab === "saved" ? "Remove" : "Undo"}
+                  {tab === "saved" ? "Remove" : "Add back"}
                 </button>
                 {tab === "saved" ? (
                   <Link
