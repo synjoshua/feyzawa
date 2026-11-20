@@ -6,7 +6,6 @@ import {
   useEffect,
   useMemo,
   useState,
-  useTransition,
   type FormEvent,
 } from "react";
 import type { NormalizedJob } from "@/lib/ats/types";
@@ -81,7 +80,6 @@ export function DenseHome({
   const [q, setQ] = useState("");
   const [chip, setChip] = useState<QuickKey>("all");
   const [company, setCompany] = useState("");
-  const [pending, startTransition] = useTransition();
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMsg, setRefreshMsg] = useState("");
   const [appByJob, setAppByJob] = useState<
@@ -186,7 +184,8 @@ export function DenseHome({
   const remoteCount = activeJobs.filter((j) => j.isRemote).length;
 
   function applyQuick(next: QuickKey) {
-    startTransition(() => setChip(next));
+    // Sync update — avoids transition “steeping” flicker in the status strip
+    setChip(next);
   }
 
   function runSearch(e: FormEvent) {
@@ -284,9 +283,9 @@ export function DenseHome({
                 key={c.key}
                 type="button"
                 onClick={() => applyQuick(c.key)}
-                className={`focus-ring shrink-0 border-b-2 px-3 pb-2.5 text-sm transition ${
+                className={`focus-ring shrink-0 border-b-2 px-3 pb-2.5 text-sm font-medium transition-colors ${
                   chip === c.key
-                    ? "border-gold font-semibold text-ink"
+                    ? "border-gold text-ink"
                     : "border-transparent text-ink-soft hover:text-ink"
                 }`}
               >
@@ -360,13 +359,15 @@ export function DenseHome({
         </section>
 
         {/* Status strip + live refresh */}
-        <div className="animate-pour stagger-1 mt-3 flex flex-wrap items-center gap-3 rounded-2xl border border-[var(--line)] bg-porcelain/90 px-3 py-2.5 text-sm text-ink-soft shadow-soft">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-chartreuse/25 text-xs text-gold">
+        <div className="mt-3 flex flex-wrap items-center gap-3 rounded-2xl border border-[var(--line)] bg-porcelain/90 px-3 py-2.5 text-sm text-ink-soft shadow-soft">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-chartreuse/25 text-xs text-gold">
             ●
           </span>
           <p className="min-w-0 flex-1">
-            <span className="font-semibold text-ink">{filtered.length}</span> roles
-            {pending ? " · steeping…" : ""}
+            <span className="inline-block min-w-[1.5ch] font-semibold tabular-nums text-ink">
+              {filtered.length}
+            </span>{" "}
+            roles
             {updatedAt
               ? ` · verified ${relativeTime(updatedAt)} · ${source}`
               : " · not refreshed yet"}
@@ -383,11 +384,9 @@ export function DenseHome({
               <button
                 type="button"
                 onClick={() => {
-                  startTransition(() => {
-                    setQ("");
-                    setChip("all");
-                    setCompany("");
-                  });
+                  setQ("");
+                  setChip("all");
+                  setCompany("");
                 }}
                 className="focus-ring text-xs text-gold underline-offset-2 hover:underline"
               >
@@ -439,11 +438,9 @@ export function DenseHome({
                   key={name}
                   type="button"
                   onClick={() => {
-                    startTransition(() => {
-                      // Second click clears the company filter
-                      setCompany((prev) => (prev === name ? "" : name));
-                      setChip("all");
-                    });
+                    // Second click clears the company filter
+                    setCompany((prev) => (prev === name ? "" : name));
+                    setChip("all");
                     document
                       .getElementById("open-roles")
                       ?.scrollIntoView({ behavior: "smooth" });
@@ -470,7 +467,7 @@ export function DenseHome({
         </section>
 
         {/* Open roles — full filtered list */}
-        <section id="open-roles" className="animate-pour stagger-3 mt-5 scroll-mt-4">
+        <section id="open-roles" className="mt-5 scroll-mt-4">
           <div className="mb-2 flex items-baseline justify-between gap-2 px-0.5">
             <h2 className="brand-display text-2xl text-ink sm:text-3xl">
               Open roles
