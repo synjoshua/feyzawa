@@ -13,6 +13,11 @@ import type { NormalizedJob } from "@/lib/ats/types";
 import { relativeTime } from "@/lib/format";
 import { fetchApplications } from "@/lib/tracking/client";
 import { buildAppByJobMap } from "@/lib/tracking/app-utils";
+import {
+  closedJobIdSet,
+  filterOpenSoftApps,
+  purgeLocalSoftMarksForClosedJobs,
+} from "@/lib/tracking/purge-closed";
 import type {
   ApplicationRecord,
   ApplicationStatus,
@@ -81,16 +86,24 @@ export function DenseHome({
   const [refreshMsg, setRefreshMsg] = useState("");
   const [appByJob, setAppByJob] = useState<
     Map<string, { id: string; status: ApplicationStatus }>
-  >(() => buildAppByJobMap(initialApplications, initialJobs));
+  >(() =>
+    buildAppByJobMap(
+      filterOpenSoftApps(initialApplications, closedJobIdSet(initialJobs)),
+      initialJobs,
+    ),
+  );
   const router = useRouter();
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      const closed = closedJobIdSet(initialJobs);
+      purgeLocalSoftMarksForClosedJobs(closed);
       // Merge server + local + any cloud sync of browser-only rows
       const { applications } = await fetchApplications();
       if (cancelled) return;
-      setAppByJob(buildAppByJobMap(applications, initialJobs));
+      const openApps = filterOpenSoftApps(applications, closed);
+      setAppByJob(buildAppByJobMap(openApps, initialJobs));
     })();
     return () => {
       cancelled = true;

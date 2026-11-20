@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { refreshAllJobs } from "@/lib/ats/fetch-all";
 import { loadJobs, persistJobs } from "@/lib/jobs/store";
+import { purgeSoftMarksAfterRefresh } from "@/lib/tracking/purge-closed";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
     const existing = await loadJobs();
     const { jobs, summary } = await refreshAllJobs(existing.jobs);
     const persist = await persistJobs(jobs, summary);
+    const purge = await purgeSoftMarksAfterRefresh(jobs);
     const activeCount = jobs.filter((j) => j.status === "active").length;
 
     return NextResponse.json({
@@ -44,6 +46,7 @@ export async function POST(request: Request) {
       totalCount: jobs.length,
       summary,
       persist,
+      purge,
     });
   } catch (err) {
     console.error("[jobs/refresh]", err);

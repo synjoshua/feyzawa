@@ -8,6 +8,10 @@ import {
   fetchApplications,
   removeApplication,
 } from "@/lib/tracking/client";
+import {
+  filterOpenSoftApps,
+  purgeLocalSoftMarksForClosedJobs,
+} from "@/lib/tracking/purge-closed";
 import type { ApplicationRecord } from "@/lib/tracking/types";
 
 type Tab = "saved" | "not_interested";
@@ -20,16 +24,25 @@ function relevant(apps: ApplicationRecord[]) {
 
 export function SavedJobsList({
   initial = [],
+  closedJobIds = [],
 }: {
   initial?: ApplicationRecord[];
+  closedJobIds?: string[];
 }) {
-  const [all, setAll] = useState<ApplicationRecord[]>(() => relevant(initial));
+  const closed = useMemo(() => new Set(closedJobIds), [closedJobIds]);
+  const [all, setAll] = useState<ApplicationRecord[]>(() =>
+    relevant(filterOpenSoftApps(initial, closed)),
+  );
   const [tab, setTab] = useState<Tab>("saved");
   const [loading, setLoading] = useState(initial.length === 0);
 
   useEffect(() => {
+    purgeLocalSoftMarksForClosedJobs(closed);
+
     // Paint local bookmarks immediately (signed-out / offline mirror)
-    const local = relevant(listLocalApplications());
+    const local = relevant(
+      filterOpenSoftApps(listLocalApplications(), closed),
+    );
     if (local.length > 0) {
       setAll((prev) => {
         const ids = new Set(prev.map((r) => r.id));
@@ -53,13 +66,13 @@ export function SavedJobsList({
     (async () => {
       const { applications } = await fetchApplications();
       if (cancelled) return;
-      setAll(relevant(applications));
+      setAll(relevant(filterOpenSoftApps(applications, closed)));
       setLoading(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, [initial]);
+  }, [initial, closed]);
 
   const savedCount = useMemo(
     () => all.filter((a) => a.status === "saved").length,
