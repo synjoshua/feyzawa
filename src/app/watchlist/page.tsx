@@ -2,10 +2,8 @@ import { PageShell } from "@/components/PageShell";
 import { WatchlistPanel } from "@/components/WatchlistPanel";
 import { getCompanyAllowlist } from "@/lib/ats/allowlist";
 import { isSupabaseAuthConfigured } from "@/lib/supabase/admin";
-import {
-  createServerSupabaseClient,
-  getCurrentUser,
-} from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/server";
+import { loadUserWatchlist } from "@/lib/watchlist/server";
 
 export const dynamic = "force-dynamic";
 
@@ -28,21 +26,8 @@ export default async function WatchlistPage() {
     }));
 
   if (configured && user) {
-    const supabase = await createServerSupabaseClient();
-    if (supabase) {
-      const { data } = await supabase
-        .from("watchlist")
-        .select("*")
-        .eq("user_id", user.id);
-      if (data && data.length > 0) {
-        initial = data.map((row) => ({
-          id: row.id as string,
-          company_name: row.company_name as string,
-          provider: row.provider as string | null,
-          board_token: row.board_token as string | null,
-        }));
-      }
-    }
+    const { items } = await loadUserWatchlist(user.id);
+    initial = items;
   }
 
   return (
@@ -50,7 +35,7 @@ export default async function WatchlistPage() {
       active="/watchlist"
       eyebrow="Companies"
       title="Watchlist"
-      description="Allowlisted boards with verified Greenhouse / Lever / Ashby tokens. Watching is personal once you sign in."
+      description="Companies you follow. Sign in once — Watch / Unwatch saves to your account."
     >
       <WatchlistPanel
         initial={initial}

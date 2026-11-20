@@ -31,7 +31,7 @@ export function WatchlistPanel({
 
   async function toggle(company: CompanyAllowlistEntry) {
     if (!configured || !signedIn) {
-      setMessage("Sign in with Supabase to persist your watchlist.");
+      setMessage("Sign in to save your watchlist to your account.");
       return;
     }
     setMessage("");
@@ -41,10 +41,12 @@ export function WatchlistPanel({
         { method: "DELETE" },
       );
       if (!res.ok) {
-        setMessage("Could not remove");
+        const data = await res.json().catch(() => ({}));
+        setMessage(data.error || "Could not remove — try refreshing");
         return;
       }
       setItems((prev) => prev.filter((i) => i.company_name !== company.name));
+      setMessage(`Removed ${company.name}. Home will match after you refresh.`);
       return;
     }
 
@@ -59,11 +61,12 @@ export function WatchlistPanel({
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setMessage(data.error || "Could not add");
+      setMessage(data.error || "Could not add — try refreshing");
       return;
     }
     const data = await res.json();
     setItems((prev) => [...prev, data.item as WatchItem]);
+    setMessage(`Watching ${company.name}.`);
   }
 
   return (

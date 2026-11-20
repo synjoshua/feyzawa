@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient, getCurrentUser } from "@/lib/supabase/server";
-import { getCompanyAllowlist } from "@/lib/ats/allowlist";
+import {
+  loadUserWatchlist,
+  WATCHLIST_SEED_MARKER,
+} from "@/lib/watchlist/server";
 
 export const runtime = "nodejs";
 
@@ -9,33 +12,9 @@ export async function GET() {
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const supabase = await createServerSupabaseClient();
-  if (!supabase) {
-    // Fall back to default watched companies when Supabase missing
-    const defaults = getCompanyAllowlist()
-      .filter((c) => c.watchedByDefault)
-      .map((c) => ({
-        company_name: c.name,
-        provider: c.provider,
-        board_token: c.boardToken,
-      }));
-    return NextResponse.json({
-      watchlist: defaults,
-      source: "allowlist-defaults",
-    });
-  }
 
-  const { data, error } = await supabase
-    .from("watchlist")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("company_name");
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ watchlist: data ?? [], source: "supabase" });
+  const { items, source } = await loadUserWatchlist(user.id);
+  return NextResponse.json({ watchlist: items, source });
 }
 
 export async function POST(request: Request) {
@@ -53,7 +32,7 @@ export async function POST(request: Request) {
 
   const body = await request.json();
   const companyName = String(body.companyName ?? "").trim();
-  if (!companyName) {
+  if (!companyName || companyName === WATCHLIST_SEED_MARKER) {
     return NextResponse.json({ error: "companyName required" }, { status: 400 });
   }
 
@@ -96,6 +75,9 @@ export async function DELETE(request: Request) {
   const company = searchParams.get("company");
   if (!id && !company) {
     return NextResponse.json({ error: "Missing id or company" }, { status: 400 });
+  }
+  if (company === WATCHLIST_SEED_MARKER) {
+    return NextResponse.json({ error: "Invalid company" }, { status: 400 });
   }
 
   let query = supabase.from("watchlist").delete().eq("user_id", user.id);
