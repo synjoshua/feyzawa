@@ -43,7 +43,7 @@ const STATUS_META: Record<
   },
   rejected: {
     label: "Rejected",
-    className: "border-clay/30 bg-clay/15 text-clay",
+    className: "border-[#c47a6a]/45 bg-[#f3ddd6] text-[#8a3f32]",
   },
 };
 
