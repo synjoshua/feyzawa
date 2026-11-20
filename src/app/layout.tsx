@@ -19,7 +19,7 @@ const body = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Feyzawa — UX & Product Design roles",
+  title: "Feyzawa",
   description:
     "Early-career UX and product design job board with California focus, real ATS listings, and private application tracking.",
 };
