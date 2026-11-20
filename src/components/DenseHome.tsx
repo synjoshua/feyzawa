@@ -188,12 +188,12 @@ export function DenseHome({
       }
     });
 
-    // Bookmarked (saved) first, then applied/pipeline, then the rest
+    // Bookmarked (saved) first, open roles next, already-applied last
     const rank = (jobId: string) => {
       const status = appByJob.get(jobId)?.status;
       if (status === "saved") return 0;
-      if (status && isPipelineStatus(status)) return 1;
-      return 2;
+      if (status && isPipelineStatus(status)) return 2;
+      return 1;
     };
     return [...list].sort((a, b) => rank(a.id) - rank(b.id));
   }, [initialJobs, q, chip, company, appByJob]);
@@ -556,7 +556,7 @@ export function DenseHome({
                       bookmarked
                         ? "bg-[#f2e8de]/80"
                         : applied
-                          ? "bg-jade/8"
+                          ? "bg-[#ebe6df]/70 opacity-60"
                           : ""
                     }`}
                   >
@@ -565,17 +565,23 @@ export function DenseHome({
                         bookmarked
                           ? "border-l-[3px] border-l-[#c9a85a]"
                           : applied
-                            ? "border-l-[3px] border-l-jade"
+                            ? "border-l-[3px] border-l-[#b0a69a]"
                             : ""
                       }`}
                     >
-                      <div className="flex min-w-0 items-start gap-3">
+                      <div
+                        className={`flex min-w-0 items-start gap-3 ${
+                          applied ? "grayscale" : ""
+                        }`}
+                      >
                         <CompanyLogo companyName={job.companyName} />
                         <div className="min-w-0 space-y-1">
                           <div className="flex flex-wrap items-center gap-2">
                             <Link
                               href={`/jobs/${job.id}`}
-                              className="focus-ring text-[15px] font-medium text-ink hover:text-gold"
+                              className={`focus-ring text-[15px] font-medium hover:text-gold ${
+                                applied ? "text-ink-soft" : "text-ink"
+                              }`}
                             >
                               {job.title}
                             </Link>
@@ -584,11 +590,19 @@ export function DenseHome({
                             ) : null}
                             <StatusBadge value={job.status} />
                           </div>
-                          <p className="text-xs text-ink-soft sm:text-sm">
+                          <p
+                            className={`text-xs sm:text-sm ${
+                              applied ? "text-ink-soft/70" : "text-ink-soft"
+                            }`}
+                          >
                             {job.companyName}
                             {job.locationText ? ` · ${job.locationText}` : ""}
                           </p>
-                          <div className="flex flex-wrap gap-1">
+                          <div
+                            className={`flex flex-wrap gap-1 ${
+                              applied ? "opacity-70" : ""
+                            }`}
+                          >
                             <ExperienceBadge value={job.experienceBand} />
                             <WorkStyleBadge value={job.workStyle} />
                           </div>
