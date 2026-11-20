@@ -164,7 +164,7 @@ export function DenseHome({
     <div className="pb-16">
       {/* Flat lacquer brown header — solid fill, no gradient */}
       <section className="relative z-20 overflow-visible bg-[#2c2827] text-porcelain">
-        <div className="relative z-20 mx-auto max-w-6xl px-4 pt-6 sm:px-6">
+        <div className="relative z-20 mx-auto max-w-6xl px-4 pb-5 pt-6 sm:px-6 sm:pb-6">
           <div className="relative z-20 flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1 pr-2">
               <h1 className="brand-mark overflow-visible pl-0.5 text-[2.35rem] leading-none tracking-[-0.02em] text-porcelain sm:pl-0 sm:text-[3.5rem] sm:tracking-[-0.045em]">
@@ -221,7 +221,7 @@ export function DenseHome({
 
           <form
             onSubmit={runSearch}
-            className="mt-6 mb-3 flex items-center gap-2 rounded-full bg-porcelain p-1 pl-4 shadow-[0_8px_0_0_#3f3530,0_12px_24px_-10px_rgba(43,37,35,0.4)]"
+            className="mt-6 flex items-center gap-2 rounded-full bg-porcelain p-1 pl-4 shadow-soft"
           >
             <input
               value={q}
