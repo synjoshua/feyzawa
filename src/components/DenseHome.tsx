@@ -196,7 +196,7 @@ export function DenseHome({
               <p className="text-[10px] uppercase tracking-[0.28em] text-[#e5bf55]">
                 Design hunt
               </p>
-              <h1 className="brand-mark mt-1 text-[2.35rem] leading-none text-porcelain sm:text-[3.5rem]">
+              <h1 className="brand-mark mt-1 overflow-visible pl-0.5 text-[2.35rem] leading-none tracking-[-0.02em] text-porcelain sm:pl-0 sm:text-[3.5rem] sm:tracking-[-0.045em]">
                 Feyzawa
               </h1>
             </div>
