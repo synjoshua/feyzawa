@@ -34,7 +34,7 @@ export function MobileNav({ links, tone = "porcelain", active }: Props) {
     tone === "porcelain" ? "text-porcelain" : "text-porcelain";
 
   return (
-    <div className="relative sm:hidden">
+    <div className="relative z-[60] sm:hidden">
       <button
         type="button"
         className={`focus-ring flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/10 ${icon}`}
@@ -48,15 +48,16 @@ export function MobileNav({ links, tone = "porcelain", active }: Props) {
 
       {open ? (
         <>
+          {/* Fixed layer — escapes header overflow / sibling z-index traps */}
           <button
             type="button"
-            className="fixed inset-0 z-40 bg-ink/40"
+            className="fixed inset-0 z-[200] bg-ink/45"
             aria-label="Dismiss menu"
             onClick={() => setOpen(false)}
           />
           <nav
             id={panelId}
-            className="absolute right-0 top-12 z-50 w-52 overflow-hidden rounded-2xl border border-[var(--line)] bg-porcelain shadow-panel"
+            className="fixed right-3 top-14 z-[210] w-56 overflow-hidden rounded-2xl border border-[var(--line)] bg-porcelain shadow-panel sm:right-6"
           >
             <ul className="py-1.5">
               {links.map((link) => {

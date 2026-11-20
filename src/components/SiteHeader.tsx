@@ -16,8 +16,8 @@ export async function SiteHeader({ active }: { active?: string }) {
   ];
 
   return (
-    <header className="bg-[#2c2827] text-porcelain">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3.5 sm:gap-4 sm:px-6">
+    <header className="relative z-30 bg-[#2c2827] text-porcelain">
+      <div className="relative z-30 mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3.5 sm:gap-4 sm:px-6">
         <Link
           href="/"
           className="group focus-ring flex min-w-0 items-baseline gap-3 rounded-sm"

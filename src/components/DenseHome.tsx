@@ -157,15 +157,15 @@ export function DenseHome({
   return (
     <div className="pb-16">
       {/* Flat lacquer brown header — solid fill, no gradient */}
-      <section className="relative overflow-hidden bg-[#2c2827] text-porcelain">
-        <div className="relative mx-auto max-w-6xl px-4 pt-6 sm:px-6">
-          <div className="flex items-start justify-between gap-3">
+      <section className="relative z-20 overflow-visible bg-[#2c2827] text-porcelain">
+        <div className="relative z-20 mx-auto max-w-6xl px-4 pt-6 sm:px-6">
+          <div className="relative z-20 flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1 pr-2">
               <h1 className="brand-mark overflow-visible pl-0.5 text-[2.35rem] leading-none tracking-[-0.02em] text-porcelain sm:pl-0 sm:text-[3.5rem] sm:tracking-[-0.045em]">
                 Feyzawa
               </h1>
             </div>
-            <div className="flex shrink-0 items-center pt-0.5">
+            <div className="relative z-30 flex shrink-0 items-center pt-0.5">
               <MobileNav
                 links={[
                   { href: "/watchlist", label: "Watch" },
