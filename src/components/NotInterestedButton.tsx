@@ -131,14 +131,15 @@ export function NotInterestedButton({
         onClick={toggle}
         disabled={busy}
         aria-pressed={active}
-        title={active ? "Undo not interested" : "Not interested"}
-        className={`focus-ring rounded-full border px-3 py-1.5 text-xs font-medium transition disabled:opacity-60 ${
+        aria-label={active ? "Add back to board" : "Not interested"}
+        title={active ? "Add back to board" : "Not interested"}
+        className={`focus-ring flex h-9 w-9 items-center justify-center rounded-full border transition disabled:opacity-60 ${
           active
             ? "border-[#b0a69a] bg-[#ebe6df] text-ink-soft"
             : "border-[var(--line)] bg-porcelain text-ink-soft hover:border-[#b0a69a] hover:text-ink"
         }`}
       >
-        {busy ? "…" : active ? "Not interested ✓" : "Not interested"}
+        <CircleCrossIcon filled={active} />
       </button>
       {hint ? (
         <span className="mt-1 max-w-[8rem] text-center text-[10px] text-ink-soft">
@@ -146,5 +147,27 @@ export function NotInterestedButton({
         </span>
       ) : null}
     </div>
+  );
+}
+
+function CircleCrossIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
+      <circle
+        cx="12"
+        cy="12"
+        r="8.25"
+        fill={filled ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth="1.75"
+      />
+      <path
+        d="M9 9l6 6M15 9l-6 6"
+        fill="none"
+        stroke={filled ? "var(--porcelain, #f7f3ec)" : "currentColor"}
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
