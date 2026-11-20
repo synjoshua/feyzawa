@@ -11,7 +11,9 @@ import {
   StatusBadge,
   WorkStyleBadge,
 } from "./Badges";
+import { CompanyLogo } from "./CompanyLogo";
 import { IconOutreach, IconTracker, IconWatch } from "./HomeIcons";
+import { MobileNav } from "./MobileNav";
 
 type Props = {
   initialJobs: NormalizedJob[];
@@ -190,40 +192,53 @@ export function DenseHome({
       <section className="relative overflow-hidden bg-[#2c2827] text-porcelain">
         <div className="relative mx-auto max-w-6xl px-4 pt-6 sm:px-6">
           <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1 pr-2">
               <p className="text-[10px] uppercase tracking-[0.28em] text-[#e5bf55]">
                 Design hunt
               </p>
-              <h1 className="brand-mark mt-1 truncate text-[2.85rem] leading-none text-porcelain sm:text-[3.5rem]">
+              <h1 className="brand-mark mt-1 text-[2.35rem] leading-none text-porcelain sm:text-[3.5rem]">
                 Feyzawa
               </h1>
             </div>
-            <nav className="flex shrink-0 items-center gap-0.5 pt-1 text-xs sm:gap-1 sm:text-sm">
-              <Link
-                href="/watchlist"
-                className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
-              >
-                Watch
-              </Link>
-              <Link
-                href="/tracker"
-                className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
-              >
-                Tracker
-              </Link>
-              <Link
-                href="/outreach"
-                className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
-              >
-                Outreach
-              </Link>
-              <Link
-                href={signedIn ? "/profile" : "/login"}
-                className="focus-ring rounded-full bg-[#e5bf55]/90 px-2.5 py-1.5 font-medium text-ink hover:bg-[#e5bf55]"
-              >
-                {signedIn ? "Profile" : "Sign in"}
-              </Link>
-            </nav>
+            <div className="flex shrink-0 items-center pt-0.5">
+              <MobileNav
+                links={[
+                  { href: "/watchlist", label: "Watch" },
+                  { href: "/tracker", label: "Tracker" },
+                  { href: "/outreach", label: "Outreach" },
+                  {
+                    href: signedIn ? "/profile" : "/login",
+                    label: signedIn ? "Profile" : "Sign in",
+                  },
+                ]}
+              />
+              <nav className="hidden items-center gap-0.5 text-xs sm:flex sm:gap-1 sm:text-sm">
+                <Link
+                  href="/watchlist"
+                  className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
+                >
+                  Watch
+                </Link>
+                <Link
+                  href="/tracker"
+                  className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
+                >
+                  Tracker
+                </Link>
+                <Link
+                  href="/outreach"
+                  className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
+                >
+                  Outreach
+                </Link>
+                <Link
+                  href={signedIn ? "/profile" : "/login"}
+                  className="focus-ring rounded-full bg-[#e5bf55]/90 px-2.5 py-1.5 font-medium text-ink hover:bg-[#e5bf55]"
+                >
+                  {signedIn ? "Profile" : "Sign in"}
+                </Link>
+              </nav>
+            </div>
           </div>
 
           <form
@@ -453,24 +468,27 @@ export function DenseHome({
               featured.map((job) => (
                 <li key={job.id} className="job-row">
                   <div className="flex flex-col gap-2.5 px-3.5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-4">
-                    <div className="min-w-0 space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Link
-                          href={`/jobs/${job.id}`}
-                          className="focus-ring truncate text-[15px] font-medium text-ink hover:text-gold"
-                        >
-                          {job.title}
-                        </Link>
-                        <StatusBadge value={job.status} />
-                      </div>
-                      <p className="truncate text-xs text-ink-soft sm:text-sm">
-                        {job.companyName}
-                        {job.locationText ? ` · ${job.locationText}` : ""}
-                      </p>
-                      <div className="flex flex-wrap gap-1">
-                        <EligibilityBadge value={job.eligibility} />
-                        <ExperienceBadge value={job.experienceBand} />
-                        <WorkStyleBadge value={job.workStyle} />
+                    <div className="flex min-w-0 items-start gap-3">
+                      <CompanyLogo companyName={job.companyName} />
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link
+                            href={`/jobs/${job.id}`}
+                            className="focus-ring text-[15px] font-medium text-ink hover:text-gold"
+                          >
+                            {job.title}
+                          </Link>
+                          <StatusBadge value={job.status} />
+                        </div>
+                        <p className="text-xs text-ink-soft sm:text-sm">
+                          {job.companyName}
+                          {job.locationText ? ` · ${job.locationText}` : ""}
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          <EligibilityBadge value={job.eligibility} />
+                          <ExperienceBadge value={job.experienceBand} />
+                          <WorkStyleBadge value={job.workStyle} />
+                        </div>
                       </div>
                     </div>
                     <div className="flex shrink-0 flex-wrap gap-2">
@@ -531,18 +549,21 @@ export function DenseHome({
                     .getElementById("open-roles")
                     ?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className={`focus-ring shrink-0 rounded-2xl border px-3.5 py-2.5 text-left transition ${
+                className={`focus-ring flex shrink-0 items-center gap-2.5 rounded-2xl border px-3 py-2 text-left transition ${
                   company === name
                     ? "border-jade bg-jade text-porcelain"
                     : "border-[var(--line)] bg-porcelain hover:border-gold/50"
                 }`}
               >
-                <p className="text-sm font-medium">{name}</p>
-                <p
-                  className={`text-[11px] ${company === name ? "text-porcelain/80" : "text-ink-soft"}`}
-                >
-                  {companyCounts.get(name) ?? 0} open
-                </p>
+                <CompanyLogo companyName={name} size="sm" />
+                <span>
+                  <p className="text-sm font-medium">{name}</p>
+                  <p
+                    className={`text-[11px] ${company === name ? "text-porcelain/80" : "text-ink-soft"}`}
+                  >
+                    {companyCounts.get(name) ?? 0} open
+                  </p>
+                </span>
               </button>
             ))}
           </div>
@@ -581,19 +602,22 @@ export function DenseHome({
             {filtered.map((job) => (
               <li key={`full-${job.id}`} className="job-row">
                 <div className="flex flex-col gap-2 px-3.5 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
-                  <div className="min-w-0">
-                    <Link
-                      href={`/jobs/${job.id}`}
-                      className="focus-ring text-sm font-medium text-ink hover:text-gold"
-                    >
-                      {job.title}
-                    </Link>
-                    <p className="truncate text-xs text-ink-soft">
-                      {job.companyName}
-                      {job.locationText ? ` · ${job.locationText}` : ""}
-                      {" · "}
-                      verified {relativeTime(job.lastVerifiedAt)}
-                    </p>
+                  <div className="flex min-w-0 items-start gap-3">
+                    <CompanyLogo companyName={job.companyName} size="sm" />
+                    <div className="min-w-0">
+                      <Link
+                        href={`/jobs/${job.id}`}
+                        className="focus-ring text-sm font-medium text-ink hover:text-gold"
+                      >
+                        {job.title}
+                      </Link>
+                      <p className="text-xs text-ink-soft">
+                        {job.companyName}
+                        {job.locationText ? ` · ${job.locationText}` : ""}
+                        {" · "}
+                        verified {relativeTime(job.lastVerifiedAt)}
+                      </p>
+                    </div>
                   </div>
                   <a
                     href={job.applyUrl}

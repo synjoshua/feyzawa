@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MobileNav } from "@/components/MobileNav";
 import { getCurrentUser } from "@/lib/supabase/server";
 
 export async function SiteHeader({ active }: { active?: string }) {
@@ -16,19 +17,20 @@ export async function SiteHeader({ active }: { active?: string }) {
 
   return (
     <header className="bg-[#2c2827] text-porcelain">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3.5 sm:gap-4 sm:px-6">
         <Link
           href="/"
-          className="group focus-ring flex items-baseline gap-3 rounded-sm"
+          className="group focus-ring flex min-w-0 items-baseline gap-3 rounded-sm"
         >
-          <span className="brand-mark text-[1.85rem] text-porcelain transition group-hover:text-[#e5bf55] sm:text-[2.1rem]">
+          <span className="brand-mark shrink-0 text-[1.85rem] text-porcelain transition group-hover:text-[#e5bf55] sm:text-[2.1rem]">
             Feyzawa
           </span>
           <span className="hidden text-[10px] uppercase tracking-[0.26em] text-[#e5bf55]/80 sm:inline">
             Design hunt
           </span>
         </Link>
-        <nav className="flex items-center gap-0.5 sm:gap-1">
+        <MobileNav links={links} active={active} />
+        <nav className="hidden items-center gap-0.5 sm:flex sm:gap-1">
           {links.map((link) => {
             const isActive = active === link.href;
             return (

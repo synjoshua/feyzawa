@@ -10,6 +10,7 @@ import {
   StatusBadge,
   WorkStyleBadge,
 } from "./Badges";
+import { CompanyLogo } from "./CompanyLogo";
 
 type Props = {
   initialJobs: NormalizedJob[];
@@ -221,11 +222,13 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
             {filtered.map((job) => (
               <li key={job.id} className="job-row">
                 <div className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-5">
-                  <div className="min-w-0 space-y-1.5">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <CompanyLogo companyName={job.companyName} />
+                    <div className="min-w-0 space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
                         href={`/jobs/${job.id}`}
-                        className="focus-ring truncate text-base font-medium text-ink hover:text-gold"
+                        className="focus-ring text-base font-medium text-ink hover:text-gold"
                       >
                         {job.title}
                       </Link>
@@ -246,6 +249,7 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
                         ? ` · first seen ${relativeTime(job.firstSeenAt)}`
                         : ""}
                     </p>
+                    </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     <Link
