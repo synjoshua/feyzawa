@@ -14,7 +14,6 @@ export const dynamic = "force-dynamic";
 const STATUS_ORDER: ApplicationStatus[] = [
   "applied",
   "interviewing",
-  "offer",
   "saved",
   "not_interested",
   "rejected",
@@ -72,14 +71,18 @@ export default async function ProfilePage() {
       description={user.email ?? undefined}
       actions={<SignOutButton />}
     >
-      <section className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+      <section className="grid grid-cols-5 gap-1.5 sm:gap-2">
         {STATUS_ORDER.map((status) => (
           <div
             key={status}
-            className="rounded-xl border border-[var(--line)] bg-porcelain px-3 py-3 text-center"
+            className="rounded-xl border border-[var(--line)] bg-porcelain px-1.5 py-2.5 text-center sm:px-3 sm:py-3"
           >
-            <p className="text-xl font-semibold text-ink">{counts[status]}</p>
-            <p className="text-[11px] text-ink-soft">{STATUS_LABEL[status]}</p>
+            <p className="text-lg font-semibold tabular-nums text-ink sm:text-xl">
+              {counts[status]}
+            </p>
+            <p className="text-[10px] leading-tight text-ink-soft sm:text-[11px]">
+              {STATUS_LABEL[status]}
+            </p>
           </div>
         ))}
       </section>
