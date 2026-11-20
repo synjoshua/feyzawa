@@ -74,9 +74,16 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Missing id or company" }, { status: 400 });
   }
 
+  const clearAll = searchParams.get("all") === "1";
+
   let query = supabase.from("watchlist").delete().eq("user_id", user.id);
-  if (id) query = query.eq("id", id);
-  if (company) query = query.eq("company_name", company);
+  if (clearAll) {
+    // wipe every row for this user
+  } else if (id) {
+    query = query.eq("id", id);
+  } else if (company) {
+    query = query.eq("company_name", company);
+  }
 
   const { error } = await query;
   if (error) {

@@ -69,8 +69,40 @@ export function WatchlistPanel({
     setMessage(`Watching ${company.name}.`);
   }
 
+  async function clearAll() {
+    if (!configured || !signedIn) {
+      setMessage("Sign in to manage your watchlist.");
+      return;
+    }
+    setMessage("");
+    const res = await fetch("/api/watchlist?all=1", { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setMessage(data.error || "Could not clear watchlist");
+      return;
+    }
+    setItems([]);
+    setMessage("Watchlist cleared. Home Company watch is empty until you Watch again.");
+  }
+
   return (
     <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-ink-soft">
+          {items.length === 0
+            ? "None watched — tap Watch to pin a company on home."
+            : `${items.length} watched`}
+        </p>
+        {items.length > 0 ? (
+          <button
+            type="button"
+            onClick={clearAll}
+            className="focus-ring rounded-full border border-[var(--line)] px-3 py-1.5 text-xs text-ink-soft hover:border-gold hover:text-ink"
+          >
+            Clear all
+          </button>
+        ) : null}
+      </div>
       {message ? (
         <p className="text-sm text-amber">{message}</p>
       ) : null}
