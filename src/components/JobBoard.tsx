@@ -5,7 +5,6 @@ import { useMemo, useState, useTransition } from "react";
 import type { NormalizedJob } from "@/lib/ats/types";
 import { relativeTime } from "@/lib/format";
 import {
-  EligibilityBadge,
   ExperienceBadge,
   StatusBadge,
   WorkStyleBadge,
@@ -22,13 +21,11 @@ type Props = {
 
 const WORK = ["remote", "hybrid", "in_person"] as const;
 const EXPERIENCE = ["intern", "new_grad", "junior", "associate", "unknown"] as const;
-const ELIGIBILITY = ["possible", "unclear"] as const;
 
 export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
   const [q, setQ] = useState("");
   const [work, setWork] = useState<string[]>([]);
   const [experience, setExperience] = useState<string[]>([]);
-  const [eligibility, setEligibility] = useState<string[]>([]);
   const [company, setCompany] = useState("");
   const [californiaOnly, setCaliforniaOnly] = useState(false);
   const [remoteOnly, setRemoteOnly] = useState(false);
@@ -49,8 +46,6 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
       if (work.length && !work.includes(job.workStyle)) return false;
       if (experience.length && !experience.includes(job.experienceBand))
         return false;
-      if (eligibility.length && !eligibility.includes(job.eligibility))
-        return false;
       if (californiaOnly && !job.isCalifornia) return false;
       if (remoteOnly && !job.isRemote) return false;
       if (internOnly && !job.isInternship) return false;
@@ -61,7 +56,6 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
     q,
     work,
     experience,
-    eligibility,
     company,
     californiaOnly,
     remoteOnly,
@@ -80,7 +74,6 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
       setQ("");
       setWork([]);
       setExperience([]);
-      setEligibility([]);
       setCompany("");
       setCaliforniaOnly(false);
       setRemoteOnly(false);
@@ -92,7 +85,6 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
   const activeFilterCount =
     work.length +
     experience.length +
-    eligibility.length +
     (company ? 1 : 0) +
     (californiaOnly ? 1 : 0) +
     (remoteOnly ? 1 : 0) +
@@ -148,14 +140,6 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
-          {ELIGIBILITY.map((e) => (
-            <Chip
-              key={e}
-              active={eligibility.includes(e)}
-              onClick={() => toggle(eligibility, e, setEligibility)}
-              label={`Eligible: ${e}`}
-            />
-          ))}
           <Chip
             active={californiaOnly}
             onClick={() => setCaliforniaOnly((v) => !v)}
@@ -240,7 +224,6 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
                       {job.locationText ? ` · ${job.locationText}` : ""}
                     </p>
                     <div className="flex flex-wrap gap-1.5 pt-1">
-                      <EligibilityBadge value={job.eligibility} />
                       <ExperienceBadge value={job.experienceBand} />
                       <WorkStyleBadge value={job.workStyle} />
                     </div>

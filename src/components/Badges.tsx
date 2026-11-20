@@ -1,22 +1,4 @@
-import {
-  eligibilityLabel,
-  experienceLabel,
-  workStyleLabel,
-} from "@/lib/format";
-
-export function EligibilityBadge({ value }: { value: string }) {
-  const styles =
-    value === "possible"
-      ? "bg-leaf/15 text-[#8a5a18] ring-leaf/30"
-      : "bg-foam text-ink-soft ring-[var(--line)]";
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide ring-1 ring-inset ${styles}`}
-    >
-      {eligibilityLabel(value)}
-    </span>
-  );
-}
+import { experienceLabel, workStyleLabel } from "@/lib/format";
 
 export function ExperienceBadge({ value }: { value: string }) {
   return (

@@ -6,7 +6,6 @@ import { useMemo, useState, useTransition, type FormEvent } from "react";
 import type { NormalizedJob } from "@/lib/ats/types";
 import { relativeTime } from "@/lib/format";
 import {
-  EligibilityBadge,
   ExperienceBadge,
   StatusBadge,
   WorkStyleBadge,
@@ -507,7 +506,6 @@ export function DenseHome({
                           {job.locationText ? ` · ${job.locationText}` : ""}
                         </p>
                         <div className="flex flex-wrap gap-1">
-                          <EligibilityBadge value={job.eligibility} />
                           <ExperienceBadge value={job.experienceBand} />
                           <WorkStyleBadge value={job.workStyle} />
                         </div>

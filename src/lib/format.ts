@@ -9,15 +9,6 @@ export function relativeTime(iso: string | null | undefined): string {
   }
 }
 
-export function eligibilityLabel(value: string): string {
-  switch (value) {
-    case "possible":
-      return "Possible";
-    default:
-      return "Unclear";
-  }
-}
-
 export function experienceLabel(value: string): string {
   switch (value) {
     case "intern":

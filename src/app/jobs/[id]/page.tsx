@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageShell } from "@/components/PageShell";
 import {
-  EligibilityBadge,
   ExperienceBadge,
   StatusBadge,
   WorkStyleBadge,
@@ -39,7 +38,6 @@ export default async function JobDetailPage({
 
       <article className="mt-4 overflow-hidden rounded-[1.35rem] border border-[var(--line)] bg-porcelain p-5 shadow-panel sm:p-8">
         <div className="flex flex-wrap gap-1.5">
-          <EligibilityBadge value={job.eligibility} />
           <ExperienceBadge value={job.experienceBand} />
           <WorkStyleBadge value={job.workStyle} />
         </div>
