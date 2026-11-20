@@ -174,9 +174,15 @@ export async function trackApplication(input: {
   location?: string | null;
   status?: ApplicationStatus;
   notes?: string;
-}): Promise<{ application: ApplicationRecord; mode: "supabase" | "local" }> {
+}): Promise<{
+  application: ApplicationRecord;
+  mode: "supabase" | "local";
+  syncError?: string;
+}> {
   const notes = withBoardJobNote(input.notes, input.jobId);
   const local = createLocalApplication({ ...input, notes });
+  const status = input.status ?? "saved";
+  const SOFT = new Set<ApplicationStatus>(["saved", "not_interested"]);
 
   const body = {
     jobId: input.jobId ?? null,
@@ -184,7 +190,7 @@ export async function trackApplication(input: {
     company: input.company,
     applyUrl: input.applyUrl ?? null,
     location: input.location ?? null,
-    status: input.status ?? "saved",
+    status,
     notes,
   };
 
@@ -209,7 +215,13 @@ export async function trackApplication(input: {
       typeof errBody.error === "string"
         ? errBody.error
         : `Could not save to account (${res.status})`;
-    // Drop the optimistic local row so the board doesn't lie about cloud state
+
+    // Soft marks (bookmark / not interested): keep this-device state so the
+    // board doesn't bounce the row back. Cloud sync retries on next load.
+    if (SOFT.has(status)) {
+      return { application: local, mode: "local", syncError: message };
+    }
+
     deleteLocalApplication(local.id);
     throw Object.assign(new Error(message), { cloudRejected: true as const });
   } catch (err) {

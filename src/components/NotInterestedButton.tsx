@@ -91,7 +91,7 @@ export function NotInterestedButton({
     onChange?.(true, tempId);
 
     try {
-      const { application } = await trackApplication({
+      const { application, mode, syncError } = await trackApplication({
         jobId: job.id,
         title: job.title,
         company: job.companyName,
@@ -113,6 +113,9 @@ export function NotInterestedButton({
       }
       setAppId(application.id);
       onChange?.(true, application.id);
+      if (syncError || mode === "local") {
+        setHint("Saved on this device — account sync pending");
+      }
     } catch {
       setAppId(null);
       onChange?.(false, null);
