@@ -109,10 +109,8 @@ body {
 a:hover > .brand-mark-glow {
   color: #e5bf55;
   text-shadow:
-    0 0 10px rgba(229, 191, 85, 0.85),
-    0 0 24px rgba(229, 191, 85, 0.55),
-    0 0 42px rgba(201, 168, 90, 0.35);
-  filter: drop-shadow(0 0 6px rgba(229, 191, 85, 0.45));
+    0 0 8px rgba(229, 191, 85, 0.35),
+    0 0 18px rgba(229, 191, 85, 0.18);
 }
 
 .eyebrow {
