@@ -68,6 +68,7 @@ export default async function ProfilePage() {
       active="/profile"
       eyebrow="Your account"
       title="Profile"
+      signedIn
       description={user.email ?? undefined}
       actions={<SignOutButton />}
     >

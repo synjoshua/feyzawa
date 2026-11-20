@@ -11,6 +11,7 @@ import { NotInterestedButton } from "@/components/NotInterestedButton";
 import { TrackJobActions } from "@/components/TrackJobActions";
 import { getJobById } from "@/lib/jobs/store";
 import { relativeTime } from "@/lib/format";
+import { getCurrentUser } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -20,11 +21,12 @@ export default async function JobDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const job = await getJobById(id);
+  const [job, user] = await Promise.all([getJobById(id), getCurrentUser()]);
   if (!job) notFound();
 
   return (
     <PageShell
+      signedIn={Boolean(user)}
       eyebrow={job.companyName}
       title={job.title}
       description={job.locationText || "Location not listed"}

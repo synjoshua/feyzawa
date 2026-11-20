@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 export async function createServerSupabaseClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -26,11 +27,12 @@ export async function createServerSupabaseClient() {
   });
 }
 
-export async function getCurrentUser() {
+/** Deduped per request — SiteHeader/pages/loaders share one auth round-trip. */
+export const getCurrentUser = cache(async () => {
   const supabase = await createServerSupabaseClient();
   if (!supabase) return null;
   const {
     data: { user },
   } = await supabase.auth.getUser();
   return user;
-}
+});

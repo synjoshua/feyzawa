@@ -14,6 +14,7 @@ export default async function TrackerPage() {
   return (
     <PageShell
       active="/tracker"
+      signedIn={Boolean(user)}
       eyebrow="Private"
       title="Tracker"
       description="Mark roles you saved or already applied to. Add manual entries for anything off-board. Notes stay private."

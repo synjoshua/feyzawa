@@ -1,13 +1,27 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+function needsAuthCheck(pathname: string): boolean {
+  if (pathname === "/login") return true;
+  const protectedPaths = ["/tracker", "/watchlist", "/profile"];
+  return protectedPaths.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+}
+
 export async function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+
+  // Skip Supabase network round-trip on public browse — biggest nav win
+  if (!needsAuthCheck(path)) {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // Without Supabase, allow public browse; protect tracker routes with a soft gate in-page.
   if (!url || !key) {
     return supabaseResponse;
   }
@@ -33,7 +47,6 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
   const protectedPaths = ["/tracker", "/watchlist", "/profile"];
   const isProtected = protectedPaths.some(
     (p) => path === p || path.startsWith(`${p}/`),

@@ -28,6 +28,7 @@ export default async function WatchlistPage() {
   return (
     <PageShell
       active="/watchlist"
+      signedIn={Boolean(user)}
       eyebrow="Companies"
       title="Watchlist"
       description="Nothing is watched by default. Tap Watch on companies you care about — that list shows up under Company watch on home."

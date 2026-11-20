@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/SiteHeader";
  */
 export function PageShell({
   active,
+  signedIn = false,
   eyebrow,
   title,
   description,
@@ -15,6 +16,7 @@ export function PageShell({
   maxWidthClass = "max-w-6xl",
 }: {
   active?: string;
+  signedIn?: boolean;
   eyebrow?: string;
   title: string;
   description?: string;
@@ -26,6 +28,7 @@ export function PageShell({
     <div className="min-h-screen bg-[#f2e8de]">
       <SiteHeader
         active={active}
+        signedIn={signedIn}
         titleBlock={
           <div className="flex h-[4.25rem] items-end justify-between gap-4 sm:h-[4.75rem]">
             <div className="min-w-0">

@@ -13,6 +13,7 @@ export default async function SavedPage() {
   return (
     <PageShell
       active="/saved"
+      signedIn={Boolean(user)}
       eyebrow="Bookmarks"
       title="Saved"
       description="Bookmarks float to the top of Open roles. Not interested removes a role from the board entirely — switch to that tab and tap Add back anytime."

@@ -30,13 +30,13 @@ import {
 import { BookmarkButton } from "./BookmarkButton";
 import { CompanyLogo } from "./CompanyLogo";
 import { NotInterestedButton } from "./NotInterestedButton";
-import { HEADER_BRAND, HeaderFrame } from "./HeaderFrame";
+import { HeaderFrame } from "./HeaderFrame";
 import {
   IconSaved,
   IconTracker,
   IconWatch,
 } from "./HomeIcons";
-import { MobileNav } from "./MobileNav";
+import { BrandLink, HeaderNav } from "./NavChrome";
 
 type Props = {
   initialJobs: NormalizedJob[];
@@ -206,46 +206,11 @@ export function DenseHome({
     }),
   );
 
-  const navLinks = [
-    { href: "/watchlist", label: "Watch" },
-    { href: "/saved", label: "Saved" },
-    { href: "/tracker", label: "Tracker" },
-    {
-      href: signedIn ? "/profile" : "/login",
-      label: signedIn ? "Profile" : "Sign in",
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-[#f2e8de] pb-16">
       <HeaderFrame
-        brand={
-          <Link href="/" className="focus-ring inline-block rounded-sm">
-            <h1 className={HEADER_BRAND}>Feyzawa</h1>
-          </Link>
-        }
-        nav={
-          <>
-            <MobileNav links={navLinks} />
-            <nav className="hidden items-center gap-0.5 text-xs sm:flex sm:gap-1 sm:text-sm">
-              {navLinks.slice(0, 3).map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <Link
-                href={navLinks[3].href}
-                className="focus-ring rounded-full bg-[#e5bf55]/90 px-2.5 py-1.5 font-medium text-ink hover:bg-[#e5bf55]"
-              >
-                {navLinks[3].label}
-              </Link>
-            </nav>
-          </>
-        }
+        brand={<BrandLink as="h1" />}
+        nav={<HeaderNav signedIn={signedIn} />}
         below={
           <form
             onSubmit={runSearch}

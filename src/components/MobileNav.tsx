@@ -66,6 +66,7 @@ export function MobileNav({ links, tone = "porcelain", active }: Props) {
                   <li key={link.href}>
                     <Link
                       href={link.href}
+                      prefetch
                       onClick={() => setOpen(false)}
                       className={`focus-ring block px-4 py-3 text-sm ${
                         isActive

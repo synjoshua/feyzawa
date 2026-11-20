@@ -6,6 +6,7 @@ export default function LoginPage() {
   return (
     <PageShell
       active="/login"
+      signedIn={false}
       eyebrow="Account"
       title="Sign in"
       description="Continue with Google for a real profile, or use email magic link. Your applications stay private to your account."
