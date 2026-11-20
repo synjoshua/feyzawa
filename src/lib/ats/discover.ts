@@ -3,8 +3,8 @@ import { candidateKey, loadAtsCandidates } from "./candidates";
 import {
   activeDiscoveredEntries,
   loadDiscoveredBoards,
-  probedKeySet,
   saveDiscoveredBoards,
+  skipProbeKeySet,
 } from "./discovered-store";
 import { isTargetDesignRole } from "./filter";
 import { ATS_FETCH_DELAY_MS, fetchWithRetry, sleep } from "./rate-limit";
@@ -74,15 +74,17 @@ export async function discoverNewBoards(options?: {
   summary: DiscoverSummary;
   allowlist: CompanyAllowlistEntry[];
 }> {
-  const batchSize = options?.batchSize ?? discoverBatchSize(30);
+  // Default 60: work through remote directories faster (~7am PT cron).
+  const batchSize = options?.batchSize ?? discoverBatchSize(60);
   const seed = getSeedAllowlist();
   const seedKeys = new Set(seed.map((c) => candidateKey(c)));
   const discovered = await loadDiscoveredBoards();
-  const alreadyProbed = probedKeySet(discovered);
+  // Re-check empty/error boards after a week in case design roles open later.
+  const skipProbe = skipProbeKeySet(discovered);
 
   const candidates = (await loadAtsCandidates()).filter((c) => {
     const key = candidateKey(c);
-    return !seedKeys.has(key) && !alreadyProbed.has(key);
+    return !seedKeys.has(key) && !skipProbe.has(key);
   });
 
   const batch = candidates.slice(0, batchSize);

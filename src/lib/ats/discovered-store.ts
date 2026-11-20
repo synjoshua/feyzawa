@@ -162,3 +162,24 @@ export function activeDiscoveredEntries(
 export function probedKeySet(boards: DiscoveredBoardRecord[]): Set<string> {
   return new Set(boards.map((b) => `${b.provider}:${b.boardToken}`));
 }
+
+/** Boards still blocked from re-probe (active always; empty/error until TTL). */
+export function skipProbeKeySet(
+  boards: DiscoveredBoardRecord[],
+  emptyTtlMs = 7 * 24 * 60 * 60 * 1000,
+): Set<string> {
+  const now = Date.now();
+  const skip = new Set<string>();
+  for (const b of boards) {
+    const key = `${b.provider}:${b.boardToken}`;
+    if (b.status === "active") {
+      skip.add(key);
+      continue;
+    }
+    const probedAt = Date.parse(b.lastProbedAt);
+    if (Number.isFinite(probedAt) && now - probedAt < emptyTtlMs) {
+      skip.add(key);
+    }
+  }
+  return skip;
+}

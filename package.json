@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "refresh": "npx --yes tsx scripts/refresh-jobs.ts",
+    "ingest:ats": "npx --yes tsx scripts/ingest-ats-directories.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
