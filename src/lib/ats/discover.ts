@@ -6,7 +6,7 @@ import {
   probedKeySet,
   saveDiscoveredBoards,
 } from "./discovered-store";
-import { isTargetDesignTitle } from "./filter";
+import { isTargetDesignRole } from "./filter";
 import { ATS_FETCH_DELAY_MS, fetchWithRetry, sleep } from "./rate-limit";
 import type {
   AtsProvider,
@@ -117,7 +117,7 @@ export async function discoverNewBoards(options?: {
       });
     } else {
       const designCount = result.titles.filter((t) =>
-        isTargetDesignTitle(t),
+        isTargetDesignRole(t),
       ).length;
       if (designCount > 0) {
         promoted += 1;

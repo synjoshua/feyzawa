@@ -1,26 +1,57 @@
 import type { ExperienceBand, RawAtsJob } from "./types";
+import { stripHtml } from "./text";
 
-/** Target design titles and close variants (case-insensitive). */
+/**
+ * Strong design-title matches (case-insensitive).
+ * Keep this broad — early-career gating is handled separately.
+ */
 const INCLUDE_TITLE_PATTERNS: RegExp[] = [
+  // Core product / UX / UI
   /\bproduct\s*designer\b/i,
+  /\bproduct\s*design\b/i,
   /\bux\s*designer\b/i,
   /\bui\s*designer\b/i,
+  /\bux\s*design\b/i,
+  /\bui\s*design\b/i,
   /\bux\s*\/\s*ui\b/i,
   /\bui\s*\/\s*ux\b/i,
   /\bux\/ui\b/i,
+  /\bui\/ux\b/i,
   /\binteraction\s*designer\b/i,
-  /\bassociate\s+(?:product\s+)?designer\b/i,
-  /\bjunior\s+(?:product\s+|ux\s+|ui\s+)?designer\b/i,
+  /\binteraction\s*design\b/i,
+  /\bexperience\s*designer\b/i,
+  /\buser\s+experience\s+design(?:er)?\b/i,
+  /\buser\s+interface\s+design(?:er)?\b/i,
+
+  // Content / systems / visual
+  /\bcontent\s*designer\b/i,
+  /\bcontent\s*design\b/i,
+  /\bux\s*writer\b/i,
+  /\bux\s*writing\b/i,
+  /\bdesign\s+systems?\s*(?:designer)?\b/i,
+  /\bvisual\s*designer\b/i,
+  /\bvisual\s*design\b/i,
+  /\bmotion\s*designer\b/i,
+  /\bbrand\s*designer\b/i,
+  /\bdigital\s*designer\b/i,
+  /\bweb\s*designer\b/i,
+  /\bgraphic\s*designer\b/i,
+  /\bcommunication\s*designer\b/i,
+
+  // Early-career / level phrasing
+  /\bassociate\s+(?:product\s+|ux\s+|ui\s+|visual\s+|content\s+)?design(?:er)?\b/i,
+  /\bjunior\s+(?:product\s+|ux\s+|ui\s+|visual\s+|content\s+)?design(?:er)?\b/i,
   /\bdesign\s+intern(?:ship)?\b/i,
   /\bproduct\s+design\s+intern(?:ship)?\b/i,
   /\bux\s+intern(?:ship)?\b/i,
   /\bui\s+intern(?:ship)?\b/i,
-  /\bvisual\s+designer\b/i,
-  /\bdesign\s+systems?\s+designer\b/i,
-  /\bexperience\s+designer\b/i,
-  /\bcontent\s+designer\b/i,
-  /\bux\s+writer\b/i,
+  /\bcontent\s+design\s+intern(?:ship)?\b/i,
+  /\bfigma\b/i,
 ];
+
+/** Title looks design-related even if not an exact "X Designer" phrase. */
+const DESIGNISH_TITLE: RegExp =
+  /\b(design(?:er|ing)?|ux|ui|figma|prototyp(?:e|ing)|wirefram)/i;
 
 /** Hard seniority excludes unless early-career signal also present. */
 const SENIORITY_EXCLUDE: RegExp[] = [
@@ -49,15 +80,45 @@ const EARLY_CAREER_SIGNAL: RegExp[] = [
   /\b20(2[5-9]|3[0-2])\b/,
 ];
 
-export function isTargetDesignTitle(title: string): boolean {
-  if (!INCLUDE_TITLE_PATTERNS.some((p) => p.test(title))) {
+const FIGMA: RegExp = /\bfigma\b/i;
+
+function hasEarlyCareerSignal(title: string, description = ""): boolean {
+  const text = `${title}\n${description}`;
+  return EARLY_CAREER_SIGNAL.some((p) => p.test(text));
+}
+
+function passesSeniorityGate(title: string, description = ""): boolean {
+  const hasSeniority = SENIORITY_EXCLUDE.some((p) => p.test(title));
+  if (!hasSeniority) return true;
+  return hasEarlyCareerSignal(title, description);
+}
+
+/**
+ * Include a role when:
+ * - Title matches a design pattern, or
+ * - Title is design-ish and Figma is mentioned in the title or description, or
+ * - Title itself mentions Figma
+ *
+ * Senior titles still need an early-career signal (title or description).
+ */
+export function isTargetDesignRole(
+  title: string,
+  description = "",
+): boolean {
+  const strongTitle = INCLUDE_TITLE_PATTERNS.some((p) => p.test(title));
+  const designish = DESIGNISH_TITLE.test(title);
+  const figmaHit = FIGMA.test(title) || FIGMA.test(description);
+  const figmaDesignRole = designish && figmaHit;
+
+  if (!strongTitle && !figmaDesignRole) {
     return false;
   }
-  const hasSeniority = SENIORITY_EXCLUDE.some((p) => p.test(title));
-  if (hasSeniority) {
-    return EARLY_CAREER_SIGNAL.some((p) => p.test(title));
-  }
-  return true;
+  return passesSeniorityGate(title, description);
+}
+
+/** @deprecated use isTargetDesignRole — kept for title-only discovery probes */
+export function isTargetDesignTitle(title: string): boolean {
+  return isTargetDesignRole(title, "");
 }
 
 export function classifyExperienceBand(
@@ -95,11 +156,12 @@ export function earlyCareerScore(
   if (/0-1 years|0–1 years|1\+? years|less than 2|up to 2 years/.test(text))
     score += 8;
   if (/portfolio/.test(text)) score += 2;
+  if (/\bfigma\b/.test(text)) score += 3;
 
   // Soft demote strong mid+ signals without early-career language
   if (
     SENIORITY_EXCLUDE.some((p) => p.test(title)) &&
-    !EARLY_CAREER_SIGNAL.some((p) => p.test(title))
+    !hasEarlyCareerSignal(title, description)
   ) {
     score -= 30;
   }
@@ -108,5 +170,8 @@ export function earlyCareerScore(
 }
 
 export function passesDesignFilter(job: RawAtsJob): boolean {
-  return isTargetDesignTitle(job.title);
+  const description = stripHtml(
+    job.descriptionText || job.descriptionHtml || "",
+  );
+  return isTargetDesignRole(job.title, description);
 }
