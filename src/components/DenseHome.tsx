@@ -221,7 +221,7 @@ export function DenseHome({
 
           <form
             onSubmit={runSearch}
-            className="mt-6 mb-6 flex items-center gap-2 rounded-full bg-porcelain p-1 pl-4 shadow-soft"
+            className="mt-6 mb-3 flex items-center gap-2 rounded-full bg-porcelain p-1 pl-4 shadow-[0_8px_0_0_#3f3530,0_12px_24px_-10px_rgba(43,37,35,0.4)]"
           >
             <input
               value={q}
