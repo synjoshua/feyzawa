@@ -5,6 +5,7 @@ import type { NormalizedJob } from "@/lib/ats/types";
 import {
   fetchApplications,
   removeApplication,
+  resolveAppJobId,
   trackApplication,
 } from "@/lib/tracking/client";
 import type { ApplicationStatus } from "@/lib/tracking/types";
@@ -25,6 +26,21 @@ type Props = {
   onChange?: (saved: boolean, id: string | null) => void;
 };
 
+function findSavedForJob(
+  applications: { id: string; job_id: string | null; status: ApplicationStatus; notes?: string; company_snapshot?: string; title_snapshot?: string }[],
+  job: NormalizedJob,
+) {
+  return applications.find((a) => {
+    if (a.status !== "saved") return false;
+    const key = resolveAppJobId(a as Parameters<typeof resolveAppJobId>[0]);
+    if (key && key === job.id) return true;
+    return (
+      (a.company_snapshot || "").toLowerCase() === job.companyName.toLowerCase() &&
+      (a.title_snapshot || "").toLowerCase() === job.title.toLowerCase()
+    );
+  });
+}
+
 export function BookmarkButton({
   job,
   className = "",
@@ -36,23 +52,22 @@ export function BookmarkButton({
   const [hint, setHint] = useState("");
 
   useEffect(() => {
-    if (initialSavedId) {
-      setSavedId(initialSavedId);
-      return;
-    }
+    setSavedId(initialSavedId);
+  }, [initialSavedId]);
+
+  useEffect(() => {
+    if (initialSavedId) return;
     let cancelled = false;
     (async () => {
       const { applications } = await fetchApplications();
       if (cancelled) return;
-      const hit = applications.find(
-        (a) => a.job_id === job.id && a.status === "saved",
-      );
+      const hit = findSavedForJob(applications, job);
       setSavedId(hit?.id ?? null);
     })();
     return () => {
       cancelled = true;
     };
-  }, [job.id, initialSavedId]);
+  }, [job.id, job.companyName, job.title, initialSavedId]);
 
   async function toggle() {
     if (busy) return;
@@ -70,9 +85,11 @@ export function BookmarkButton({
         return;
       }
 
-      // Don't create a "saved" row over an applied/pipeline entry
       const { applications } = await fetchApplications();
-      const existing = applications.find((a) => a.job_id === job.id);
+      const existing = applications.find((a) => {
+        const key = resolveAppJobId(a);
+        return key === job.id || a.job_id === job.id;
+      });
       if (existing && PIPELINE.includes(existing.status)) {
         setHint("Already in tracker");
         return;
@@ -86,7 +103,6 @@ export function BookmarkButton({
         location: job.locationText,
         status: "saved",
       });
-      // If server refused downgrade, status may still be pipeline
       if (application.status !== "saved") {
         setHint("Already in tracker");
         onChange?.(false, null);
@@ -113,8 +129,8 @@ export function BookmarkButton({
         aria-label={filled ? "Remove bookmark" : "Save job"}
         className={`focus-ring flex h-9 w-9 items-center justify-center rounded-full border transition disabled:opacity-60 ${
           filled
-            ? "border-gold bg-[#e5bf55]/35 text-ink"
-            : "border-[var(--line)] bg-porcelain text-ink-soft hover:border-gold hover:text-ink"
+            ? "border-[#c9a85a] bg-[#f2e8de] text-ink"
+            : "border-[var(--line)] bg-porcelain text-ink-soft hover:border-[#c9a85a] hover:text-ink"
         }`}
       >
         <BookmarkIcon filled={filled} />

@@ -86,19 +86,38 @@ export function DenseHome({
       const { applications } = await fetchApplications();
       if (cancelled) return;
       const next = new Map<string, { id: string; status: ApplicationStatus }>();
+
+      const matchKey = (a: (typeof applications)[number]) => {
+        const fromId = resolveAppJobId(a);
+        if (fromId) return fromId;
+        const hit = initialJobs.find(
+          (j) =>
+            j.companyName.toLowerCase() ===
+              a.company_snapshot.trim().toLowerCase() &&
+            j.title.toLowerCase() === a.title_snapshot.trim().toLowerCase(),
+        );
+        return hit?.id ?? null;
+      };
+
       for (const a of applications) {
-        const jobKey = resolveAppJobId(a);
+        const jobKey = matchKey(a);
         if (!jobKey) continue;
         const prev = next.get(jobKey);
         if (!prev) {
           next.set(jobKey, { id: a.id, status: a.status });
           continue;
         }
-        // Prefer applied/pipeline over saved so bookmarks don't hide tracker state
+        // Prefer applied/pipeline over saved for the row’s primary status,
+        // but keep a separate saved entry only when that’s the sole status.
         if (isPipelineStatus(a.status) && prev.status === "saved") {
           next.set(jobKey, { id: a.id, status: a.status });
         } else if (isPipelineStatus(prev.status) && a.status === "saved") {
-          // keep pipeline
+          // keep pipeline as primary — bookmark won’t show while applied
+        } else if (a.status === "saved" || prev.status === "saved") {
+          next.set(jobKey, {
+            id: a.status === "saved" ? a.id : prev.id,
+            status: "saved",
+          });
         } else {
           next.set(jobKey, { id: a.id, status: a.status });
         }
@@ -108,7 +127,7 @@ export function DenseHome({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialJobs]);
 
   async function refreshJobs() {
     setRefreshing(true);
@@ -535,7 +554,7 @@ export function DenseHome({
                     key={job.id}
                     className={`job-row ${
                       bookmarked
-                        ? "bg-[#e5bf55]/12"
+                        ? "bg-[#f2e8de]/80"
                         : applied
                           ? "bg-jade/8"
                           : ""
@@ -544,7 +563,7 @@ export function DenseHome({
                     <div
                       className={`flex flex-col gap-2.5 px-3.5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-4 ${
                         bookmarked
-                          ? "border-l-[3px] border-l-gold"
+                          ? "border-l-[3px] border-l-[#c9a85a]"
                           : applied
                             ? "border-l-[3px] border-l-jade"
                             : ""
