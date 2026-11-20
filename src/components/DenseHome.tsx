@@ -28,7 +28,6 @@ type QuickKey =
   | "all"
   | "intern"
   | "new_grad"
-  | "confirmed"
   | "california"
   | "remote"
   | "product";
@@ -37,7 +36,6 @@ const CATEGORY_CHIPS: { key: QuickKey; label: string }[] = [
   { key: "all", label: "All" },
   { key: "intern", label: "Intern" },
   { key: "new_grad", label: "New grad" },
-  { key: "confirmed", label: "Confirmed" },
   { key: "california", label: "California" },
   { key: "remote", label: "Remote" },
   { key: "product", label: "Product" },
@@ -110,8 +108,6 @@ export function DenseHome({
           return job.isInternship || job.experienceBand === "intern";
         case "new_grad":
           return job.experienceBand === "new_grad";
-        case "confirmed":
-          return job.eligibility === "confirmed";
         case "california":
           return job.isCalifornia;
         case "remote":
@@ -128,9 +124,6 @@ export function DenseHome({
   const internCount = activeJobs.filter((j) => j.isInternship).length;
   const caCount = activeJobs.filter((j) => j.isCalifornia).length;
   const remoteCount = activeJobs.filter((j) => j.isRemote).length;
-  const confirmedCount = activeJobs.filter(
-    (j) => j.eligibility === "confirmed",
-  ).length;
 
   function applyQuick(next: QuickKey) {
     startTransition(() => setChip(next));
@@ -151,8 +144,6 @@ export function DenseHome({
         return internCount;
       case "new_grad":
         return activeJobs.filter((j) => j.experienceBand === "new_grad").length;
-      case "confirmed":
-        return confirmedCount;
       case "california":
         return caCount;
       case "remote":
@@ -305,13 +296,13 @@ export function DenseHome({
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-soft">
                 Role counts
               </p>
-              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
+              <div className="mt-2 grid w-full grid-cols-2 gap-2 sm:grid-cols-5">
                 {filterStats.map((stat) => (
                   <button
                     key={stat.key}
                     type="button"
                     onClick={() => applyQuick(stat.key)}
-                    className={`focus-ring rounded-xl border px-3 py-3 text-left transition ${
+                    className={`focus-ring w-full rounded-xl border px-3 py-3 text-left transition ${
                       chip === stat.key
                         ? "border-gold bg-[#e5bf55]/25"
                         : "border-[var(--line)] bg-[#f2e8de]/50 hover:border-gold/40"
