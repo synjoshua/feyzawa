@@ -9,6 +9,7 @@
     "lint": "next lint",
     "refresh": "npx --yes tsx scripts/refresh-jobs.ts",
     "ingest:ats": "npx --yes tsx scripts/ingest-ats-directories.ts",
+    "sweep:interns": "npx --yes tsx scripts/sweep-design-interns.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

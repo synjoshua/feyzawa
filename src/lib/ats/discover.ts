@@ -74,8 +74,8 @@ export async function discoverNewBoards(options?: {
   summary: DiscoverSummary;
   allowlist: CompanyAllowlistEntry[];
 }> {
-  // Default 60: work through remote directories faster (~7am PT cron).
-  const batchSize = options?.batchSize ?? discoverBatchSize(60);
+  // Default 120: chew through remote ATS directories faster on the daily cron.
+  const batchSize = options?.batchSize ?? discoverBatchSize(120);
   const seed = getSeedAllowlist();
   const seedKeys = new Set(seed.map((c) => candidateKey(c)));
   const discovered = await loadDiscoveredBoards();
@@ -87,6 +87,7 @@ export async function discoverNewBoards(options?: {
     return !seedKeys.has(key) && !skipProbe.has(key);
   });
 
+  // Prefer never-probed boards, then older empty/error rechecks.
   const batch = candidates.slice(0, batchSize);
   const now = new Date().toISOString();
   const promotedNames: string[] = [];
