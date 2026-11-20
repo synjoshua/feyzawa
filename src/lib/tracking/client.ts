@@ -2,14 +2,10 @@
 
 import {
   createLocalApplication,
-  createLocalOutreach,
   deleteLocalApplication,
-  deleteLocalOutreach,
   listLocalApplications,
-  listLocalOutreach,
   replaceLocalApplication,
   updateLocalApplication,
-  updateLocalOutreach,
 } from "./local-store";
 import {
   appDedupeKey,
@@ -19,8 +15,6 @@ import {
 import type {
   ApplicationRecord,
   ApplicationStatus,
-  OutreachRecord,
-  OutreachStatus,
 } from "./types";
 
 export { resolveAppJobId, withBoardJobNote } from "./app-utils";
@@ -36,24 +30,6 @@ function mapApp(row: Record<string, unknown>): ApplicationRecord {
     status: row.status as ApplicationStatus,
     notes: String(row.notes ?? ""),
     applied_at: (row.applied_at as string) ?? null,
-    created_at: String(row.created_at ?? ""),
-    updated_at: String(row.updated_at ?? ""),
-    source: "supabase",
-  };
-}
-
-function mapOut(row: Record<string, unknown>): OutreachRecord {
-  return {
-    id: String(row.id),
-    company_name: String(row.company_name ?? ""),
-    recruiter_id: (row.recruiter_id as string) ?? null,
-    recruiter_name: String(row.recruiter_name ?? ""),
-    linkedin_url: String(row.linkedin_url ?? ""),
-    role_title: String(row.role_title ?? ""),
-    job_id: (row.job_id as string) ?? null,
-    status: row.status as OutreachStatus,
-    draft_message: String(row.draft_message ?? ""),
-    notes: String(row.notes ?? ""),
     created_at: String(row.created_at ?? ""),
     updated_at: String(row.updated_at ?? ""),
     source: "supabase",
@@ -307,96 +283,4 @@ export async function removeApplication(
   }
 
   return remoteOk || localCleared;
-}
-
-export async function fetchOutreach(): Promise<{
-  outreach: OutreachRecord[];
-  mode: "supabase" | "local";
-}> {
-  try {
-    const res = await fetch("/api/outreach", {
-      credentials: "same-origin",
-      cache: "no-store",
-    });
-    if (res.ok) {
-      const data = await res.json();
-      return {
-        outreach: (data.outreach ?? []).map((r: Record<string, unknown>) =>
-          mapOut(r),
-        ),
-        mode: "supabase",
-      };
-    }
-  } catch {
-    // fall through
-  }
-  return { outreach: listLocalOutreach(), mode: "local" };
-}
-
-export async function queueOutreach(input: {
-  companyName: string;
-  recruiterId?: string | null;
-  recruiterName: string;
-  linkedinUrl: string;
-  roleTitle: string;
-  jobId?: string | null;
-  status?: OutreachStatus;
-  draftMessage?: string;
-  notes?: string;
-}): Promise<{ item: OutreachRecord; mode: "supabase" | "local" }> {
-  try {
-    const res = await fetch("/api/outreach", {
-      method: "POST",
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      return { item: mapOut(data.item), mode: "supabase" };
-    }
-  } catch {
-    // fall through
-  }
-  return { item: createLocalOutreach(input), mode: "local" };
-}
-
-export async function patchOutreach(
-  id: string,
-  patch: Partial<{
-    status: OutreachStatus;
-    draftMessage: string;
-    notes: string;
-    linkedinUrl: string;
-  }>,
-): Promise<{ item: OutreachRecord; mode: "supabase" | "local" } | null> {
-  try {
-    const res = await fetch("/api/outreach", {
-      method: "PATCH",
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, ...patch }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      return { item: mapOut(data.item), mode: "supabase" };
-    }
-  } catch {
-    // fall through
-  }
-  const local = updateLocalOutreach(id, patch);
-  return local ? { item: local, mode: "local" } : null;
-}
-
-export async function removeOutreach(id: string): Promise<boolean> {
-  try {
-    const res = await fetch(`/api/outreach?id=${encodeURIComponent(id)}`, {
-      method: "DELETE",
-      credentials: "same-origin",
-    });
-    if (res.ok) return true;
-  } catch {
-    // fall through
-  }
-  return deleteLocalOutreach(id);
 }

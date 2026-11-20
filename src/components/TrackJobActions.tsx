@@ -122,18 +122,12 @@ export function TrackJobActions({ job }: { job: NormalizedJob }) {
           }}
         />
         <a
-          href={`/outreach?company=${encodeURIComponent(job.companyName)}&role=${encodeURIComponent(job.title)}&jobId=${encodeURIComponent(job.id)}`}
-          className="focus-ring rounded-full border border-gold/40 bg-chartreuse/15 px-4 py-2.5 text-sm font-medium text-ink"
-        >
-          Find recruiters
-        </a>
-        <a
           href={linkedinPeopleSearchUrl(
             `("product design" OR design OR university) (recruiter OR "talent acquisition") "${job.companyName}"`,
           )}
           target="_blank"
           rel="noopener noreferrer"
-          className="focus-ring rounded-full border border-[var(--line)] bg-porcelain px-4 py-2.5 text-sm font-medium text-ink"
+          className="focus-ring rounded-full border border-gold/40 bg-chartreuse/15 px-4 py-2.5 text-sm font-medium text-ink"
         >
           Search LinkedIn
         </a>

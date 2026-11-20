@@ -42,14 +42,6 @@ export function IconWatch({ className = "h-6 w-6" }: IconProps) {
   );
 }
 
-export function IconOutreach({ className = "h-6 w-6" }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
-      <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm-7.5 9a7.5 7.5 0 0 1 15 0v1H4.5v-1zM18 8h2v2h2v2h-2v2h-2v-2h-2v-2h2V8z" />
-    </svg>
-  );
-}
-
 export function IconSaved({ className = "h-6 w-6" }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>

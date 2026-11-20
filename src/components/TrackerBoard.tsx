@@ -620,12 +620,6 @@ export function TrackerBoard({
                           Link
                         </a>
                       ) : null}
-                      <a
-                        href={`/outreach?company=${encodeURIComponent(row.company_snapshot)}&role=${encodeURIComponent(row.title_snapshot)}`}
-                        className="text-xs text-gold hover:underline"
-                      >
-                        Recruiters
-                      </a>
                       <button
                         type="button"
                         onClick={() => remove(row.id)}

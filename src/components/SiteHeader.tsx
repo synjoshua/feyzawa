@@ -8,7 +8,6 @@ const NAV = [
   { href: "/watchlist", label: "Watch" },
   { href: "/saved", label: "Saved" },
   { href: "/tracker", label: "Tracker" },
-  { href: "/outreach", label: "Outreach" },
 ] as const;
 
 export async function SiteHeader({

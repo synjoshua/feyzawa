@@ -1,12 +1,9 @@
 import type {
   ApplicationRecord,
   ApplicationStatus,
-  OutreachRecord,
-  OutreachStatus,
 } from "./types";
 
 const APP_KEY = "feyzawa.applications.v1";
-const OUT_KEY = "feyzawa.outreach.v1";
 
 function uid(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -166,79 +163,4 @@ export function replaceLocalApplication(
     else all.unshift(row);
   }
   writeJson(APP_KEY, all);
-}
-
-export function listLocalOutreach(): OutreachRecord[] {
-  return readJson<OutreachRecord[]>(OUT_KEY, []).map((o) => ({
-    ...o,
-    source: "local" as const,
-  }));
-}
-
-export function createLocalOutreach(input: {
-  companyName: string;
-  recruiterId?: string | null;
-  recruiterName: string;
-  linkedinUrl: string;
-  roleTitle: string;
-  jobId?: string | null;
-  status?: OutreachStatus;
-  draftMessage?: string;
-  notes?: string;
-}): OutreachRecord {
-  const now = new Date().toISOString();
-  const row: OutreachRecord = {
-    id: uid(),
-    company_name: input.companyName,
-    recruiter_id: input.recruiterId ?? null,
-    recruiter_name: input.recruiterName,
-    linkedin_url: input.linkedinUrl,
-    role_title: input.roleTitle,
-    job_id: input.jobId ?? null,
-    status: input.status ?? "queued",
-    draft_message: input.draftMessage ?? "",
-    notes: input.notes ?? "",
-    created_at: now,
-    updated_at: now,
-    source: "local",
-  };
-  const all = listLocalOutreach();
-  all.unshift(row);
-  writeJson(OUT_KEY, all);
-  return row;
-}
-
-export function updateLocalOutreach(
-  id: string,
-  patch: Partial<{
-    status: OutreachStatus;
-    draftMessage: string;
-    notes: string;
-    linkedinUrl: string;
-  }>,
-): OutreachRecord | null {
-  const all = listLocalOutreach();
-  const idx = all.findIndex((o) => o.id === id);
-  if (idx < 0) return null;
-  const prev = all[idx];
-  const next: OutreachRecord = {
-    ...prev,
-    status: patch.status ?? prev.status,
-    draft_message: patch.draftMessage ?? prev.draft_message,
-    notes: patch.notes ?? prev.notes,
-    linkedin_url: patch.linkedinUrl ?? prev.linkedin_url,
-    updated_at: new Date().toISOString(),
-    source: "local",
-  };
-  all[idx] = next;
-  writeJson(OUT_KEY, all);
-  return next;
-}
-
-export function deleteLocalOutreach(id: string): boolean {
-  const all = listLocalOutreach();
-  const next = all.filter((o) => o.id !== id);
-  if (next.length === all.length) return false;
-  writeJson(OUT_KEY, next);
-  return true;
 }

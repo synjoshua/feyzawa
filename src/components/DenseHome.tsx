@@ -32,7 +32,6 @@ import { CompanyLogo } from "./CompanyLogo";
 import { NotInterestedButton } from "./NotInterestedButton";
 import { HEADER_BRAND, HeaderFrame } from "./HeaderFrame";
 import {
-  IconOutreach,
   IconSaved,
   IconTracker,
   IconWatch,
@@ -211,7 +210,6 @@ export function DenseHome({
     { href: "/watchlist", label: "Watch" },
     { href: "/saved", label: "Saved" },
     { href: "/tracker", label: "Tracker" },
-    { href: "/outreach", label: "Outreach" },
     {
       href: signedIn ? "/profile" : "/login",
       label: signedIn ? "Profile" : "Sign in",
@@ -230,7 +228,7 @@ export function DenseHome({
           <>
             <MobileNav links={navLinks} />
             <nav className="hidden items-center gap-0.5 text-xs sm:flex sm:gap-1 sm:text-sm">
-              {navLinks.slice(0, 4).map((link) => (
+              {navLinks.slice(0, 3).map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
@@ -240,10 +238,10 @@ export function DenseHome({
                 </Link>
               ))}
               <Link
-                href={navLinks[4].href}
+                href={navLinks[3].href}
                 className="focus-ring rounded-full bg-[#e5bf55]/90 px-2.5 py-1.5 font-medium text-ink hover:bg-[#e5bf55]"
               >
-                {navLinks[4].label}
+                {navLinks[3].label}
               </Link>
             </nav>
           </>
@@ -351,7 +349,7 @@ export function DenseHome({
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-soft">
                 Your tools
               </p>
-              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div className="mt-2 grid grid-cols-3 gap-2">
                 <Link
                   href="/watchlist"
                   className="focus-ring flex flex-col items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[#f2e8de]/40 px-2 py-3 text-center transition hover:border-gold hover:bg-[#e5bf55]/20"
@@ -369,14 +367,6 @@ export function DenseHome({
                   <IconSaved className="h-6 w-6 text-[#6f675f]" />
                   <span className="text-xs font-medium text-ink">Saved</span>
                   <span className="text-[10px] text-ink-soft">Bookmarks</span>
-                </Link>
-                <Link
-                  href="/outreach"
-                  className="focus-ring flex flex-col items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[#f2e8de]/40 px-2 py-3 text-center transition hover:border-gold hover:bg-[#e5bf55]/20"
-                >
-                  <IconOutreach className="h-6 w-6 text-[#6f675f]" />
-                  <span className="text-xs font-medium text-ink">Outreach</span>
-                  <span className="text-[10px] text-ink-soft">Recruiters</span>
                 </Link>
                 <Link
                   href="/tracker"
