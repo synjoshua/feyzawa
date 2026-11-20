@@ -72,8 +72,17 @@ export default async function JobDetailPage({
             </dt>
             <dd className="text-ink">
               <ul className="list-disc pl-4">
-                {job.eligibilityReasons.map((r) => (
-                  <li key={r}>{r}</li>
+                {job.eligibilityReasons.map((r, i) => (
+                  <li
+                    key={r}
+                    className={
+                      i === 0 && /years of experience|experience required/i.test(r)
+                        ? "font-medium text-ink"
+                        : undefined
+                    }
+                  >
+                    {r}
+                  </li>
                 ))}
               </ul>
             </dd>
