@@ -153,10 +153,10 @@ export async function fetchApplications(): Promise<{
       const remote = (data.applications ?? []).map(
         (r: Record<string, unknown>) => mapApp(r),
       );
-      // Don't block the UI on sequential local→cloud uploads
-      void syncLocalToCloud(remote);
+      // Upload any browser-only marks (e.g. not_interested) to the account
+      const uploaded = await syncLocalToCloud(remote);
       return {
-        applications: mergeApplications(remote, local),
+        applications: mergeApplications([...remote, ...uploaded], local),
         mode: "supabase",
       };
     }
@@ -188,23 +188,42 @@ export async function trackApplication(input: {
     notes,
   };
 
-  // Cloud upsert in the background — UI already has the local row
-  void (async () => {
-    try {
-      let res = await postApplication(body);
-      if (!res.ok && input.jobId) {
-        res = await postApplication({ ...body, jobId: null });
-      }
-      if (res.ok) {
-        const data = await res.json();
-        replaceLocalApplication(local.id, mapApp(data.application));
-      }
-    } catch {
-      // keep local-only until next sync
+  // Prefer a real cloud write when signed in so marks survive across devices.
+  try {
+    let res = await postApplication(body);
+    if (!res.ok && input.jobId) {
+      res = await postApplication({ ...body, jobId: null });
     }
-  })();
-
-  return { application: local, mode: "local" };
+    if (res.ok) {
+      const data = await res.json();
+      const remote = mapApp(data.application);
+      replaceLocalApplication(local.id, remote);
+      return { application: remote, mode: "supabase" };
+    }
+    // Signed out / no session — local-only is expected
+    if (res.status === 401) {
+      return { application: local, mode: "local" };
+    }
+    const errBody = await res.json().catch(() => ({}));
+    const message =
+      typeof errBody.error === "string"
+        ? errBody.error
+        : `Could not save to account (${res.status})`;
+    // Drop the optimistic local row so the board doesn't lie about cloud state
+    deleteLocalApplication(local.id);
+    throw Object.assign(new Error(message), { cloudRejected: true as const });
+  } catch (err) {
+    if (
+      err &&
+      typeof err === "object" &&
+      "cloudRejected" in err &&
+      (err as { cloudRejected?: boolean }).cloudRejected
+    ) {
+      throw err;
+    }
+    // Network blip — keep local and let syncLocalToCloud retry later
+    return { application: local, mode: "local" };
+  }
 }
 
 export async function patchApplication(
