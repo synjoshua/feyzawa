@@ -245,6 +245,35 @@ a:hover > .brand-mark-glow {
   outline-offset: 2px;
 }
 
+/* Thin warm scrollbar for horizontal tea strips (company watch, chips). */
+.tea-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(120, 102, 83, 0.4) transparent;
+}
+
+.tea-scroll::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+
+.tea-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  margin-inline: 2px;
+}
+
+.tea-scroll::-webkit-scrollbar-thumb {
+  background: rgba(120, 102, 83, 0.32);
+  border-radius: 999px;
+}
+
+.tea-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 168, 90, 0.75);
+}
+
+.tea-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 @keyframes nav-progress {
   0% {
     transform: translateX(-100%) scaleX(0.35);

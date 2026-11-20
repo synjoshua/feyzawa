@@ -277,7 +277,7 @@ export function DenseHome({
       <div className="relative z-10 mx-auto mt-5 max-w-6xl px-4 sm:mt-6 sm:px-6">
         <section className="animate-pour overflow-hidden rounded-[1.35rem] border border-[var(--line)] bg-porcelain shadow-panel">
           {/* Group 1: filter chips — one job, same control type */}
-          <div className="flex gap-1 overflow-x-auto border-b border-[var(--line)] px-3 pb-0 pt-5 scrollbar-thin sm:pt-6">
+          <div className="tea-scroll flex gap-1 overflow-x-auto border-b border-[var(--line)] px-3 pb-0 pt-5 sm:pt-6">
             {CATEGORY_CHIPS.map((c) => (
               <button
                 key={c.key}
@@ -432,7 +432,7 @@ export function DenseHome({
               )}
             </p>
           ) : (
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="tea-scroll flex gap-2 overflow-x-auto pb-2">
               {watchedCompanies.map((name) => (
                 <button
                   key={name}
