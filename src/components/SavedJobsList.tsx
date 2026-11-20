@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { relativeTime } from "@/lib/format";
+import { listLocalApplications } from "@/lib/tracking/local-store";
 import {
   fetchApplications,
   removeApplication,
@@ -11,24 +12,54 @@ import type { ApplicationRecord } from "@/lib/tracking/types";
 
 type Tab = "saved" | "not_interested";
 
-export function SavedJobsList() {
-  const [all, setAll] = useState<ApplicationRecord[]>([]);
-  const [tab, setTab] = useState<Tab>("saved");
-  const [loading, setLoading] = useState(true);
+function relevant(apps: ApplicationRecord[]) {
+  return apps.filter(
+    (a) => a.status === "saved" || a.status === "not_interested",
+  );
+}
 
-  async function reload() {
-    const { applications } = await fetchApplications();
-    setAll(
-      applications.filter(
-        (a) => a.status === "saved" || a.status === "not_interested",
-      ),
-    );
-    setLoading(false);
-  }
+export function SavedJobsList({
+  initial = [],
+}: {
+  initial?: ApplicationRecord[];
+}) {
+  const [all, setAll] = useState<ApplicationRecord[]>(() => relevant(initial));
+  const [tab, setTab] = useState<Tab>("saved");
+  const [loading, setLoading] = useState(initial.length === 0);
 
   useEffect(() => {
-    void reload();
-  }, []);
+    // Paint local bookmarks immediately (signed-out / offline mirror)
+    const local = relevant(listLocalApplications());
+    if (local.length > 0) {
+      setAll((prev) => {
+        const ids = new Set(prev.map((r) => r.id));
+        const keys = new Set(
+          prev.map(
+            (r) =>
+              `${(r.job_id ?? "").toLowerCase()}|${r.company_snapshot.toLowerCase()}|${r.title_snapshot.toLowerCase()}`,
+          ),
+        );
+        const extras = local.filter((r) => {
+          if (ids.has(r.id)) return false;
+          const key = `${(r.job_id ?? "").toLowerCase()}|${r.company_snapshot.toLowerCase()}|${r.title_snapshot.toLowerCase()}`;
+          return !keys.has(key);
+        });
+        return extras.length ? [...prev, ...extras] : prev;
+      });
+      setLoading(false);
+    }
+
+    let cancelled = false;
+    (async () => {
+      const { applications } = await fetchApplications();
+      if (cancelled) return;
+      setAll(relevant(applications));
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [initial]);
 
   const savedCount = useMemo(
     () => all.filter((a) => a.status === "saved").length,

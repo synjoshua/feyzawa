@@ -2,11 +2,13 @@ import Link from "next/link";
 import { PageShell } from "@/components/PageShell";
 import { SavedJobsList } from "@/components/SavedJobsList";
 import { getCurrentUser } from "@/lib/supabase/server";
+import { loadUserApplications } from "@/lib/tracking/load-user-apps";
 
 export const dynamic = "force-dynamic";
 
 export default async function SavedPage() {
   const user = await getCurrentUser();
+  const applications = await loadUserApplications(user?.id);
 
   return (
     <PageShell
@@ -26,7 +28,7 @@ export default async function SavedPage() {
       ) : null}
 
       <div className="mt-4 tea-surface overflow-hidden rounded-[1.25rem]">
-        <SavedJobsList />
+        <SavedJobsList initial={applications} />
       </div>
     </PageShell>
   );

@@ -176,9 +176,10 @@ export async function fetchApplications(): Promise<{
       const remote = (data.applications ?? []).map(
         (r: Record<string, unknown>) => mapApp(r),
       );
-      const uploaded = await syncLocalToCloud(remote);
+      // Don't block the UI on sequential local→cloud uploads
+      void syncLocalToCloud(remote);
       return {
-        applications: mergeApplications([...remote, ...uploaded], local),
+        applications: mergeApplications(remote, local),
         mode: "supabase",
       };
     }
