@@ -317,22 +317,24 @@ export function DenseHome({
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-soft">
                 Role counts
               </p>
-              <div className="mt-2 grid w-full grid-cols-2 gap-2 sm:grid-cols-4">
+              <div className="mt-2 grid w-full grid-cols-5 gap-1.5 sm:gap-2">
                 {filterStats.map((stat) => (
                   <button
                     key={stat.key}
                     type="button"
                     onClick={() => applyQuick(stat.key)}
-                    className={`focus-ring w-full rounded-xl border px-3 py-3 text-left transition ${
+                    className={`focus-ring w-full rounded-xl border px-1.5 py-2.5 text-left transition sm:px-3 sm:py-3 ${
                       chip === stat.key
                         ? "border-gold bg-[#e5bf55]/30"
                         : "border-[var(--line)] bg-[#f2e8de]/50 hover:border-gold hover:bg-[#e5bf55]/20"
                     }`}
                   >
-                    <p className="text-xl font-semibold tabular-nums text-ink">
+                    <p className="text-lg font-semibold tabular-nums text-ink sm:text-xl">
                       {stat.count}
                     </p>
-                    <p className="mt-0.5 text-xs text-ink-soft">{stat.label}</p>
+                    <p className="mt-0.5 text-[10px] leading-tight text-ink-soft sm:text-xs">
+                      {stat.label}
+                    </p>
                   </button>
                 ))}
               </div>
