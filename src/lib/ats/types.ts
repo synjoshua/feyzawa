@@ -88,6 +88,15 @@ export interface FetchCompanyResult {
   fetchedAt: string;
 }
 
+export interface DiscoverSummary {
+  probed: number;
+  promoted: number;
+  empty: number;
+  errors: number;
+  promotedNames: string[];
+  remainingCandidates: number;
+}
+
 export interface RefreshSummary {
   startedAt: string;
   finishedAt: string;
@@ -99,4 +108,5 @@ export interface RefreshSummary {
   upserted: number;
   markedPotentiallyClosed: number;
   failures: Array<{ company: string; provider: AtsProvider; error: string }>;
+  discovery?: DiscoverSummary;
 }

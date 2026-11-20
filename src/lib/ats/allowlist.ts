@@ -948,7 +948,8 @@ export const DEFAULT_COMPANY_ALLOWLIST: CompanyAllowlistEntry[] = [
   },
 ];
 
-export function getCompanyAllowlist(): CompanyAllowlistEntry[] {
+/** Built-in + env seed list (no dynamic discovery). */
+export function getSeedAllowlist(): CompanyAllowlistEntry[] {
   const fromEnv = process.env.COMPANY_ALLOWLIST_JSON;
   if (fromEnv) {
     try {
@@ -963,4 +964,9 @@ export function getCompanyAllowlist(): CompanyAllowlistEntry[] {
     }
   }
   return DEFAULT_COMPANY_ALLOWLIST.filter((c) => c.enabled !== false);
+}
+
+/** @deprecated Prefer getEffectiveAllowlist() when discovery boards matter. */
+export function getCompanyAllowlist(): CompanyAllowlistEntry[] {
+  return getSeedAllowlist();
 }

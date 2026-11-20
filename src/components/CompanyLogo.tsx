@@ -8,17 +8,19 @@ import {
 
 type Props = {
   companyName: string;
+  careersUrl?: string | null;
   className?: string;
   size?: "sm" | "md";
 };
 
 export function CompanyLogo({
   companyName,
+  careersUrl,
   className = "",
   size = "md",
 }: Props) {
   const [failed, setFailed] = useState(false);
-  const src = companyLogoUrl(companyName);
+  const src = companyLogoUrl(companyName, careersUrl);
   const dim = size === "sm" ? "h-8 w-8" : "h-10 w-10";
   const text = size === "sm" ? "text-[10px]" : "text-xs";
 

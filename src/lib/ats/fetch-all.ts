@@ -1,4 +1,4 @@
-import { getCompanyAllowlist } from "./allowlist";
+import { discoverNewBoards, getEffectiveAllowlist } from "./discover";
 import { fetchAshbyJobs } from "./ashby";
 import { fetchGreenhouseJobs } from "./greenhouse";
 import { fetchLeverJobs } from "./lever";
@@ -37,15 +37,37 @@ export interface RefreshResult {
   summary: RefreshSummary;
 }
 
+export interface RefreshOptions {
+  /** Probe unseen ATS candidates and auto-promote design-hiring boards. */
+  discover?: boolean;
+  /** Override discover batch size (defaults via DISCOVER_BATCH_SIZE / 30). */
+  discoverBatchSize?: number;
+}
+
 /**
- * Fetch all allowlisted boards sequentially (rate-limit friendly),
- * normalize, filter design titles, dedupe, and merge lifecycle timestamps.
+ * Optionally discover new boards, then fetch all allowlisted boards
+ * sequentially (rate-limit friendly), normalize, filter design titles,
+ * dedupe, and merge lifecycle timestamps.
  */
 export async function refreshAllJobs(
   previous: NormalizedJob[] = [],
+  options: RefreshOptions = {},
 ): Promise<RefreshResult> {
   const startedAt = new Date().toISOString();
-  const allowlist = getCompanyAllowlist();
+
+  let discoverySummary: RefreshSummary["discovery"];
+  let allowlist: CompanyAllowlistEntry[];
+
+  if (options.discover !== false) {
+    const discovered = await discoverNewBoards({
+      batchSize: options.discoverBatchSize,
+    });
+    discoverySummary = discovered.summary;
+    allowlist = discovered.allowlist;
+  } else {
+    allowlist = await getEffectiveAllowlist();
+  }
+
   const previousById = new Map(previous.map((j) => [j.id, j]));
 
   const failures: RefreshSummary["failures"] = [];
@@ -102,7 +124,12 @@ export async function refreshAllJobs(
   let markedPotentiallyClosed = 0;
   const successfullyFetchedCompanies = new Set(
     allowlist
-      .filter((c) => !failures.some((f) => f.company === c.name && f.provider === c.provider))
+      .filter(
+        (c) =>
+          !failures.some(
+            (f) => f.company === c.name && f.provider === c.provider,
+          ),
+      )
       .map((c) => `${c.provider}:${c.boardToken}`),
   );
 
@@ -140,6 +167,7 @@ export async function refreshAllJobs(
       upserted: jobs.length,
       markedPotentiallyClosed,
       failures,
+      discovery: discoverySummary,
     },
   };
 }

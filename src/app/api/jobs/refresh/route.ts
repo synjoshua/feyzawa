@@ -35,7 +35,11 @@ export async function POST(request: Request) {
 
   try {
     const existing = await loadJobs();
-    const { jobs, summary } = await refreshAllJobs(existing.jobs);
+    // Manual refresh also discovers a smaller batch so new boards keep landing.
+    const { jobs, summary } = await refreshAllJobs(existing.jobs, {
+      discover: true,
+      discoverBatchSize: Number(process.env.DISCOVER_BATCH_SIZE_MANUAL ?? "12"),
+    });
     const persist = await persistJobs(jobs, summary);
     const purge = await purgeSoftMarksAfterRefresh(jobs);
     const activeCount = jobs.filter((j) => j.status === "active").length;

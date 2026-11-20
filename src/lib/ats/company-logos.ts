@@ -1,4 +1,4 @@
-import { getCompanyAllowlist } from "./allowlist";
+import { getSeedAllowlist } from "./allowlist";
 
 /** Prefer real product domains over careers subdomains for logo lookups. */
 const DOMAIN_OVERRIDES: Record<string, string> = {
@@ -34,6 +34,15 @@ const DOMAIN_OVERRIDES: Record<string, string> = {
   Watershed: "watershed.com",
   Benchling: "benchling.com",
   Clerk: "clerk.com",
+  Anthropic: "anthropic.com",
+  Vercel: "vercel.com",
+  Webflow: "webflow.com",
+  Plaid: "plaid.com",
+  Snowflake: "snowflake.com",
+  Midjourney: "midjourney.com",
+  Supabase: "supabase.com",
+  "Riot Games": "riotgames.com",
+  "Epic Games": "epicgames.com",
 };
 
 function hostnameFromUrl(url: string | undefined): string | null {
@@ -50,7 +59,7 @@ function buildDomainMap(): Map<string, string> {
   for (const [name, domain] of Object.entries(DOMAIN_OVERRIDES)) {
     map.set(name.toLowerCase(), domain);
   }
-  for (const company of getCompanyAllowlist()) {
+  for (const company of getSeedAllowlist()) {
     const key = company.name.toLowerCase();
     if (map.has(key)) continue;
     const host = hostnameFromUrl(company.careersUrl);
@@ -61,13 +70,21 @@ function buildDomainMap(): Map<string, string> {
 
 const DOMAIN_BY_COMPANY = buildDomainMap();
 
-export function companyDomain(companyName: string): string | null {
+export function companyDomain(
+  companyName: string,
+  careersUrl?: string | null,
+): string | null {
+  const fromUrl = hostnameFromUrl(careersUrl ?? undefined);
+  if (fromUrl) return fromUrl;
   return DOMAIN_BY_COMPANY.get(companyName.trim().toLowerCase()) ?? null;
 }
 
 /** High-res favicon via Google — no API key, good enough for list scanning. */
-export function companyLogoUrl(companyName: string): string | null {
-  const domain = companyDomain(companyName);
+export function companyLogoUrl(
+  companyName: string,
+  careersUrl?: string | null,
+): string | null {
+  const domain = companyDomain(companyName, careersUrl);
   if (!domain) return null;
   return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`;
 }

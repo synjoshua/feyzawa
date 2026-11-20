@@ -8,8 +8,12 @@ async function main() {
     `Previous: ${existing.jobs.length} jobs (source=${existing.source})`,
   );
 
-  console.log("Fetching allowlisted Greenhouse / Lever / Ashby boards…");
-  const { jobs, summary } = await refreshAllJobs(existing.jobs);
+  console.log(
+    "Discovering new boards + fetching Greenhouse / Lever / Ashby allowlist…",
+  );
+  const { jobs, summary } = await refreshAllJobs(existing.jobs, {
+    discover: true,
+  });
   const persist = await persistJobs(jobs, summary);
 
   console.log("\nRefresh summary");

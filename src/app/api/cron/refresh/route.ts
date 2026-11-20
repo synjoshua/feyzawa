@@ -26,7 +26,10 @@ async function handleRefresh(request: Request) {
 
   try {
     const existing = await loadJobs();
-    const { jobs, summary } = await refreshAllJobs(existing.jobs);
+    // Daily cron: probe a batch of new ATS candidates, then refresh boards.
+    const { jobs, summary } = await refreshAllJobs(existing.jobs, {
+      discover: true,
+    });
     const persist = await persistJobs(jobs, summary);
     const purge = await purgeSoftMarksAfterRefresh(jobs);
 
