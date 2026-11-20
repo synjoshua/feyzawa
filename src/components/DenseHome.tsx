@@ -237,19 +237,35 @@ export function DenseHome({
               className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-ink outline-none placeholder:text-ink-soft/50"
               aria-label="Search roles"
             />
-            <select
-              value={company}
-              onChange={(e) => setCompany(e.target.value)}
-              className="hidden max-w-[11rem] truncate rounded-full bg-[#f2e8de] px-3 py-1.5 text-xs text-ink sm:block"
-              aria-label="Filter by company"
-            >
-              <option value="">All companies</option>
-              {companies.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+            <div className="relative hidden shrink-0 sm:block">
+              <select
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+                className="max-w-[12rem] appearance-none truncate rounded-full bg-[#f2e8de] py-1.5 pl-3 pr-8 text-xs text-ink outline-none"
+                aria-label="Filter by company"
+              >
+                <option value="">All companies</option>
+                {companies.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+              <svg
+                viewBox="0 0 12 12"
+                className="pointer-events-none absolute right-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-ink-soft"
+                aria-hidden
+              >
+                <path
+                  d="M2.5 4.25 6 7.75l3.5-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
             <button
               type="submit"
               className="focus-ring shrink-0 rounded-full bg-ink px-4 py-2 text-sm font-medium text-porcelain"
