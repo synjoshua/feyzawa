@@ -28,6 +28,7 @@ import {
 } from "./Badges";
 import { BookmarkButton } from "./BookmarkButton";
 import { CompanyLogo } from "./CompanyLogo";
+import { HEADER_BRAND, HeaderFrame } from "./HeaderFrame";
 import {
   IconOutreach,
   IconSaved,
@@ -216,68 +217,47 @@ export function DenseHome({
     }),
   );
 
-  return (
-    <div className="pb-16">
-      {/* Flat lacquer brown header — solid fill, no gradient */}
-      <section className="relative z-20 overflow-visible bg-[#2c2827] text-porcelain">
-        <div className="relative z-20 mx-auto max-w-6xl px-4 pb-5 pt-6 sm:px-6 sm:pb-6">
-          <div className="relative z-20 flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1 pr-2">
-              <h1 className="brand-mark overflow-visible pl-0.5 text-[2.35rem] leading-none tracking-[-0.02em] text-porcelain sm:pl-0 sm:text-[3.5rem] sm:tracking-[-0.045em]">
-                Feyzawa
-              </h1>
-            </div>
-            <div className="relative z-30 flex shrink-0 items-center pt-0.5">
-              <MobileNav
-                links={[
-                  { href: "/watchlist", label: "Watch" },
-                  { href: "/saved", label: "Saved" },
-                  { href: "/tracker", label: "Tracker" },
-                  { href: "/outreach", label: "Outreach" },
-                  {
-                    href: signedIn ? "/profile" : "/login",
-                    label: signedIn ? "Profile" : "Sign in",
-                  },
-                ]}
-              />
-              <nav className="hidden items-center gap-0.5 text-xs sm:flex sm:gap-1 sm:text-sm">
-                <Link
-                  href="/watchlist"
-                  className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
-                >
-                  Watch
-                </Link>
-                <Link
-                  href="/saved"
-                  className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
-                >
-                  Saved
-                </Link>
-                <Link
-                  href="/tracker"
-                  className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
-                >
-                  Tracker
-                </Link>
-                <Link
-                  href="/outreach"
-                  className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
-                >
-                  Outreach
-                </Link>
-                <Link
-                  href={signedIn ? "/profile" : "/login"}
-                  className="focus-ring rounded-full bg-[#e5bf55]/90 px-2.5 py-1.5 font-medium text-ink hover:bg-[#e5bf55]"
-                >
-                  {signedIn ? "Profile" : "Sign in"}
-                </Link>
-              </nav>
-            </div>
-          </div>
+  const navLinks = [
+    { href: "/watchlist", label: "Watch" },
+    { href: "/saved", label: "Saved" },
+    { href: "/tracker", label: "Tracker" },
+    { href: "/outreach", label: "Outreach" },
+    {
+      href: signedIn ? "/profile" : "/login",
+      label: signedIn ? "Profile" : "Sign in",
+    },
+  ];
 
+  return (
+    <div className="min-h-screen bg-[#f2e8de] pb-16">
+      <HeaderFrame
+        brand={<h1 className={HEADER_BRAND}>Feyzawa</h1>}
+        nav={
+          <>
+            <MobileNav links={navLinks} />
+            <nav className="hidden items-center gap-0.5 text-xs sm:flex sm:gap-1 sm:text-sm">
+              {navLinks.slice(0, 4).map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <Link
+                href={navLinks[4].href}
+                className="focus-ring rounded-full bg-[#e5bf55]/90 px-2.5 py-1.5 font-medium text-ink hover:bg-[#e5bf55]"
+              >
+                {navLinks[4].label}
+              </Link>
+            </nav>
+          </>
+        }
+        below={
           <form
             onSubmit={runSearch}
-            className="mt-6 flex items-center gap-2 rounded-full bg-porcelain p-1 pl-4 shadow-soft"
+            className="flex items-center gap-2 rounded-full bg-porcelain p-1 pl-4 shadow-soft"
           >
             <input
               value={q}
@@ -322,10 +302,10 @@ export function DenseHome({
               Search
             </button>
           </form>
-        </div>
-      </section>
+        }
+      />
 
-      <div className="relative z-10 mx-auto mt-5 max-w-6xl px-3 sm:mt-6 sm:px-6">
+      <div className="relative z-10 mx-auto mt-5 max-w-6xl px-4 sm:mt-6 sm:px-6">
         <section className="animate-pour overflow-hidden rounded-[1.35rem] border border-[var(--line)] bg-porcelain shadow-panel">
           {/* Group 1: filter chips — one job, same control type */}
           <div className="flex gap-1 overflow-x-auto border-b border-[var(--line)] px-3 pb-0 pt-5 scrollbar-thin sm:pt-6">

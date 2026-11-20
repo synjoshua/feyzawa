@@ -1,52 +1,72 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { MobileNav } from "@/components/MobileNav";
+import { HEADER_BRAND, HeaderFrame } from "@/components/HeaderFrame";
 import { getCurrentUser } from "@/lib/supabase/server";
 
-export async function SiteHeader({ active }: { active?: string }) {
-  const user = await getCurrentUser();
+const NAV = [
+  { href: "/watchlist", label: "Watch" },
+  { href: "/saved", label: "Saved" },
+  { href: "/tracker", label: "Tracker" },
+  { href: "/outreach", label: "Outreach" },
+] as const;
 
-  const links = [
-    { href: "/", label: "Board" },
-    { href: "/tracker", label: "Tracker" },
-    { href: "/saved", label: "Saved" },
-    { href: "/outreach", label: "Outreach" },
-    { href: "/watchlist", label: "Watchlist" },
-    user
-      ? { href: "/profile", label: "Profile" }
-      : { href: "/login", label: "Sign in" },
-  ];
+export async function SiteHeader({
+  active,
+  titleBlock,
+}: {
+  active?: string;
+  /** Page title / eyebrow area rendered under the brand row */
+  titleBlock?: ReactNode;
+}) {
+  const user = await getCurrentUser();
+  const profile = user
+    ? { href: "/profile", label: "Profile" }
+    : { href: "/login", label: "Sign in" };
+
+  const links = [...NAV, profile];
 
   return (
-    <header className="relative z-30 bg-[#2c2827] text-porcelain">
-      <div className="relative z-30 mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3.5 sm:gap-4 sm:px-6">
-        <Link
-          href="/"
-          className="group focus-ring flex min-w-0 items-baseline gap-3 rounded-sm"
-        >
-          <span className="brand-mark shrink-0 text-[1.85rem] text-porcelain transition group-hover:text-[#e5bf55] sm:text-[2.1rem]">
-            Feyzawa
-          </span>
+    <HeaderFrame
+      brand={
+        <Link href="/" className="focus-ring inline-block rounded-sm">
+          <span className={HEADER_BRAND}>Feyzawa</span>
         </Link>
-        <MobileNav links={links} active={active} />
-        <nav className="hidden items-center gap-0.5 sm:flex sm:gap-1">
-          {links.map((link) => {
-            const isActive = active === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`focus-ring rounded-full px-3 py-1.5 text-sm transition ${
-                  isActive
-                    ? "bg-[#e5bf55] font-medium text-ink"
-                    : "text-porcelain/75 hover:bg-white/10 hover:text-porcelain"
-                }`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-    </header>
+      }
+      nav={
+        <>
+          <MobileNav links={links} active={active} />
+          <nav className="hidden items-center gap-0.5 text-xs sm:flex sm:gap-1 sm:text-sm">
+            {NAV.map((link) => {
+              const isActive = active === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`focus-ring rounded-full px-2.5 py-1.5 transition ${
+                    isActive
+                      ? "bg-[#e5bf55] font-medium text-ink"
+                      : "text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+            <Link
+              href={profile.href}
+              className={`focus-ring rounded-full px-2.5 py-1.5 font-medium transition ${
+                active === profile.href
+                  ? "bg-[#e5bf55] text-ink"
+                  : "bg-[#e5bf55]/90 text-ink hover:bg-[#e5bf55]"
+              }`}
+            >
+              {profile.label}
+            </Link>
+          </nav>
+        </>
+      }
+      below={titleBlock}
+    />
   );
 }

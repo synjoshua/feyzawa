@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 
 /**
- * Shared layout for inner pages — flat brown title band + cream body,
- * matching the home page lacquer / rice-paper system.
+ * Shared layout for inner pages — same lacquer header band as home
+ * (max-w-6xl, matching brand + nav + fixed brown height).
  */
 export function PageShell({
   active,
@@ -12,7 +12,7 @@ export function PageShell({
   description,
   actions,
   children,
-  maxWidthClass = "max-w-3xl",
+  maxWidthClass = "max-w-6xl",
 }: {
   active?: string;
   eyebrow?: string;
@@ -24,34 +24,34 @@ export function PageShell({
 }) {
   return (
     <div className="min-h-screen bg-[#f2e8de]">
-      <SiteHeader active={active} />
-      <div className="bg-[#2c2827] text-porcelain">
-        <div
-          className={`mx-auto ${maxWidthClass} px-4 py-7 sm:px-6 sm:py-8`}
-        >
-          {eyebrow ? (
-            <p className="text-[10px] uppercase tracking-[0.28em] text-[#e5bf55]">
-              {eyebrow}
-            </p>
-          ) : null}
-          <div className="mt-1 flex flex-wrap items-start justify-between gap-4">
+      <SiteHeader
+        active={active}
+        titleBlock={
+          <div className="flex h-[4.25rem] items-end justify-between gap-4 sm:h-[4.75rem]">
             <div className="min-w-0">
-              <h1 className="brand-mark text-4xl leading-none text-porcelain sm:text-5xl">
+              {eyebrow ? (
+                <p className="text-[10px] uppercase tracking-[0.28em] text-[#e5bf55]">
+                  {eyebrow}
+                </p>
+              ) : (
+                <p className="text-[10px] uppercase tracking-[0.28em] text-transparent">
+                  &nbsp;
+                </p>
+              )}
+              <h1 className="brand-mark mt-1 truncate text-[2rem] leading-none tracking-[-0.02em] text-porcelain sm:text-[2.75rem] sm:tracking-[-0.04em]">
                 {title}
               </h1>
-              {description ? (
-                <p className="mt-2 max-w-2xl text-sm text-porcelain/65">
-                  {description}
-                </p>
-              ) : null}
             </div>
-            {actions ? <div className="shrink-0">{actions}</div> : null}
+            {actions ? <div className="shrink-0 pb-0.5">{actions}</div> : null}
           </div>
-        </div>
-      </div>
+        }
+      />
       <main
         className={`mx-auto ${maxWidthClass} px-4 py-8 sm:px-6 sm:py-10`}
       >
+        {description ? (
+          <p className="mb-6 max-w-2xl text-sm text-ink-soft">{description}</p>
+        ) : null}
         {children}
       </main>
     </div>

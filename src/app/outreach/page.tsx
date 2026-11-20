@@ -47,7 +47,6 @@ export default async function OutreachPage({
       eyebrow="Network"
       title="Outreach"
       description="Prioritize recruiters at companies with open design roles. Paste LinkedIn URLs, draft a note, copy, and send yourself — never auto-DM."
-      maxWidthClass="max-w-5xl"
     >
       <Suspense fallback={<p className="text-sm text-ink-soft">Loading…</p>}>
         <Panel
