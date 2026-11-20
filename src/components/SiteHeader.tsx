@@ -8,6 +8,7 @@ export async function SiteHeader({ active }: { active?: string }) {
   const links = [
     { href: "/", label: "Board" },
     { href: "/tracker", label: "Tracker" },
+    { href: "/saved", label: "Saved" },
     { href: "/outreach", label: "Outreach" },
     { href: "/watchlist", label: "Watchlist" },
     user

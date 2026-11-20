@@ -10,6 +10,7 @@ import {
   StatusBadge,
   WorkStyleBadge,
 } from "./Badges";
+import { BookmarkButton } from "./BookmarkButton";
 import { CompanyLogo } from "./CompanyLogo";
 
 type Props = {
@@ -252,6 +253,7 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
+                    <BookmarkButton job={job} />
                     <Link
                       href={`/jobs/${job.id}`}
                       className="focus-ring rounded-full border border-[var(--line)] bg-foam/60 px-3.5 py-2 text-xs font-medium text-ink-soft hover:border-gold/40 hover:text-gold"

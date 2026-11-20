@@ -11,8 +11,14 @@ import {
   StatusBadge,
   WorkStyleBadge,
 } from "./Badges";
+import { BookmarkButton } from "./BookmarkButton";
 import { CompanyLogo } from "./CompanyLogo";
-import { IconOutreach, IconTracker, IconWatch } from "./HomeIcons";
+import {
+  IconOutreach,
+  IconSaved,
+  IconTracker,
+  IconWatch,
+} from "./HomeIcons";
 import { MobileNav } from "./MobileNav";
 
 type Props = {
@@ -169,6 +175,7 @@ export function DenseHome({
               <MobileNav
                 links={[
                   { href: "/watchlist", label: "Watch" },
+                  { href: "/saved", label: "Saved" },
                   { href: "/tracker", label: "Tracker" },
                   { href: "/outreach", label: "Outreach" },
                   {
@@ -183,6 +190,12 @@ export function DenseHome({
                   className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
                 >
                   Watch
+                </Link>
+                <Link
+                  href="/saved"
+                  className="focus-ring rounded-full px-2.5 py-1.5 text-porcelain/80 hover:bg-white/10 hover:text-porcelain"
+                >
+                  Saved
                 </Link>
                 <Link
                   href="/tracker"
@@ -308,7 +321,7 @@ export function DenseHome({
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-soft">
                 Your tools
               </p>
-              <div className="mt-2 grid grid-cols-3 gap-2">
+              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <Link
                   href="/watchlist"
                   className="focus-ring flex flex-col items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[#f2e8de]/40 px-2 py-3 text-center transition hover:border-gold hover:bg-[#e5bf55]/20"
@@ -318,6 +331,14 @@ export function DenseHome({
                   <span className="text-[10px] text-ink-soft">
                     {watchedCompanies.length} companies
                   </span>
+                </Link>
+                <Link
+                  href="/saved"
+                  className="focus-ring flex flex-col items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[#f2e8de]/40 px-2 py-3 text-center transition hover:border-gold hover:bg-[#e5bf55]/20"
+                >
+                  <IconSaved className="h-6 w-6 text-[#6f675f]" />
+                  <span className="text-xs font-medium text-ink">Saved</span>
+                  <span className="text-[10px] text-ink-soft">Bookmarks</span>
                 </Link>
                 <Link
                   href="/outreach"
@@ -429,7 +450,8 @@ export function DenseHome({
                         </div>
                       </div>
                     </div>
-                    <div className="flex shrink-0 flex-wrap gap-2">
+                    <div className="flex shrink-0 flex-wrap items-center gap-2">
+                      <BookmarkButton job={job} />
                       <Link
                         href={`/jobs/${job.id}`}
                         className="focus-ring rounded-full border border-[var(--line)] px-3 py-1.5 text-xs text-ink-soft"
@@ -579,14 +601,17 @@ export function DenseHome({
                       </p>
                     </div>
                   </div>
-                  <a
-                    href={job.applyUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="focus-ring shrink-0 rounded-full bg-ink px-3 py-1.5 text-xs font-medium text-porcelain"
-                  >
-                    Apply
-                  </a>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <BookmarkButton job={job} />
+                    <a
+                      href={job.applyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="focus-ring rounded-full bg-ink px-3 py-1.5 text-xs font-medium text-porcelain"
+                    >
+                      Apply
+                    </a>
+                  </div>
                 </div>
               </li>
             ))}
