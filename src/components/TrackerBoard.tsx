@@ -21,12 +21,87 @@ const STATUSES: ApplicationStatus[] = [
   "rejected",
 ];
 
+const STATUS_META: Record<
+  ApplicationStatus,
+  { label: string; className: string }
+> = {
+  saved: {
+    label: "Saved",
+    className: "border-[#d4c4b0] bg-[#f2e8de] text-ink-soft",
+  },
+  applied: {
+    label: "Applied",
+    className: "border-[#2c2827]/20 bg-[#2c2827] text-porcelain",
+  },
+  interviewing: {
+    label: "Interviewing",
+    className: "border-gold/50 bg-[#e5bf55]/35 text-[#5c4810]",
+  },
+  offer: {
+    label: "Accepted",
+    className: "border-[#6b8f71]/40 bg-[#d8e8d4] text-[#2f4a34]",
+  },
+  rejected: {
+    label: "Rejected",
+    className: "border-clay/30 bg-clay/15 text-clay",
+  },
+};
+
 /** Quick statuses for paste-link import (Accepted → offer). */
 const PASTE_STATUSES: { value: ApplicationStatus; label: string }[] = [
   { value: "applied", label: "Applied" },
   { value: "offer", label: "Accepted" },
   { value: "rejected", label: "Rejected" },
 ];
+
+function cleanNotes(notes: string | null | undefined): string {
+  if (!notes) return "";
+  return notes
+    .split("\n")
+    .filter((line) => !line.trim().startsWith("board_job_id:"))
+    .join("\n")
+    .trim();
+}
+
+function StatusPill({
+  value,
+  onChange,
+}: {
+  value: ApplicationStatus;
+  onChange: (next: ApplicationStatus) => void;
+}) {
+  const meta = STATUS_META[value];
+  return (
+    <label className="relative inline-flex">
+      <span className="sr-only">Status</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value as ApplicationStatus)}
+        className={`focus-ring appearance-none rounded-full border py-1 pl-2.5 pr-7 text-[11px] font-semibold tracking-wide ${meta.className}`}
+      >
+        {STATUSES.map((s) => (
+          <option key={s} value={s}>
+            {STATUS_META[s].label}
+          </option>
+        ))}
+      </select>
+      <svg
+        viewBox="0 0 12 12"
+        className="pointer-events-none absolute right-2 top-1/2 h-2.5 w-2.5 -translate-y-1/2 opacity-70"
+        aria-hidden
+      >
+        <path
+          d="M2.5 4.25 6 7.75l3.5-3.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </label>
+  );
+}
 
 export function TrackerBoard({
   initial,
@@ -41,6 +116,7 @@ export function TrackerBoard({
   );
   const [error, setError] = useState("");
   const [showManual, setShowManual] = useState(false);
+  const [filter, setFilter] = useState<ApplicationStatus | "all">("all");
   const [pasteUrl, setPasteUrl] = useState("");
   const [pasteTitle, setPasteTitle] = useState("");
   const [pasteCompany, setPasteCompany] = useState("");
@@ -54,8 +130,6 @@ export function TrackerBoard({
     (async () => {
       const result = await fetchApplications();
       if (cancelled) return;
-      // Always take the merged client list (Supabase + local) so mark-applied
-      // from the board shows up even when the server insert failed / lagged.
       setRows(result.applications);
       setMode(result.mode);
     })();
@@ -64,19 +138,25 @@ export function TrackerBoard({
     };
   }, [initial]);
 
-  const grouped = useMemo(() => {
-    const map: Record<ApplicationStatus, ApplicationRecord[]> = {
-      saved: [],
-      applied: [],
-      interviewing: [],
-      offer: [],
-      rejected: [],
+  const counts = useMemo(() => {
+    const map: Record<ApplicationStatus, number> = {
+      saved: 0,
+      applied: 0,
+      interviewing: 0,
+      offer: 0,
+      rejected: 0,
     };
-    for (const row of rows) {
-      map[row.status]?.push(row);
-    }
+    for (const row of rows) map[row.status] = (map[row.status] ?? 0) + 1;
     return map;
   }, [rows]);
+
+  const visible = useMemo(() => {
+    const list =
+      filter === "all" ? rows : rows.filter((r) => r.status === filter);
+    return [...list].sort(
+      (a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at),
+    );
+  }, [rows, filter]);
 
   async function updateStatus(id: string, status: ApplicationStatus) {
     setError("");
@@ -148,7 +228,6 @@ export function TrackerBoard({
     }
     setPasteCompany(parsed.company);
     setPasteTitle(parsed.title);
-    // Try to match a role already on the board for a better title
     void (async () => {
       try {
         const res = await fetch("/api/jobs?status=all");
@@ -193,7 +272,6 @@ export function TrackerBoard({
         setError("Add a title and company");
         return;
       }
-      // Resolve job id if on board
       let jobId: string | null = null;
       let location: string | null = null;
       try {
@@ -242,7 +320,7 @@ export function TrackerBoard({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <form
         onSubmit={onPasteSubmit}
         className="tea-surface space-y-3 rounded-tea p-4"
@@ -294,10 +372,10 @@ export function TrackerBoard({
                 key={s.value}
                 type="button"
                 onClick={() => setPasteStatus(s.value)}
-                className={`focus-ring rounded-full px-3.5 py-2 text-sm transition ${
+                className={`focus-ring rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
                   pasteStatus === s.value
-                    ? "bg-[#2c2827] font-medium text-porcelain"
-                    : "border border-[var(--line)] bg-porcelain text-ink hover:border-gold"
+                    ? STATUS_META[s.value].className
+                    : "border-[var(--line)] bg-porcelain text-ink-soft hover:border-gold"
                 }`}
               >
                 {s.label}
@@ -330,6 +408,8 @@ export function TrackerBoard({
             : mode === "local"
               ? " — works without Supabase; set up keys to sync"
               : ""}
+          {" · "}
+          {rows.length} roles
         </p>
         <button
           type="button"
@@ -393,7 +473,7 @@ export function TrackerBoard({
             >
               {STATUSES.map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {STATUS_META[s].label}
                 </option>
               ))}
             </select>
@@ -417,101 +497,141 @@ export function TrackerBoard({
       ) : null}
 
       {error ? (
-        <p className="rounded-lg bg-clay/10 px-3 py-2 text-sm text-clay">{error}</p>
+        <p className="rounded-lg bg-clay/10 px-3 py-2 text-sm text-clay">
+          {error}
+        </p>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-5">
-        {STATUSES.map((status) => (
-          <section key={status} className="tea-surface rounded-tea p-3">
-            <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-ink-soft">
-              {status} · {grouped[status].length}
-            </h2>
-            <ul className="space-y-3">
-              {grouped[status].map((row) => (
-                <li
-                  key={row.id}
-                  className="rounded-xl border border-[var(--line)] bg-porcelain p-3"
-                >
-                  <p className="text-sm font-semibold text-ink">
-                    {row.title_snapshot}
-                  </p>
-                  <p className="text-xs text-ink-soft">
-                    {row.company_snapshot}
-                    {row.location_snapshot ? ` · ${row.location_snapshot}` : ""}
-                  </p>
-                  <p className="mt-1 text-[11px] text-ink-soft/70">
-                    Updated {relativeTime(row.updated_at)}
-                  </p>
-                  <label className="mt-2 block">
-                    <span className="sr-only">Status</span>
-                    <select
-                      value={row.status}
-                      onChange={(e) =>
-                        updateStatus(
-                          row.id,
-                          e.target.value as ApplicationStatus,
-                        )
-                      }
-                      className="focus-ring w-full rounded-md border border-[var(--line)] bg-white px-2 py-1 text-xs"
-                    >
-                      {STATUSES.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="mt-2 block">
-                    <span className="text-[10px] uppercase tracking-wide text-ink-soft/70">
-                      Private notes
-                    </span>
-                    <textarea
-                      defaultValue={row.notes ?? ""}
-                      onBlur={(e) => {
-                        if (e.target.value !== (row.notes ?? "")) {
-                          updateNotes(row.id, e.target.value);
-                        }
-                      }}
-                      rows={3}
-                      className="focus-ring mt-1 w-full rounded-md border border-[var(--line)] bg-white px-2 py-1 text-xs"
-                      placeholder="Interview notes stay private…"
-                    />
-                  </label>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    {row.apply_url ? (
-                      <a
-                        href={row.apply_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-gold underline"
-                      >
-                        Apply link
-                      </a>
-                    ) : null}
-                    <a
-                      href={`/outreach?company=${encodeURIComponent(row.company_snapshot)}&role=${encodeURIComponent(row.title_snapshot)}`}
-                      className="text-xs text-gold underline"
-                    >
-                      Recruiters
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => remove(row.id)}
-                      className="ml-auto text-xs text-clay hover:underline"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </li>
-              ))}
-              {grouped[status].length === 0 ? (
-                <li className="px-1 py-6 text-center text-xs text-ink-soft/70">
-                  Empty
-                </li>
-              ) : null}
-            </ul>
-          </section>
+      <div className="flex flex-wrap gap-1.5">
+        <button
+          type="button"
+          onClick={() => setFilter("all")}
+          className={`focus-ring rounded-full px-3 py-1 text-xs font-medium transition ${
+            filter === "all"
+              ? "bg-jade text-porcelain"
+              : "border border-[var(--line)] bg-porcelain text-ink-soft hover:border-gold"
+          }`}
+        >
+          All · {rows.length}
+        </button>
+        {STATUSES.map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => setFilter(s)}
+            className={`focus-ring rounded-full border px-3 py-1 text-xs font-semibold transition ${
+              filter === s
+                ? STATUS_META[s].className
+                : "border-[var(--line)] bg-porcelain text-ink-soft hover:border-gold"
+            }`}
+          >
+            {STATUS_META[s].label} · {counts[s]}
+          </button>
         ))}
+      </div>
+
+      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-porcelain shadow-soft">
+        <table className="w-full min-w-[52rem] border-collapse text-left text-sm">
+          <thead>
+            <tr className="border-b border-[var(--line)] bg-[#f2e8de]/70 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">
+              <th className="px-3 py-2.5 font-semibold">Role</th>
+              <th className="px-3 py-2.5 font-semibold">Company</th>
+              <th className="px-3 py-2.5 font-semibold">Status</th>
+              <th className="px-3 py-2.5 font-semibold">Notes</th>
+              <th className="px-3 py-2.5 font-semibold">Updated</th>
+              <th className="px-3 py-2.5 font-semibold"> </th>
+            </tr>
+          </thead>
+          <tbody>
+            {visible.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="px-3 py-10 text-center text-sm text-ink-soft"
+                >
+                  No roles here yet — paste a link or mark applied from the
+                  board.
+                </td>
+              </tr>
+            ) : (
+              visible.map((row) => (
+                <tr
+                  key={row.id}
+                  className="border-b border-[var(--line)] last:border-b-0 hover:bg-[#f2e8de]/35"
+                >
+                  <td className="max-w-[14rem] px-3 py-2 align-middle">
+                    <p className="truncate font-medium text-ink">
+                      {row.title_snapshot}
+                    </p>
+                    {row.location_snapshot ? (
+                      <p className="truncate text-[11px] text-ink-soft">
+                        {row.location_snapshot}
+                      </p>
+                    ) : null}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2 align-middle text-ink-soft">
+                    {row.company_snapshot}
+                  </td>
+                  <td className="px-3 py-2 align-middle">
+                    <StatusPill
+                      value={row.status}
+                      onChange={(status) => updateStatus(row.id, status)}
+                    />
+                  </td>
+                  <td className="min-w-[12rem] px-3 py-2 align-middle">
+                    <input
+                      defaultValue={cleanNotes(row.notes)}
+                      key={`${row.id}-${row.updated_at}`}
+                      onBlur={(e) => {
+                        const next = e.target.value.trim();
+                        const prev = cleanNotes(row.notes);
+                        if (next === prev) return;
+                        // Preserve internal board_job_id line if present
+                        const boardLine = (row.notes ?? "")
+                          .split("\n")
+                          .find((l) => l.trim().startsWith("board_job_id:"));
+                        const merged = [next, boardLine].filter(Boolean).join("\n");
+                        updateNotes(row.id, merged);
+                      }}
+                      placeholder="Add note…"
+                      className="focus-ring w-full rounded-md border border-transparent bg-transparent px-1.5 py-1 text-xs text-ink placeholder:text-ink-soft/50 hover:border-[var(--line)] focus:border-[var(--line)] focus:bg-white"
+                    />
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2 align-middle text-[11px] text-ink-soft">
+                    {relativeTime(row.updated_at)}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2 align-middle">
+                    <div className="flex items-center justify-end gap-2">
+                      {row.apply_url ? (
+                        <a
+                          href={row.apply_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-gold hover:underline"
+                        >
+                          Link
+                        </a>
+                      ) : null}
+                      <a
+                        href={`/outreach?company=${encodeURIComponent(row.company_snapshot)}&role=${encodeURIComponent(row.title_snapshot)}`}
+                        className="text-xs text-gold hover:underline"
+                      >
+                        Recruiters
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => remove(row.id)}
+                        className="text-xs text-clay hover:underline"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
