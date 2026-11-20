@@ -11,14 +11,7 @@ import {
   StatusBadge,
   WorkStyleBadge,
 } from "./Badges";
-import {
-  IconCalifornia,
-  IconIntern,
-  IconOutreach,
-  IconRemote,
-  IconTracker,
-  IconWatch,
-} from "./HomeIcons";
+import { IconOutreach, IconTracker, IconWatch } from "./HomeIcons";
 
 type Props = {
   initialJobs: NormalizedJob[];
@@ -153,47 +146,6 @@ export function DenseHome({
     document.getElementById("open-roles")?.scrollIntoView({ behavior: "smooth" });
   }
 
-  const shortcuts = [
-    {
-      label: "Internships",
-      count: internCount,
-      icon: "intern" as const,
-      onClick: () => applyQuick("intern"),
-    },
-    {
-      label: "California",
-      count: caCount,
-      icon: "california" as const,
-      onClick: () => applyQuick("california"),
-    },
-    {
-      label: "Remote",
-      count: remoteCount,
-      icon: "remote" as const,
-      onClick: () => applyQuick("remote"),
-    },
-    {
-      label: "Tracker",
-      count: null as number | null,
-      icon: "tracker" as const,
-      href: "/tracker",
-    },
-  ];
-
-  function ShortcutIcon({ name }: { name: (typeof shortcuts)[number]["icon"] }) {
-    const cls = "h-7 w-7";
-    switch (name) {
-      case "intern":
-        return <IconIntern className={cls} />;
-      case "california":
-        return <IconCalifornia className={cls} />;
-      case "remote":
-        return <IconRemote className={cls} />;
-      case "tracker":
-        return <IconTracker className={cls} />;
-    }
-  }
-
   const closedCount = initialJobs.filter(
     (j) => j.status === "potentially_closed",
   ).length;
@@ -276,7 +228,7 @@ export function DenseHome({
 
           <form
             onSubmit={runSearch}
-            className="mt-6 flex items-center gap-2 rounded-full bg-porcelain p-1 pl-4 shadow-soft"
+            className="mt-6 mb-6 flex items-center gap-2 rounded-full bg-porcelain p-1 pl-4 shadow-soft"
           >
             <input
               value={q}
@@ -288,10 +240,10 @@ export function DenseHome({
             <select
               value={company}
               onChange={(e) => setCompany(e.target.value)}
-              className="hidden max-w-[9rem] truncate rounded-full bg-[#f2e8de] px-2 py-1.5 text-xs text-ink sm:block"
-              aria-label="Company"
+              className="hidden max-w-[11rem] truncate rounded-full bg-[#f2e8de] px-3 py-1.5 text-xs text-ink sm:block"
+              aria-label="Filter by company"
             >
-              <option value="">Company</option>
+              <option value="">All companies</option>
               {companies.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -305,42 +257,6 @@ export function DenseHome({
               Search
             </button>
           </form>
-
-          <div className="mt-7 grid grid-cols-4 gap-2 pb-6 sm:gap-4">
-            {shortcuts.map((item) => {
-              const inner = (
-                <>
-                  <span className="flex h-11 w-11 items-center justify-center text-[#e5bf55]">
-                    <ShortcutIcon name={item.icon} />
-                  </span>
-                  <span className="text-[11px] font-medium leading-tight text-porcelain/90 sm:text-xs">
-                    {item.label}
-                  </span>
-                  {item.count !== null ? (
-                    <span className="text-[10px] tabular-nums text-porcelain/55">
-                      {item.count}
-                    </span>
-                  ) : null}
-                </>
-              );
-              const className =
-                "focus-ring flex flex-col items-center gap-1 rounded-2xl px-1 py-2.5 text-center transition hover:bg-white/5";
-              return "href" in item && item.href ? (
-                <Link key={item.label} href={item.href} className={className}>
-                  {inner}
-                </Link>
-              ) : (
-                <button
-                  key={item.label}
-                  type="button"
-                  onClick={item.onClick}
-                  className={className}
-                >
-                  {inner}
-                </button>
-              );
-            })}
-          </div>
         </div>
       </section>
 
