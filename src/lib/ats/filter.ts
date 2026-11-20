@@ -70,7 +70,8 @@ const SENIORITY_EXCLUDE: RegExp[] = [
   /\bvp\b/i,
 ];
 
-const EARLY_CAREER_SIGNAL: RegExp[] = [
+/** Strong early-career cues that are safe to read from a job title. */
+const EARLY_CAREER_TITLE: RegExp[] = [
   /\bintern(?:ship)?\b/i,
   /\bco-?op\b/i,
   /\bnew\s*grad(?:uate)?\b/i,
@@ -81,20 +82,40 @@ const EARLY_CAREER_SIGNAL: RegExp[] = [
   /\bassociate\b/i,
   /\bentry[\s-]?level\b/i,
   /\bclass of\s*20\d{2}\b/i,
-  /\b20(2[5-9]|3[0-2])\b/,
+];
+
+/**
+ * Description-only cues. Deliberately excludes bare years and "Class of 20xx"
+ * award/press lines (e.g. "Enterprise Tech 30 Class of 2026") that were
+ * mis-tagging senior roles as new grad.
+ */
+const EARLY_CAREER_DESCRIPTION: RegExp[] = [
+  /\bintern(?:ship)?\b/i,
+  /\bco-?op\b/i,
+  /\bnew\s*grad(?:uate)?\b/i,
+  /\brecent\s+grad(?:uate)?\b/i,
+  /\bgraduate\s+program\b/i,
+  /\bearly\s*career\b/i,
+  /\buniversity\s+hire\b/i,
+  /\bcampus\s+(?:recruit|hire|program)\b/i,
+  /\bjunior\b/i,
+  /\bentry[\s-]?level\b/i,
 ];
 
 const FIGMA: RegExp = /\bfigma\b/i;
 
 function hasEarlyCareerSignal(title: string, description = ""): boolean {
-  const text = `${title}\n${description}`;
-  return EARLY_CAREER_SIGNAL.some((p) => p.test(text));
+  if (EARLY_CAREER_TITLE.some((p) => p.test(title))) return true;
+  return EARLY_CAREER_DESCRIPTION.some((p) => p.test(description));
 }
 
-function passesSeniorityGate(title: string, description = ""): boolean {
+function passesSeniorityGate(title: string, _description = ""): boolean {
   const hasSeniority = SENIORITY_EXCLUDE.some((p) => p.test(title));
   if (!hasSeniority) return true;
-  return hasEarlyCareerSignal(title, description);
+  // Senior-titled roles only stay if the TITLE itself says early-career
+  // (e.g. "Senior Product Designer, New Grad"). Press blurbs in the JD
+  // must not keep them on an early-career board.
+  return EARLY_CAREER_TITLE.some((p) => p.test(title));
 }
 
 /**
@@ -129,14 +150,25 @@ export function classifyExperienceBand(
   title: string,
   description: string,
 ): ExperienceBand {
-  const text = `${title}\n${description}`;
-  if (/\bintern(?:ship)?\b|\bco-?op\b/i.test(text)) return "intern";
-  if (/\bnew\s*grad|\bgraduate\s+program|\bclass of\b/i.test(text))
+  // Title wins — never let award/press copy in the JD override a senior title.
+  if (/\bintern(?:ship)?\b|\bco-?op\b/i.test(title)) return "intern";
+  if (/\bnew\s*grad|\bgraduate\s+program|\bclass of\s*20\d{2}\b/i.test(title))
     return "new_grad";
-  if (/\bjunior\b|\bentry[\s-]?level\b|\bearly\s*career\b/i.test(text))
+  if (/\bjunior\b|\bentry[\s-]?level\b|\bearly\s*career\b/i.test(title))
     return "junior";
   if (/\bassociate\b/i.test(title)) return "associate";
   if (SENIORITY_EXCLUDE.some((p) => p.test(title))) return "mid";
+
+  if (/\bintern(?:ship)?\b|\bco-?op\b/i.test(description)) return "intern";
+  if (
+    /\bnew\s*grad(?:uate)?\b|\brecent\s+grad(?:uate)?\b|\bgraduate\s+program\b/i.test(
+      description,
+    )
+  ) {
+    return "new_grad";
+  }
+  if (/\bjunior\b|\bentry[\s-]?level\b|\bearly\s*career\b/i.test(description))
+    return "junior";
   return "unknown";
 }
 

@@ -134,20 +134,26 @@ export function DenseHome({
     [initialJobs],
   );
 
+  // Same visibility rules as the Open roles list (hide not-interested / siblings).
+  const visibleJobs = useMemo(
+    () =>
+      activeJobs.filter(
+        (j) => appByJob.get(j.id)?.status !== "not_interested",
+      ),
+    [activeJobs, appByJob],
+  );
+
   const companyCounts = useMemo(() => {
     const map = new Map<string, number>();
-    for (const job of activeJobs) {
+    for (const job of visibleJobs) {
       map.set(job.companyName, (map.get(job.companyName) ?? 0) + 1);
     }
     return map;
-  }, [activeJobs]);
+  }, [visibleJobs]);
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
-    const list = initialJobs.filter((job) => {
-      if (job.status !== "active") return false;
-      // Hide roles marked not interested — they live under Saved → Not interested
-      if (appByJob.get(job.id)?.status === "not_interested") return false;
+    const list = visibleJobs.filter((job) => {
       if (query) {
         const hay =
           `${job.title} ${job.companyName} ${job.locationText}`.toLowerCase();
@@ -177,11 +183,11 @@ export function DenseHome({
       return 1;
     };
     return [...list].sort((a, b) => rank(a.id) - rank(b.id));
-  }, [initialJobs, q, chip, company, appByJob]);
+  }, [visibleJobs, q, chip, company, appByJob]);
 
-  const internCount = activeJobs.filter((j) => j.isInternship).length;
-  const caCount = activeJobs.filter((j) => j.isCalifornia).length;
-  const remoteCount = activeJobs.filter((j) => j.isRemote).length;
+  const internCount = visibleJobs.filter((j) => j.isInternship).length;
+  const caCount = visibleJobs.filter((j) => j.isCalifornia).length;
+  const remoteCount = visibleJobs.filter((j) => j.isRemote).length;
 
   function applyQuick(next: QuickKey) {
     // Sync update — avoids transition “steeping” flicker in the status strip
@@ -198,14 +204,15 @@ export function DenseHome({
       case "intern":
         return internCount;
       case "new_grad":
-        return activeJobs.filter((j) => j.experienceBand === "new_grad").length;
+        return visibleJobs.filter((j) => j.experienceBand === "new_grad")
+          .length;
       case "california":
         return caCount;
       case "remote":
         return remoteCount;
       case "all":
       default:
-        return activeJobs.length;
+        return visibleJobs.length;
     }
   }
 
