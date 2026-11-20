@@ -361,7 +361,7 @@ export function DenseHome({
               <span className="mt-0.5 block text-xs text-ink">{refreshMsg}</span>
             ) : (
               <span className="mt-0.5 block text-xs">
-                Pull latest design listings from your company allowlist anytime.
+                Updates daily at 7:00 AM Pacific — tap Refresh anytime for a live pull.
               </span>
             )}
           </p>
