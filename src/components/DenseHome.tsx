@@ -29,8 +29,7 @@ type QuickKey =
   | "intern"
   | "new_grad"
   | "california"
-  | "remote"
-  | "product";
+  | "remote";
 
 const CATEGORY_CHIPS: { key: QuickKey; label: string }[] = [
   { key: "all", label: "All" },
@@ -38,7 +37,6 @@ const CATEGORY_CHIPS: { key: QuickKey; label: string }[] = [
   { key: "new_grad", label: "New grad" },
   { key: "california", label: "California" },
   { key: "remote", label: "Remote" },
-  { key: "product", label: "Product" },
 ];
 
 export function DenseHome({
@@ -52,7 +50,6 @@ export function DenseHome({
   const [q, setQ] = useState("");
   const [chip, setChip] = useState<QuickKey>("all");
   const [company, setCompany] = useState("");
-  const [showClosed, setShowClosed] = useState(false);
   const [pending, startTransition] = useTransition();
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMsg, setRefreshMsg] = useState("");
@@ -95,7 +92,7 @@ export function DenseHome({
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
     return initialJobs.filter((job) => {
-      if (!showClosed && job.status !== "active") return false;
+      if (job.status !== "active") return false;
       if (query) {
         const hay =
           `${job.title} ${job.companyName} ${job.locationText}`.toLowerCase();
@@ -112,13 +109,11 @@ export function DenseHome({
           return job.isCalifornia;
         case "remote":
           return job.isRemote;
-        case "product":
-          return /product/i.test(job.title);
         default:
           return true;
       }
     });
-  }, [initialJobs, q, chip, company, showClosed]);
+  }, [initialJobs, q, chip, company]);
 
   const featured = filtered.slice(0, 8);
   const internCount = activeJobs.filter((j) => j.isInternship).length;
@@ -134,10 +129,6 @@ export function DenseHome({
     document.getElementById("open-roles")?.scrollIntoView({ behavior: "smooth" });
   }
 
-  const closedCount = initialJobs.filter(
-    (j) => j.status === "potentially_closed",
-  ).length;
-
   function countForFilter(key: QuickKey): number {
     switch (key) {
       case "intern":
@@ -148,8 +139,6 @@ export function DenseHome({
         return caCount;
       case "remote":
         return remoteCount;
-      case "product":
-        return activeJobs.filter((j) => /product/i.test(j.title)).length;
       case "all":
       default:
         return activeJobs.length;
@@ -296,17 +285,13 @@ export function DenseHome({
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-soft">
                 Role counts
               </p>
-              <div className="mt-2 grid w-full grid-cols-2 gap-2 sm:grid-cols-5">
+              <div className="mt-2 grid w-full grid-cols-2 gap-2 sm:grid-cols-4">
                 {filterStats.map((stat) => (
                   <button
                     key={stat.key}
                     type="button"
                     onClick={() => applyQuick(stat.key)}
-                    className={`focus-ring w-full rounded-xl border px-3 py-3 text-left transition ${
-                      chip === stat.key
-                        ? "border-gold bg-[#e5bf55]/25"
-                        : "border-[var(--line)] bg-[#f2e8de]/50 hover:border-gold/40"
-                    }`}
+                    className="focus-ring w-full rounded-xl border border-[var(--line)] bg-[#f2e8de]/50 px-3 py-3 text-left transition hover:border-gold/40"
                   >
                     <p className="text-xl font-semibold tabular-nums text-ink">
                       {stat.count}
@@ -317,33 +302,7 @@ export function DenseHome({
               </div>
             </div>
 
-            {/* Group 3: board scope — common region, separated from filters */}
-            <div className="flex flex-wrap items-center gap-2 border-t border-[var(--line)] pt-4">
-              <button
-                type="button"
-                onClick={() => applyQuick("all")}
-                className={`focus-ring rounded-full px-3.5 py-2 text-sm font-medium transition ${
-                  chip === "all" && !showClosed
-                    ? "bg-ink text-porcelain"
-                    : "border border-[var(--line)] bg-porcelain text-ink hover:border-gold/40"
-                }`}
-              >
-                All roles · {activeJobs.length}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowClosed((v) => !v)}
-                className={`focus-ring rounded-full px-3.5 py-2 text-sm transition ${
-                  showClosed
-                    ? "bg-ink text-porcelain"
-                    : "border border-[var(--line)] text-ink-soft hover:border-gold/40 hover:text-ink"
-                }`}
-              >
-                {showClosed ? "Hiding closed" : `Maybe closed · ${closedCount}`}
-              </button>
-            </div>
-
-            {/* Group 4: your tools — icons only, never mixed with counts */}
+            {/* Your tools — icons only, never mixed with counts */}
             <div className="border-t border-[var(--line)] pt-4">
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-soft">
                 Your tools
@@ -400,7 +359,7 @@ export function DenseHome({
             )}
           </p>
           <div className="flex shrink-0 items-center gap-2">
-            {(q || chip !== "all" || company || showClosed) && (
+            {(q || chip !== "all" || company) && (
               <button
                 type="button"
                 onClick={() => {
@@ -408,7 +367,6 @@ export function DenseHome({
                     setQ("");
                     setChip("all");
                     setCompany("");
-                    setShowClosed(false);
                   });
                 }}
                 className="focus-ring text-xs text-gold underline-offset-2 hover:underline"
