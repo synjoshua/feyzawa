@@ -29,6 +29,15 @@ export function WatchlistPanel({
     [items],
   );
 
+  const sortedAllowlist = useMemo(() => {
+    return [...allowlist].sort((a, b) => {
+      const aWatched = watchedNames.has(a.name) ? 0 : 1;
+      const bWatched = watchedNames.has(b.name) ? 0 : 1;
+      if (aWatched !== bWatched) return aWatched - bWatched;
+      return a.name.localeCompare(b.name);
+    });
+  }, [allowlist, watchedNames]);
+
   async function toggle(company: CompanyAllowlistEntry) {
     if (!configured || !signedIn) {
       setMessage("Sign in to save your watchlist to your account.");
@@ -107,7 +116,7 @@ export function WatchlistPanel({
         <p className="text-sm text-amber">{message}</p>
       ) : null}
       <ul className="tea-surface divide-y divide-[var(--line)] overflow-hidden rounded-tea">
-        {allowlist.map((company) => {
+        {sortedAllowlist.map((company) => {
           const watched = watchedNames.has(company.name);
           return (
             <li
