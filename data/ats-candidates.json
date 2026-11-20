@@ -63,12 +63,12 @@
       "boardToken": "60decibelsinc"
     },
     {
-      "name": "84.51°",
+      "name": "84.51\u00b0",
       "provider": "greenhouse",
       "boardToken": "8451"
     },
     {
-      "name": "84.51° University Programs / Early Career Paths",
+      "name": "84.51\u00b0 University Programs / Early Career Paths",
       "provider": "greenhouse",
       "boardToken": "8451university"
     },
@@ -1974,7 +1974,7 @@
       "boardToken": "breezecash"
     },
     {
-      "name": "Breeze Airways™",
+      "name": "Breeze Airways\u2122",
       "provider": "greenhouse",
       "boardToken": "breezeairways"
     },
@@ -5449,7 +5449,7 @@
       "boardToken": "Fuse"
     },
     {
-      "name": "Fussball Club Cincinnati LLC (“FC Cincinnati”)",
+      "name": "Fussball Club Cincinnati LLC (\u201cFC Cincinnati\u201d)",
       "provider": "greenhouse",
       "boardToken": "fccincinnati"
     },
@@ -14088,6 +14088,13 @@
       "provider": "greenhouse",
       "boardToken": "zynga",
       "careersUrl": "https://www.zynga.com/careers/"
+    },
+    {
+      "name": "HP IQ",
+      "provider": "greenhouse",
+      "boardToken": "hpiq",
+      "careersUrl": "https://job-boards.greenhouse.io/hpiq",
+      "source": "manual-report"
     }
   ]
 }

@@ -1284,6 +1284,12 @@ export const DEFAULT_COMPANY_ALLOWLIST: CompanyAllowlistEntry[] = [
     boardToken: "nebius",
     careersUrl: "https://nebius.com/careers",
   },
+  {
+    name: "HP IQ",
+    provider: "greenhouse",
+    boardToken: "hpiq",
+    careersUrl: "https://job-boards.greenhouse.io/hpiq",
+  },
 ];
 
 /** Built-in + env seed list (no dynamic discovery). */
