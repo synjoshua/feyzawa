@@ -500,7 +500,8 @@ export function DenseHome({
                   type="button"
                   onClick={() => {
                     startTransition(() => {
-                      setCompany(name);
+                      // Second click clears the company filter
+                      setCompany((prev) => (prev === name ? "" : name));
                       setChip("all");
                     });
                     document
