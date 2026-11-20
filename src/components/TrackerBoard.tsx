@@ -54,13 +54,10 @@ export function TrackerBoard({
     (async () => {
       const result = await fetchApplications();
       if (cancelled) return;
-      if (result.mode === "supabase" || result.applications.length > 0) {
-        setRows(result.applications);
-        setMode(result.mode);
-      } else if (initial.length === 0) {
-        setRows(result.applications);
-        setMode(result.mode);
-      }
+      // Always take the merged client list (Supabase + local) so mark-applied
+      // from the board shows up even when the server insert failed / lagged.
+      setRows(result.applications);
+      setMode(result.mode);
     })();
     return () => {
       cancelled = true;

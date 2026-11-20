@@ -56,7 +56,8 @@ create policy "jobs are publicly readable"
 create table if not exists public.applications (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
-  job_id text references public.jobs (id) on delete set null,
+  -- No FK to jobs: board listings often live in cache before/without a jobs row.
+  job_id text,
   title_snapshot text not null,
   company_snapshot text not null,
   apply_url text,

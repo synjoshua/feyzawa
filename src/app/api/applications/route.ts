@@ -56,24 +56,97 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
+  const jobId =
+    typeof body.jobId === "string" && body.jobId.trim()
+      ? body.jobId.trim()
+      : null;
+  const now = new Date().toISOString();
+
+  // Upsert by job: mark applied / save should update an existing row, not orphan.
+  if (jobId) {
+    const { data: existingRows } = await supabase
+      .from("applications")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("job_id", jobId)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+    const existing = existingRows?.[0];
+
+    if (existing) {
+      const updates: Record<string, unknown> = {
+        status,
+        title_snapshot: String(body.title ?? existing.title_snapshot),
+        company_snapshot: String(body.company ?? existing.company_snapshot),
+        apply_url: body.applyUrl ?? existing.apply_url,
+        location_snapshot: body.location ?? existing.location_snapshot,
+        notes:
+          typeof body.notes === "string" ? body.notes : existing.notes ?? "",
+        updated_at: now,
+      };
+      if (status === "applied" && !existing.applied_at) {
+        updates.applied_at = now;
+      }
+      const { data, error } = await supabase
+        .from("applications")
+        .update(updates)
+        .eq("id", existing.id)
+        .eq("user_id", user.id)
+        .select("*")
+        .single();
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      return NextResponse.json({ application: data });
+    }
+  }
+
   const row = {
     user_id: user.id,
-    job_id: body.jobId ?? null,
+    job_id: jobId,
     title_snapshot: String(body.title ?? "Untitled"),
     company_snapshot: String(body.company ?? "Unknown"),
     apply_url: body.applyUrl ?? null,
     location_snapshot: body.location ?? null,
     status,
     notes: String(body.notes ?? ""),
-    applied_at: status === "applied" ? new Date().toISOString() : null,
-    updated_at: new Date().toISOString(),
+    applied_at: status === "applied" ? now : null,
+    updated_at: now,
   };
 
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("applications")
     .insert(row)
     .select("*")
     .single();
+
+  // Legacy DBs may still FK job_id → jobs. Retry without job_id so tracking works.
+  if (error && jobId) {
+    const fk =
+      /foreign key|violates foreign key|jobs/i.test(error.message ?? "") ||
+      error.code === "23503";
+    if (fk) {
+      const retry = await supabase
+        .from("applications")
+        .insert({ ...row, job_id: null })
+        .select("*")
+        .single();
+      data = retry.data;
+      error = retry.error;
+      if (!error && data) {
+        // Keep board linkage in notes when FK blocked job_id
+        const note = `board_job_id:${jobId}`;
+        const notes = [data.notes, note].filter(Boolean).join("\n");
+        const patched = await supabase
+          .from("applications")
+          .update({ notes })
+          .eq("id", data.id)
+          .select("*")
+          .single();
+        if (patched.data) data = patched.data;
+      }
+    }
+  }
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

@@ -63,8 +63,8 @@ export function TrackJobActions({ job }: { job: NormalizedJob }) {
       setMessage(
         status === "applied"
           ? result.mode === "local"
-            ? "Marked applied (saved on this device)"
-            : "Marked applied in your tracker"
+            ? "Marked applied — open Tracker (saved on this device; sign in to sync)"
+            : "Marked applied — it’s in your tracker"
           : result.mode === "local"
             ? "Saved on this device"
             : "Saved to your tracker",

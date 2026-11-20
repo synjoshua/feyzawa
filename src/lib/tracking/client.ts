@@ -52,25 +52,68 @@ function mapOut(row: Record<string, unknown>): OutreachRecord {
   };
 }
 
+function appDedupeKey(row: ApplicationRecord): string {
+  if (row.job_id) return `job:${row.job_id}`;
+  const boardNote = row.notes?.match(/board_job_id:([^\s]+)/)?.[1];
+  if (boardNote) return `job:${boardNote}`;
+  return `snap:${row.company_snapshot.trim().toLowerCase()}|${row.title_snapshot.trim().toLowerCase()}`;
+}
+
+/** Merge remote + local so mark-applied never disappears from the tracker. */
+function mergeApplications(
+  remote: ApplicationRecord[],
+  local: ApplicationRecord[],
+): ApplicationRecord[] {
+  const best = new Map<string, ApplicationRecord>();
+
+  for (const row of [...local, ...remote]) {
+    const key = appDedupeKey(row);
+    const prev = best.get(key);
+    if (!prev) {
+      best.set(key, row);
+      continue;
+    }
+    const preferRemote =
+      row.source === "supabase" && prev.source !== "supabase";
+    const newer =
+      Date.parse(row.updated_at || "") >= Date.parse(prev.updated_at || "");
+    if (preferRemote || (!prev.source?.includes("supabase") && newer) || newer) {
+      // Prefer row that still has a real job_id for board matching
+      best.set(
+        key,
+        row.job_id || !prev.job_id
+          ? { ...prev, ...row, job_id: row.job_id ?? prev.job_id }
+          : { ...row, ...prev, status: row.status, notes: row.notes },
+      );
+    }
+  }
+
+  return Array.from(best.values()).sort(
+    (a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at) || 0,
+  );
+}
+
 export async function fetchApplications(): Promise<{
   applications: ApplicationRecord[];
   mode: "supabase" | "local";
 }> {
+  const local = listLocalApplications();
   try {
     const res = await fetch("/api/applications");
     if (res.ok) {
       const data = await res.json();
+      const remote = (data.applications ?? []).map(
+        (r: Record<string, unknown>) => mapApp(r),
+      );
       return {
-        applications: (data.applications ?? []).map(
-          (r: Record<string, unknown>) => mapApp(r),
-        ),
+        applications: mergeApplications(remote, local),
         mode: "supabase",
       };
     }
   } catch {
     // fall through
   }
-  return { applications: listLocalApplications(), mode: "local" };
+  return { applications: local, mode: "local" };
 }
 
 export async function trackApplication(input: {
@@ -82,6 +125,10 @@ export async function trackApplication(input: {
   status?: ApplicationStatus;
   notes?: string;
 }): Promise<{ application: ApplicationRecord; mode: "supabase" | "local" }> {
+  // Always mirror locally so the tracker shows the mark even if Supabase insert fails
+  // (e.g. legacy job_id FK) or the user is signed out.
+  const local = createLocalApplication(input);
+
   try {
     const res = await fetch("/api/applications", {
       method: "POST",
@@ -98,13 +145,22 @@ export async function trackApplication(input: {
     });
     if (res.ok) {
       const data = await res.json();
-      return { application: mapApp(data.application), mode: "supabase" };
+      const remote = mapApp(data.application);
+      // Keep local row in sync with remote id/status when possible
+      if (input.jobId) {
+        createLocalApplication({
+          ...input,
+          status: remote.status,
+          notes: remote.notes,
+        });
+      }
+      return { application: remote, mode: "supabase" };
     }
   } catch {
     // fall through
   }
   return {
-    application: createLocalApplication(input),
+    application: local,
     mode: "local",
   };
 }
@@ -113,6 +169,10 @@ export async function patchApplication(
   id: string,
   patch: Partial<{ status: ApplicationStatus; notes: string; applyUrl: string }>,
 ): Promise<{ application: ApplicationRecord; mode: "supabase" | "local" } | null> {
+  // Prefer local update so UI/tracker stay consistent even when PATCH 401s
+  // (local ids) or network fails.
+  const local = updateLocalApplication(id, patch);
+
   try {
     const res = await fetch("/api/applications", {
       method: "PATCH",
@@ -121,12 +181,23 @@ export async function patchApplication(
     });
     if (res.ok) {
       const data = await res.json();
-      return { application: mapApp(data.application), mode: "supabase" };
+      const remote = mapApp(data.application);
+      if (remote.job_id) {
+        createLocalApplication({
+          jobId: remote.job_id,
+          title: remote.title_snapshot,
+          company: remote.company_snapshot,
+          applyUrl: remote.apply_url,
+          location: remote.location_snapshot,
+          status: remote.status,
+          notes: remote.notes,
+        });
+      }
+      return { application: remote, mode: "supabase" };
     }
   } catch {
     // fall through
   }
-  const local = updateLocalApplication(id, patch);
   return local ? { application: local, mode: "local" } : null;
 }
 

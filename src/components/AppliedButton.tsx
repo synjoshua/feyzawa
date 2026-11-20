@@ -61,9 +61,13 @@ export function AppliedButton({
     (async () => {
       const { applications } = await fetchApplications();
       if (cancelled) return;
-      const hit = applications.find(
+      // Prefer pipeline status; otherwise keep any existing row (e.g. saved bookmark)
+      // so Mark applied can PATCH instead of creating a second entry.
+      const pipeline = applications.find(
         (a) => a.job_id === job.id && PIPELINE.includes(a.status),
       );
+      const any = applications.find((a) => a.job_id === job.id);
+      const hit = pipeline ?? any;
       if (hit) {
         setStatus(hit.status);
         setAppId(hit.id);
@@ -78,14 +82,24 @@ export function AppliedButton({
     if (busy || (status && PIPELINE.includes(status))) return;
     setBusy(true);
     try {
-      if (appId) {
-        const result = await patchApplication(appId, { status: "applied" });
+      // Re-check for an existing saved/local row in case initial load raced.
+      let id = appId;
+      if (!id) {
+        const { applications } = await fetchApplications();
+        const hit = applications.find((a) => a.job_id === job.id);
+        if (hit) id = hit.id;
+      }
+
+      if (id) {
+        const result = await patchApplication(id, { status: "applied" });
         if (result) {
           setStatus(result.application.status);
+          setAppId(result.application.id);
           onChange?.(result.application.status, result.application.id);
+          return;
         }
-        return;
       }
+
       const { application } = await trackApplication({
         jobId: job.id,
         title: job.title,
