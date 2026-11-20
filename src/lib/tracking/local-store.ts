@@ -64,15 +64,31 @@ export function createLocalApplication(input: {
     source: "local",
   };
   const all = listLocalApplications();
+  const PIPELINE = new Set([
+    "applied",
+    "interviewing",
+    "offer",
+    "rejected",
+  ]);
   // If same job_id already tracked, update instead of duplicate
   if (row.job_id) {
-    const idx = all.findIndex((a) => a.job_id === row.job_id);
+    const idx = all.findIndex(
+      (a) =>
+        a.job_id === row.job_id ||
+        (a.notes ?? "").includes(`board_job_id:${row.job_id}`),
+    );
     if (idx >= 0) {
+      const prev = all[idx];
+      // Don't let bookmark (saved) downgrade applied / pipeline status
+      if (status === "saved" && PIPELINE.has(prev.status)) {
+        return { ...prev, source: "local" as const };
+      }
       const merged = {
-        ...all[idx],
+        ...prev,
         ...row,
-        id: all[idx].id,
-        created_at: all[idx].created_at,
+        id: prev.id,
+        job_id: prev.job_id ?? row.job_id,
+        created_at: prev.created_at,
         source: "local" as const,
       };
       all[idx] = merged;

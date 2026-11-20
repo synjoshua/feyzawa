@@ -59,6 +59,34 @@ function appDedupeKey(row: ApplicationRecord): string {
   return `snap:${row.company_snapshot.trim().toLowerCase()}|${row.title_snapshot.trim().toLowerCase()}`;
 }
 
+const PIPELINE_RANK: Record<string, number> = {
+  offer: 5,
+  interviewing: 4,
+  applied: 3,
+  rejected: 2,
+  saved: 1,
+};
+
+function pickBetterApp(
+  a: ApplicationRecord,
+  b: ApplicationRecord,
+): ApplicationRecord {
+  const rankA = PIPELINE_RANK[a.status] ?? 0;
+  const rankB = PIPELINE_RANK[b.status] ?? 0;
+  // Prefer stronger tracker status so "saved" never wins over "applied"
+  if (rankA !== rankB) return rankA > rankB ? a : b;
+  const newer =
+    Date.parse(a.updated_at || "") >= Date.parse(b.updated_at || "") ? a : b;
+  const other = newer === a ? b : a;
+  return {
+    ...other,
+    ...newer,
+    job_id: newer.job_id ?? other.job_id,
+    status: newer.status,
+    notes: newer.notes || other.notes,
+  };
+}
+
 /** Merge remote + local so mark-applied never disappears from the tracker. */
 function mergeApplications(
   remote: ApplicationRecord[],
@@ -69,28 +97,17 @@ function mergeApplications(
   for (const row of [...local, ...remote]) {
     const key = appDedupeKey(row);
     const prev = best.get(key);
-    if (!prev) {
-      best.set(key, row);
-      continue;
-    }
-    const preferRemote =
-      row.source === "supabase" && prev.source !== "supabase";
-    const newer =
-      Date.parse(row.updated_at || "") >= Date.parse(prev.updated_at || "");
-    if (preferRemote || (!prev.source?.includes("supabase") && newer) || newer) {
-      // Prefer row that still has a real job_id for board matching
-      best.set(
-        key,
-        row.job_id || !prev.job_id
-          ? { ...prev, ...row, job_id: row.job_id ?? prev.job_id }
-          : { ...row, ...prev, status: row.status, notes: row.notes },
-      );
-    }
+    best.set(key, prev ? pickBetterApp(prev, row) : row);
   }
 
   return Array.from(best.values()).sort(
     (a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at) || 0,
   );
+}
+
+export function resolveAppJobId(row: ApplicationRecord): string | null {
+  if (row.job_id) return row.job_id;
+  return row.notes?.match(/board_job_id:([^\s]+)/)?.[1] ?? null;
 }
 
 export async function fetchApplications(): Promise<{

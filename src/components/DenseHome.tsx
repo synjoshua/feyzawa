@@ -11,7 +11,10 @@ import {
 } from "react";
 import type { NormalizedJob } from "@/lib/ats/types";
 import { relativeTime } from "@/lib/format";
-import { fetchApplications } from "@/lib/tracking/client";
+import {
+  fetchApplications,
+  resolveAppJobId,
+} from "@/lib/tracking/client";
 import type { ApplicationStatus } from "@/lib/tracking/types";
 import {
   AppliedBadge,
@@ -83,8 +86,21 @@ export function DenseHome({
       if (cancelled) return;
       const next = new Map<string, { id: string; status: ApplicationStatus }>();
       for (const a of applications) {
-        if (!a.job_id || !isPipelineStatus(a.status)) continue;
-        next.set(a.job_id, { id: a.id, status: a.status });
+        const jobKey = resolveAppJobId(a);
+        if (!jobKey) continue;
+        const prev = next.get(jobKey);
+        if (!prev) {
+          next.set(jobKey, { id: a.id, status: a.status });
+          continue;
+        }
+        // Prefer applied/pipeline over saved so bookmarks don't hide tracker state
+        if (isPipelineStatus(a.status) && prev.status === "saved") {
+          next.set(jobKey, { id: a.id, status: a.status });
+        } else if (isPipelineStatus(prev.status) && a.status === "saved") {
+          // keep pipeline
+        } else {
+          next.set(jobKey, { id: a.id, status: a.status });
+        }
       }
       setAppByJob(next);
     })();
@@ -129,7 +145,7 @@ export function DenseHome({
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
-    return initialJobs.filter((job) => {
+    const list = initialJobs.filter((job) => {
       if (job.status !== "active") return false;
       if (query) {
         const hay =
@@ -151,7 +167,16 @@ export function DenseHome({
           return true;
       }
     });
-  }, [initialJobs, q, chip, company]);
+
+    // Bookmarked (saved) first, then applied/pipeline, then the rest
+    const rank = (jobId: string) => {
+      const status = appByJob.get(jobId)?.status;
+      if (status === "saved") return 0;
+      if (status && isPipelineStatus(status)) return 1;
+      return 2;
+    };
+    return [...list].sort((a, b) => rank(a.id) - rank(b.id));
+  }, [initialJobs, q, chip, company, appByJob]);
 
   const internCount = activeJobs.filter((j) => j.isInternship).length;
   const caCount = activeJobs.filter((j) => j.isCalifornia).length;
@@ -524,14 +549,25 @@ export function DenseHome({
                 const applied = tracked
                   ? isPipelineStatus(tracked.status)
                   : false;
+                const bookmarked = tracked?.status === "saved";
                 return (
                   <li
                     key={job.id}
-                    className={`job-row ${applied ? "bg-jade/8" : ""}`}
+                    className={`job-row ${
+                      bookmarked
+                        ? "bg-[#e5bf55]/12"
+                        : applied
+                          ? "bg-jade/8"
+                          : ""
+                    }`}
                   >
                     <div
                       className={`flex flex-col gap-2.5 px-3.5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-4 ${
-                        applied ? "border-l-[3px] border-l-jade" : ""
+                        bookmarked
+                          ? "border-l-[3px] border-l-gold"
+                          : applied
+                            ? "border-l-[3px] border-l-jade"
+                            : ""
                       }`}
                     >
                       <div className="flex min-w-0 items-start gap-3">
@@ -544,7 +580,7 @@ export function DenseHome({
                             >
                               {job.title}
                             </Link>
-                            {tracked ? (
+                            {applied && tracked ? (
                               <AppliedBadge status={tracked.status} />
                             ) : null}
                             <StatusBadge value={job.status} />
@@ -560,7 +596,21 @@ export function DenseHome({
                         </div>
                       </div>
                       <div className="flex shrink-0 flex-wrap items-center gap-2">
-                        <BookmarkButton job={job} />
+                        <BookmarkButton
+                          job={job}
+                          initialSavedId={bookmarked ? tracked?.id ?? null : null}
+                          onChange={(saved, id) => {
+                            setAppByJob((prev) => {
+                              const next = new Map(prev);
+                              if (saved && id) {
+                                next.set(job.id, { id, status: "saved" });
+                              } else if (next.get(job.id)?.status === "saved") {
+                                next.delete(job.id);
+                              }
+                              return next;
+                            });
+                          }}
+                        />
                         <Link
                           href={`/jobs/${job.id}`}
                           className="focus-ring rounded-full border border-[var(--line)] px-3 py-1.5 text-xs text-ink-soft"
@@ -569,8 +619,16 @@ export function DenseHome({
                         </Link>
                         <AppliedButton
                           job={job}
-                          initialStatus={tracked?.status ?? null}
-                          initialId={tracked?.id ?? null}
+                          initialStatus={
+                            tracked && isPipelineStatus(tracked.status)
+                              ? tracked.status
+                              : null
+                          }
+                          initialId={
+                            tracked && isPipelineStatus(tracked.status)
+                              ? tracked.id
+                              : null
+                          }
                           onChange={(status, id) => {
                             setAppByJob((prev) => {
                               const next = new Map(prev);

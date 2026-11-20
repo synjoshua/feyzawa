@@ -62,20 +62,36 @@ export async function POST(request: Request) {
       : null;
   const now = new Date().toISOString();
 
+  const PIPELINE = new Set([
+    "applied",
+    "interviewing",
+    "offer",
+    "rejected",
+  ]);
+
   // Upsert by job: mark applied / save should update an existing row, not orphan.
   if (jobId) {
-    const { data: existingRows } = await supabase
+    const { data: candidates } = await supabase
       .from("applications")
       .select("*")
       .eq("user_id", user.id)
-      .eq("job_id", jobId)
-      .order("updated_at", { ascending: false })
-      .limit(1);
-    const existing = existingRows?.[0];
+      .order("updated_at", { ascending: false });
+
+    const existing =
+      candidates?.find((row) => row.job_id === jobId) ??
+      candidates?.find((row) =>
+        String(row.notes ?? "").includes(`board_job_id:${jobId}`),
+      );
 
     if (existing) {
+      // Never let a bookmark (saved) downgrade an applied / pipeline role.
+      if (status === "saved" && PIPELINE.has(String(existing.status))) {
+        return NextResponse.json({ application: existing });
+      }
+
       const updates: Record<string, unknown> = {
         status,
+        job_id: existing.job_id ?? jobId,
         title_snapshot: String(body.title ?? existing.title_snapshot),
         company_snapshot: String(body.company ?? existing.company_snapshot),
         apply_url: body.applyUrl ?? existing.apply_url,

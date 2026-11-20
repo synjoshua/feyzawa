@@ -7,20 +7,39 @@ import {
   removeApplication,
   trackApplication,
 } from "@/lib/tracking/client";
+import type { ApplicationStatus } from "@/lib/tracking/types";
+
+const PIPELINE: ApplicationStatus[] = [
+  "applied",
+  "interviewing",
+  "offer",
+  "rejected",
+];
 
 type Props = {
   job: NormalizedJob;
   className?: string;
-  /** Called after save/unsave so parent can refresh counts */
-  onChange?: (saved: boolean) => void;
+  /** Preloaded saved application id from parent */
+  initialSavedId?: string | null;
+  /** Called after save/unsave so parent can refresh */
+  onChange?: (saved: boolean, id: string | null) => void;
 };
 
-export function BookmarkButton({ job, className = "", onChange }: Props) {
-  const [savedId, setSavedId] = useState<string | null>(null);
+export function BookmarkButton({
+  job,
+  className = "",
+  initialSavedId = null,
+  onChange,
+}: Props) {
+  const [savedId, setSavedId] = useState<string | null>(initialSavedId);
   const [busy, setBusy] = useState(false);
   const [hint, setHint] = useState("");
 
   useEffect(() => {
+    if (initialSavedId) {
+      setSavedId(initialSavedId);
+      return;
+    }
     let cancelled = false;
     (async () => {
       const { applications } = await fetchApplications();
@@ -33,7 +52,7 @@ export function BookmarkButton({ job, className = "", onChange }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [job.id]);
+  }, [job.id, initialSavedId]);
 
   async function toggle() {
     if (busy) return;
@@ -41,15 +60,24 @@ export function BookmarkButton({ job, className = "", onChange }: Props) {
     setHint("");
     try {
       if (savedId) {
-        const ok = await removeApplication(savedId);
+        const ok = await removeApplication(savedId, job.id);
         if (!ok) {
           setHint("Could not remove");
           return;
         }
         setSavedId(null);
-        onChange?.(false);
+        onChange?.(false, null);
         return;
       }
+
+      // Don't create a "saved" row over an applied/pipeline entry
+      const { applications } = await fetchApplications();
+      const existing = applications.find((a) => a.job_id === job.id);
+      if (existing && PIPELINE.includes(existing.status)) {
+        setHint("Already in tracker");
+        return;
+      }
+
       const { application } = await trackApplication({
         jobId: job.id,
         title: job.title,
@@ -58,8 +86,14 @@ export function BookmarkButton({ job, className = "", onChange }: Props) {
         location: job.locationText,
         status: "saved",
       });
+      // If server refused downgrade, status may still be pipeline
+      if (application.status !== "saved") {
+        setHint("Already in tracker");
+        onChange?.(false, null);
+        return;
+      }
       setSavedId(application.id);
-      onChange?.(true);
+      onChange?.(true, application.id);
     } catch {
       setHint("Sign in to save across devices");
     } finally {
