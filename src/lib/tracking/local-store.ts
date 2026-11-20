@@ -49,6 +49,10 @@ export function createLocalApplication(input: {
 }): ApplicationRecord {
   const now = new Date().toISOString();
   const status = input.status ?? "saved";
+  let notes = (input.notes ?? "").trim();
+  if (input.jobId && !notes.includes(`board_job_id:${input.jobId}`)) {
+    notes = [notes, `board_job_id:${input.jobId}`].filter(Boolean).join("\n");
+  }
   const row: ApplicationRecord = {
     id: uid(),
     job_id: input.jobId ?? null,
@@ -57,7 +61,7 @@ export function createLocalApplication(input: {
     apply_url: input.applyUrl ?? null,
     location_snapshot: input.location ?? null,
     status,
-    notes: input.notes ?? "",
+    notes,
     applied_at: status === "applied" ? now : null,
     created_at: now,
     updated_at: now,

@@ -11,11 +11,12 @@ import {
 } from "react";
 import type { NormalizedJob } from "@/lib/ats/types";
 import { relativeTime } from "@/lib/format";
-import {
-  fetchApplications,
-  resolveAppJobId,
-} from "@/lib/tracking/client";
-import type { ApplicationStatus } from "@/lib/tracking/types";
+import { fetchApplications } from "@/lib/tracking/client";
+import { buildAppByJobMap } from "@/lib/tracking/app-utils";
+import type {
+  ApplicationRecord,
+  ApplicationStatus,
+} from "@/lib/tracking/types";
 import {
   AppliedBadge,
   AppliedButton,
@@ -44,6 +45,8 @@ type Props = {
   companies: string[];
   watchedCompanies: string[];
   signedIn?: boolean;
+  /** Server-hydrated applications so reload keeps account state */
+  initialApplications?: ApplicationRecord[];
 };
 
 type QuickKey =
@@ -68,6 +71,7 @@ export function DenseHome({
   companies,
   watchedCompanies,
   signedIn = false,
+  initialApplications = [],
 }: Props) {
   const [q, setQ] = useState("");
   const [chip, setChip] = useState<QuickKey>("all");
@@ -77,57 +81,21 @@ export function DenseHome({
   const [refreshMsg, setRefreshMsg] = useState("");
   const [appByJob, setAppByJob] = useState<
     Map<string, { id: string; status: ApplicationStatus }>
-  >(new Map());
+  >(() => buildAppByJobMap(initialApplications, initialJobs));
   const router = useRouter();
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // Merge server + local + any cloud sync of browser-only rows
       const { applications } = await fetchApplications();
       if (cancelled) return;
-      const next = new Map<string, { id: string; status: ApplicationStatus }>();
-
-      const matchKey = (a: (typeof applications)[number]) => {
-        const fromId = resolveAppJobId(a);
-        if (fromId) return fromId;
-        const hit = initialJobs.find(
-          (j) =>
-            j.companyName.toLowerCase() ===
-              a.company_snapshot.trim().toLowerCase() &&
-            j.title.toLowerCase() === a.title_snapshot.trim().toLowerCase(),
-        );
-        return hit?.id ?? null;
-      };
-
-      for (const a of applications) {
-        const jobKey = matchKey(a);
-        if (!jobKey) continue;
-        const prev = next.get(jobKey);
-        if (!prev) {
-          next.set(jobKey, { id: a.id, status: a.status });
-          continue;
-        }
-        // Prefer applied/pipeline over saved for the row’s primary status,
-        // but keep a separate saved entry only when that’s the sole status.
-        if (isPipelineStatus(a.status) && prev.status === "saved") {
-          next.set(jobKey, { id: a.id, status: a.status });
-        } else if (isPipelineStatus(prev.status) && a.status === "saved") {
-          // keep pipeline as primary — bookmark won’t show while applied
-        } else if (a.status === "saved" || prev.status === "saved") {
-          next.set(jobKey, {
-            id: a.status === "saved" ? a.id : prev.id,
-            status: "saved",
-          });
-        } else {
-          next.set(jobKey, { id: a.id, status: a.status });
-        }
-      }
-      setAppByJob(next);
+      setAppByJob(buildAppByJobMap(applications, initialJobs));
     })();
     return () => {
       cancelled = true;
     };
-  }, [initialJobs]);
+  }, [initialJobs, initialApplications]);
 
   async function refreshJobs() {
     setRefreshing(true);

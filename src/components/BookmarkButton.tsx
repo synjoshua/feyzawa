@@ -5,9 +5,9 @@ import type { NormalizedJob } from "@/lib/ats/types";
 import {
   fetchApplications,
   removeApplication,
-  resolveAppJobId,
   trackApplication,
 } from "@/lib/tracking/client";
+import { resolveAppJobId } from "@/lib/tracking/app-utils";
 import type { ApplicationStatus } from "@/lib/tracking/types";
 
 const PIPELINE: ApplicationStatus[] = [
@@ -27,16 +27,23 @@ type Props = {
 };
 
 function findSavedForJob(
-  applications: { id: string; job_id: string | null; status: ApplicationStatus; notes?: string; company_snapshot?: string; title_snapshot?: string }[],
+  applications: {
+    id: string;
+    job_id: string | null;
+    status: ApplicationStatus;
+    notes: string;
+    company_snapshot: string;
+    title_snapshot: string;
+  }[],
   job: NormalizedJob,
 ) {
   return applications.find((a) => {
     if (a.status !== "saved") return false;
-    const key = resolveAppJobId(a as Parameters<typeof resolveAppJobId>[0]);
+    const key = resolveAppJobId(a);
     if (key && key === job.id) return true;
     return (
-      (a.company_snapshot || "").toLowerCase() === job.companyName.toLowerCase() &&
-      (a.title_snapshot || "").toLowerCase() === job.title.toLowerCase()
+      a.company_snapshot.toLowerCase() === job.companyName.toLowerCase() &&
+      a.title_snapshot.toLowerCase() === job.title.toLowerCase()
     );
   });
 }

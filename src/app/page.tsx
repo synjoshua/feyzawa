@@ -2,6 +2,7 @@ import { DenseHome } from "@/components/DenseHome";
 import { sortJobs } from "@/lib/ats/normalize";
 import { loadJobs } from "@/lib/jobs/store";
 import { getCurrentUser } from "@/lib/supabase/server";
+import { loadUserApplications } from "@/lib/tracking/load-user-apps";
 import { getWatchedCompanyNames } from "@/lib/watchlist/server";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,10 @@ export default async function HomePage() {
     new Set(sorted.map((j) => j.companyName)),
   ).sort((a, b) => a.localeCompare(b));
 
-  const watchedCompanies = await getWatchedCompanyNames(user?.id);
+  const [watchedCompanies, applications] = await Promise.all([
+    getWatchedCompanyNames(user?.id),
+    loadUserApplications(user?.id),
+  ]);
 
   // Prefer companies that currently have open roles first in the watch strip
   const watchStrip = watchedCompanies
@@ -36,6 +40,7 @@ export default async function HomePage() {
         companies={companies}
         watchedCompanies={watchStrip}
         signedIn={Boolean(user)}
+        initialApplications={applications}
       />
     </main>
   );

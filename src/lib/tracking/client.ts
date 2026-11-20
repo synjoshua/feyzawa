@@ -10,12 +10,19 @@ import {
   updateLocalApplication,
   updateLocalOutreach,
 } from "./local-store";
+import {
+  appDedupeKey,
+  resolveAppJobId,
+  withBoardJobNote,
+} from "./app-utils";
 import type {
   ApplicationRecord,
   ApplicationStatus,
   OutreachRecord,
   OutreachStatus,
 } from "./types";
+
+export { resolveAppJobId, withBoardJobNote } from "./app-utils";
 
 function mapApp(row: Record<string, unknown>): ApplicationRecord {
   return {
@@ -52,13 +59,6 @@ function mapOut(row: Record<string, unknown>): OutreachRecord {
   };
 }
 
-function appDedupeKey(row: ApplicationRecord): string {
-  if (row.job_id) return `job:${row.job_id}`;
-  const boardNote = row.notes?.match(/board_job_id:([^\s]+)/)?.[1];
-  if (boardNote) return `job:${boardNote}`;
-  return `snap:${row.company_snapshot.trim().toLowerCase()}|${row.title_snapshot.trim().toLowerCase()}`;
-}
-
 const PIPELINE_RANK: Record<string, number> = {
   offer: 5,
   interviewing: 4,
@@ -73,7 +73,6 @@ function pickBetterApp(
 ): ApplicationRecord {
   const rankA = PIPELINE_RANK[a.status] ?? 0;
   const rankB = PIPELINE_RANK[b.status] ?? 0;
-  // Prefer stronger tracker status so "saved" never wins over "applied"
   if (rankA !== rankB) return rankA > rankB ? a : b;
   const newer =
     Date.parse(a.updated_at || "") >= Date.parse(b.updated_at || "") ? a : b;
@@ -87,27 +86,78 @@ function pickBetterApp(
   };
 }
 
-/** Merge remote + local so mark-applied never disappears from the tracker. */
 function mergeApplications(
   remote: ApplicationRecord[],
   local: ApplicationRecord[],
 ): ApplicationRecord[] {
   const best = new Map<string, ApplicationRecord>();
-
   for (const row of [...local, ...remote]) {
     const key = appDedupeKey(row);
     const prev = best.get(key);
     best.set(key, prev ? pickBetterApp(prev, row) : row);
   }
-
   return Array.from(best.values()).sort(
     (a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at) || 0,
   );
 }
 
-export function resolveAppJobId(row: ApplicationRecord): string | null {
-  if (row.job_id) return row.job_id;
-  return row.notes?.match(/board_job_id:([^\s]+)/)?.[1] ?? null;
+async function postApplication(body: Record<string, unknown>) {
+  return fetch("/api/applications", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+/** Push browser-only rows up to Supabase once the user is signed in. */
+async function syncLocalToCloud(
+  remote: ApplicationRecord[],
+): Promise<ApplicationRecord[]> {
+  const remoteKeys = new Set(remote.map(appDedupeKey));
+  const local = listLocalApplications();
+  const uploaded: ApplicationRecord[] = [];
+
+  for (const row of local) {
+    const key = appDedupeKey(row);
+    if (remoteKeys.has(key)) continue;
+
+    const jobId = resolveAppJobId(row);
+    try {
+      let res = await postApplication({
+        jobId,
+        title: row.title_snapshot,
+        company: row.company_snapshot,
+        applyUrl: row.apply_url,
+        location: row.location_snapshot,
+        status: row.status,
+        notes: withBoardJobNote(row.notes, jobId),
+      });
+
+      // If FK still blocks job_id, retry with notes-only linkage
+      if (!res.ok && jobId) {
+        res = await postApplication({
+          jobId: null,
+          title: row.title_snapshot,
+          company: row.company_snapshot,
+          applyUrl: row.apply_url,
+          location: row.location_snapshot,
+          status: row.status,
+          notes: withBoardJobNote(row.notes, jobId),
+        });
+      }
+
+      if (res.ok) {
+        const data = await res.json();
+        uploaded.push(mapApp(data.application));
+        remoteKeys.add(key);
+      }
+    } catch {
+      // keep local-only until next load
+    }
+  }
+
+  return uploaded;
 }
 
 export async function fetchApplications(): Promise<{
@@ -116,14 +166,18 @@ export async function fetchApplications(): Promise<{
 }> {
   const local = listLocalApplications();
   try {
-    const res = await fetch("/api/applications");
+    const res = await fetch("/api/applications", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
     if (res.ok) {
       const data = await res.json();
       const remote = (data.applications ?? []).map(
         (r: Record<string, unknown>) => mapApp(r),
       );
+      const uploaded = await syncLocalToCloud(remote);
       return {
-        applications: mergeApplications(remote, local),
+        applications: mergeApplications([...remote, ...uploaded], local),
         mode: "supabase",
       };
     }
@@ -142,75 +196,88 @@ export async function trackApplication(input: {
   status?: ApplicationStatus;
   notes?: string;
 }): Promise<{ application: ApplicationRecord; mode: "supabase" | "local" }> {
-  // Always mirror locally so the tracker shows the mark even if Supabase insert fails
-  // (e.g. legacy job_id FK) or the user is signed out.
-  const local = createLocalApplication(input);
+  const notes = withBoardJobNote(input.notes, input.jobId);
+  const local = createLocalApplication({ ...input, notes });
+
+  const body = {
+    jobId: input.jobId ?? null,
+    title: input.title,
+    company: input.company,
+    applyUrl: input.applyUrl ?? null,
+    location: input.location ?? null,
+    status: input.status ?? "saved",
+    notes,
+  };
 
   try {
-    const res = await fetch("/api/applications", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        jobId: input.jobId,
-        title: input.title,
-        company: input.company,
-        applyUrl: input.applyUrl,
-        location: input.location,
-        status: input.status ?? "saved",
-        notes: input.notes ?? "",
-      }),
-    });
+    let res = await postApplication(body);
+
+    // Retry without job_id if the live DB still has the jobs FK
+    if (!res.ok && input.jobId) {
+      res = await postApplication({ ...body, jobId: null });
+    }
+
     if (res.ok) {
       const data = await res.json();
       const remote = mapApp(data.application);
-      // Keep local row in sync with remote id/status when possible
-      if (input.jobId) {
-        createLocalApplication({
-          ...input,
-          status: remote.status,
-          notes: remote.notes,
-        });
-      }
+      createLocalApplication({
+        ...input,
+        status: remote.status,
+        notes: withBoardJobNote(remote.notes, input.jobId),
+      });
       return { application: remote, mode: "supabase" };
     }
   } catch {
     // fall through
   }
-  return {
-    application: local,
-    mode: "local",
-  };
+
+  return { application: local, mode: "local" };
 }
 
 export async function patchApplication(
   id: string,
   patch: Partial<{ status: ApplicationStatus; notes: string; applyUrl: string }>,
 ): Promise<{ application: ApplicationRecord; mode: "supabase" | "local" } | null> {
-  // Prefer local update so UI/tracker stay consistent even when PATCH 401s
-  // (local ids) or network fails.
   const local = updateLocalApplication(id, patch);
 
   try {
     const res = await fetch("/api/applications", {
       method: "PATCH",
+      credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, ...patch }),
     });
     if (res.ok) {
       const data = await res.json();
       const remote = mapApp(data.application);
-      if (remote.job_id) {
-        createLocalApplication({
-          jobId: remote.job_id,
-          title: remote.title_snapshot,
-          company: remote.company_snapshot,
-          applyUrl: remote.apply_url,
-          location: remote.location_snapshot,
-          status: remote.status,
-          notes: remote.notes,
-        });
-      }
+      createLocalApplication({
+        jobId: resolveAppJobId(remote),
+        title: remote.title_snapshot,
+        company: remote.company_snapshot,
+        applyUrl: remote.apply_url,
+        location: remote.location_snapshot,
+        status: remote.status,
+        notes: remote.notes,
+      });
       return { application: remote, mode: "supabase" };
+    }
+
+    // Local UUID won't patch on Supabase — upsert by job instead
+    if (local && (res.status === 400 || res.status === 404 || res.status === 500)) {
+      const jobId = resolveAppJobId(local);
+      const upsert = await postApplication({
+        jobId,
+        title: local.title_snapshot,
+        company: local.company_snapshot,
+        applyUrl: local.apply_url,
+        location: local.location_snapshot,
+        status: patch.status ?? local.status,
+        notes: withBoardJobNote(patch.notes ?? local.notes, jobId),
+      });
+      if (upsert.ok) {
+        const data = await upsert.json();
+        return { application: mapApp(data.application), mode: "supabase" };
+      }
     }
   } catch {
     // fall through
@@ -226,13 +293,13 @@ export async function removeApplication(
   try {
     const res = await fetch(`/api/applications?id=${encodeURIComponent(id)}`, {
       method: "DELETE",
+      credentials: "same-origin",
     });
     remoteOk = res.ok;
   } catch {
     // fall through
   }
 
-  // Always clear local mirrors (ids can differ between supabase + localStorage).
   let localCleared = false;
   const local = listLocalApplications();
   for (const row of local) {
@@ -250,7 +317,10 @@ export async function fetchOutreach(): Promise<{
   mode: "supabase" | "local";
 }> {
   try {
-    const res = await fetch("/api/outreach");
+    const res = await fetch("/api/outreach", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
     if (res.ok) {
       const data = await res.json();
       return {
@@ -280,6 +350,7 @@ export async function queueOutreach(input: {
   try {
     const res = await fetch("/api/outreach", {
       method: "POST",
+      credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
     });
@@ -305,6 +376,7 @@ export async function patchOutreach(
   try {
     const res = await fetch("/api/outreach", {
       method: "PATCH",
+      credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, ...patch }),
     });
@@ -323,6 +395,7 @@ export async function removeOutreach(id: string): Promise<boolean> {
   try {
     const res = await fetch(`/api/outreach?id=${encodeURIComponent(id)}`, {
       method: "DELETE",
+      credentials: "same-origin",
     });
     if (res.ok) return true;
   } catch {

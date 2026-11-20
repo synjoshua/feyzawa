@@ -69,6 +69,14 @@ export async function POST(request: Request) {
     "rejected",
   ]);
 
+  function withBoardNote(notes: string, id: string | null) {
+    if (!id) return notes;
+    if (notes.includes(`board_job_id:${id}`)) return notes;
+    return [notes, `board_job_id:${id}`].filter(Boolean).join("\n");
+  }
+
+  const incomingNotes = withBoardNote(String(body.notes ?? ""), jobId);
+
   // Upsert by job: mark applied / save should update an existing row, not orphan.
   if (jobId) {
     const { data: candidates } = await supabase
@@ -81,6 +89,13 @@ export async function POST(request: Request) {
       candidates?.find((row) => row.job_id === jobId) ??
       candidates?.find((row) =>
         String(row.notes ?? "").includes(`board_job_id:${jobId}`),
+      ) ??
+      candidates?.find(
+        (row) =>
+          String(row.company_snapshot ?? "").toLowerCase() ===
+            String(body.company ?? "").trim().toLowerCase() &&
+          String(row.title_snapshot ?? "").toLowerCase() ===
+            String(body.title ?? "").trim().toLowerCase(),
       );
 
     if (existing) {
@@ -96,8 +111,12 @@ export async function POST(request: Request) {
         company_snapshot: String(body.company ?? existing.company_snapshot),
         apply_url: body.applyUrl ?? existing.apply_url,
         location_snapshot: body.location ?? existing.location_snapshot,
-        notes:
-          typeof body.notes === "string" ? body.notes : existing.notes ?? "",
+        notes: withBoardNote(
+          typeof body.notes === "string"
+            ? body.notes
+            : String(existing.notes ?? ""),
+          jobId,
+        ),
         updated_at: now,
       };
       if (status === "applied" && !existing.applied_at) {
@@ -125,7 +144,7 @@ export async function POST(request: Request) {
     apply_url: body.applyUrl ?? null,
     location_snapshot: body.location ?? null,
     status,
-    notes: String(body.notes ?? ""),
+    notes: incomingNotes,
     applied_at: status === "applied" ? now : null,
     updated_at: now,
   };
