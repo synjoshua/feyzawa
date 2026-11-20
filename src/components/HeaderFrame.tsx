@@ -5,7 +5,7 @@ export const HEADER_SHELL =
   "relative z-20 mx-auto max-w-6xl px-4 pb-5 pt-6 sm:px-6 sm:pb-6";
 
 export const HEADER_BRAND =
-  "brand-mark overflow-visible text-[2.35rem] leading-none tracking-[-0.02em] text-porcelain sm:text-[3.5rem] sm:tracking-[-0.045em]";
+  "brand-mark brand-mark-glow overflow-visible text-[2.35rem] leading-none tracking-[-0.02em] text-porcelain sm:text-[3.5rem] sm:tracking-[-0.045em]";
 
 export const HEADER_BAND_MIN =
   "flex min-h-[11.75rem] flex-col sm:min-h-[13.25rem]";

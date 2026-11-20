@@ -221,7 +221,11 @@ export function DenseHome({
   return (
     <div className="min-h-screen bg-[#f2e8de] pb-16">
       <HeaderFrame
-        brand={<h1 className={HEADER_BRAND}>Feyzawa</h1>}
+        brand={
+          <Link href="/" className="focus-ring inline-block rounded-sm">
+            <h1 className={HEADER_BRAND}>Feyzawa</h1>
+          </Link>
+        }
         nav={
           <>
             <MobileNav links={navLinks} />
