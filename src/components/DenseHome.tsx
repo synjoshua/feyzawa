@@ -480,7 +480,9 @@ export function DenseHome({
           <ul className="tea-surface divide-y divide-[var(--line)] overflow-hidden rounded-[1.25rem]">
             {filtered.length === 0 ? (
               <li className="px-4 py-12 text-center text-sm text-ink-soft">
-                No matching roles — reset filters or refresh allowlist boards.
+                {company && (companyCounts.get(company) ?? 0) === 0
+                  ? `No design roles stored for ${company} yet — tap Refresh jobs (while signed in) to pull their board.`
+                  : "No matching roles — reset filters or refresh allowlist boards."}
               </li>
             ) : (
               filtered.map((job) => {

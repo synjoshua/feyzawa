@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { refreshAllJobs } from "@/lib/ats/fetch-all";
 import { loadJobs, persistJobs } from "@/lib/jobs/store";
+import { getCurrentUser } from "@/lib/supabase/server";
 import { purgeSoftMarksAfterRefresh } from "@/lib/tracking/purge-closed";
 
 export const runtime = "nodejs";
@@ -9,25 +10,28 @@ export const maxDuration = 300;
 /**
  * Manual refresh from the UI.
  * - Local/dev: always allowed
- * - Production: requires Authorization: Bearer CRON_SECRET (or ?secret=)
- *   so random visitors cannot hammer ATS boards.
+ * - Production: signed-in users, or Authorization: Bearer CRON_SECRET
+ *   (anonymous visitors cannot hammer ATS boards).
  */
-function authorize(request: Request): boolean {
+async function authorize(request: Request): Promise<boolean> {
   if (process.env.NODE_ENV !== "production") return true;
   const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  const header = request.headers.get("authorization");
-  if (header === `Bearer ${secret}`) return true;
-  const url = new URL(request.url);
-  return url.searchParams.get("secret") === secret;
+  if (secret) {
+    const header = request.headers.get("authorization");
+    if (header === `Bearer ${secret}`) return true;
+    const url = new URL(request.url);
+    if (url.searchParams.get("secret") === secret) return true;
+  }
+  const user = await getCurrentUser();
+  return Boolean(user);
 }
 
 export async function POST(request: Request) {
-  if (!authorize(request)) {
+  if (!(await authorize(request))) {
     return NextResponse.json(
       {
         error:
-          "Refresh locked in production. Set CRON_SECRET and call with Authorization bearer, or use Vercel Cron.",
+          "Sign in to refresh jobs, or use the daily cron / CRON_SECRET bearer.",
       },
       { status: 401 },
     );

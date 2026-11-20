@@ -11,7 +11,7 @@ import type {
   RefreshSummary,
 } from "./types";
 
-async function fetchCompany(
+export async function fetchCompany(
   company: CompanyAllowlistEntry,
 ): Promise<FetchCompanyResult> {
   switch (company.provider) {
@@ -30,6 +30,93 @@ async function fetchCompany(
         fetchedAt: new Date().toISOString(),
       };
   }
+}
+
+/**
+ * Fetch one allowlisted company and merge into the existing job set.
+ * Used when a user Watches a company so roles appear without a full refresh.
+ */
+export async function refreshCompanyJobs(
+  company: CompanyAllowlistEntry,
+  previous: NormalizedJob[] = [],
+): Promise<RefreshResult> {
+  const startedAt = new Date().toISOString();
+  const previousById = new Map(previous.map((j) => [j.id, j]));
+  const boardKey = `${company.provider}:${company.boardToken}`;
+
+  const result = await fetchCompany(company);
+  if (!result.ok) {
+    return {
+      jobs: previous,
+      summary: {
+        startedAt,
+        finishedAt: new Date().toISOString(),
+        companiesAttempted: 1,
+        companiesSucceeded: 0,
+        companiesFailed: 1,
+        rawJobsFetched: 0,
+        designJobsMatched: previous.filter((j) => j.status === "active").length,
+        upserted: previous.length,
+        markedPotentiallyClosed: 0,
+        failures: [
+          {
+            company: company.name,
+            provider: company.provider,
+            error: result.error ?? "Unknown error",
+          },
+        ],
+      },
+    };
+  }
+
+  const nowIso = new Date().toISOString();
+  const fromCompany: NormalizedJob[] = [];
+  const seenIds = new Set<string>();
+
+  for (const raw of result.jobs) {
+    const provisional = normalizeJob(raw, nowIso, null);
+    if (!provisional) continue;
+    const withExisting = normalizeJob(
+      raw,
+      nowIso,
+      previousById.get(provisional.id) ?? null,
+    );
+    if (withExisting) {
+      fromCompany.push(withExisting);
+      seenIds.add(withExisting.id);
+    }
+  }
+
+  let markedPotentiallyClosed = 0;
+  const keptOthers: NormalizedJob[] = [];
+  for (const prev of previous) {
+    const sameBoard = `${prev.provider}:${prev.boardToken}` === boardKey;
+    if (!sameBoard) {
+      keptOthers.push(prev);
+      continue;
+    }
+    if (seenIds.has(prev.id)) continue;
+    markedPotentiallyClosed += 1;
+    keptOthers.push({ ...prev, status: "potentially_closed" });
+  }
+
+  const jobs = sortJobs(dedupeJobs([...keptOthers, ...fromCompany]));
+  return {
+    jobs,
+    summary: {
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      companiesAttempted: 1,
+      companiesSucceeded: 1,
+      companiesFailed: 0,
+      rawJobsFetched: result.jobs.length,
+      designJobsMatched: fromCompany.filter((j) => j.status === "active")
+        .length,
+      upserted: jobs.length,
+      markedPotentiallyClosed,
+      failures: [],
+    },
+  };
 }
 
 export interface RefreshResult {

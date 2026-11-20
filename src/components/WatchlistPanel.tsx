@@ -89,7 +89,18 @@ export function WatchlistPanel({
     }
     const data = await res.json();
     setItems((prev) => [...prev, data.item as WatchItem]);
-    setMessage(`Watching ${company.name}.`);
+    const matched = data.fetch?.designJobsMatched;
+    if (data.fetch?.ok && typeof matched === "number") {
+      setMessage(
+        matched > 0
+          ? `Watching ${company.name} · ${matched} design role${matched === 1 ? "" : "s"} pulled.`
+          : `Watching ${company.name} · board checked, no matching design roles right now.`,
+      );
+    } else if (data.fetch?.error) {
+      setMessage(`Watching ${company.name}. ${data.fetch.error}`);
+    } else {
+      setMessage(`Watching ${company.name}.`);
+    }
   }
 
   async function clearAll() {

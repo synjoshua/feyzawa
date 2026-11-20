@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
+import { getEffectiveAllowlist } from "@/lib/ats/discover";
+import { refreshCompanyJobs } from "@/lib/ats/fetch-all";
+import { loadJobs, persistJobs } from "@/lib/jobs/store";
 import { createServerSupabaseClient, getCurrentUser } from "@/lib/supabase/server";
 import { loadUserWatchlist } from "@/lib/watchlist/server";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -51,7 +55,52 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ item: data });
+  // Pull this company's board now so Company watch isn't stuck at 0 until cron.
+  let fetchResult: {
+    ok: boolean;
+    designJobsMatched?: number;
+    error?: string;
+  } = { ok: false };
+  try {
+    const allowlist = await getEffectiveAllowlist();
+    const boardToken = body.boardToken ? String(body.boardToken) : null;
+    const provider = body.provider ? String(body.provider) : null;
+    const company =
+      allowlist.find(
+        (c) =>
+          c.name.toLowerCase() === companyName.toLowerCase() &&
+          (!provider || c.provider === provider) &&
+          (!boardToken || c.boardToken === boardToken),
+      ) ??
+      allowlist.find(
+        (c) => c.name.toLowerCase() === companyName.toLowerCase(),
+      );
+
+    if (company) {
+      const existing = await loadJobs();
+      const { jobs, summary } = await refreshCompanyJobs(
+        company,
+        existing.jobs,
+      );
+      await persistJobs(jobs, summary);
+      fetchResult = {
+        ok: true,
+        designJobsMatched: summary.designJobsMatched,
+      };
+    } else {
+      fetchResult = {
+        ok: false,
+        error: "Company is not on the allowlist yet — roles appear after discovery or a full refresh.",
+      };
+    }
+  } catch (err) {
+    fetchResult = {
+      ok: false,
+      error: err instanceof Error ? err.message : "Board fetch failed",
+    };
+  }
+
+  return NextResponse.json({ item: data, fetch: fetchResult });
 }
 
 export async function DELETE(request: Request) {
