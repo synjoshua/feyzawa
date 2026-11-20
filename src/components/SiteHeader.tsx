@@ -25,9 +25,6 @@ export async function SiteHeader({ active }: { active?: string }) {
           <span className="brand-mark shrink-0 text-[1.85rem] text-porcelain transition group-hover:text-[#e5bf55] sm:text-[2.1rem]">
             Feyzawa
           </span>
-          <span className="hidden text-[10px] uppercase tracking-[0.26em] text-[#e5bf55]/80 sm:inline">
-            Design hunt
-          </span>
         </Link>
         <MobileNav links={links} active={active} />
         <nav className="hidden items-center gap-0.5 sm:flex sm:gap-1">
