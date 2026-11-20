@@ -121,7 +121,6 @@ export function DenseHome({
     });
   }, [initialJobs, q, chip, company]);
 
-  const featured = filtered.slice(0, 8);
   const internCount = activeJobs.filter((j) => j.isInternship).length;
   const caCount = activeJobs.filter((j) => j.isCalifornia).length;
   const remoteCount = activeJobs.filter((j) => j.isRemote).length;
@@ -407,88 +406,8 @@ export function DenseHome({
           </div>
         </div>
 
-        {/* Featured / open roles */}
-        <section id="open-roles" className="animate-pour stagger-2 mt-5 scroll-mt-4">
-          <div className="mb-2 flex items-baseline justify-between gap-2 px-0.5">
-            <h2 className="brand-display text-2xl text-ink sm:text-3xl">
-              Open roles
-            </h2>
-            <span className="text-xs text-ink-soft">
-              {filtered.length} matching
-            </span>
-          </div>
-
-          <ul className="tea-surface divide-y divide-[var(--line)] overflow-hidden rounded-[1.25rem]">
-            {featured.length === 0 ? (
-              <li className="px-4 py-12 text-center text-sm text-ink-soft">
-                No matching roles — reset filters or refresh allowlist boards.
-              </li>
-            ) : (
-              featured.map((job) => (
-                <li key={job.id} className="job-row">
-                  <div className="flex flex-col gap-2.5 px-3.5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-4">
-                    <div className="flex min-w-0 items-start gap-3">
-                      <CompanyLogo companyName={job.companyName} />
-                      <div className="min-w-0 space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Link
-                            href={`/jobs/${job.id}`}
-                            className="focus-ring text-[15px] font-medium text-ink hover:text-gold"
-                          >
-                            {job.title}
-                          </Link>
-                          <StatusBadge value={job.status} />
-                        </div>
-                        <p className="text-xs text-ink-soft sm:text-sm">
-                          {job.companyName}
-                          {job.locationText ? ` · ${job.locationText}` : ""}
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          <EligibilityBadge value={job.eligibility} />
-                          <ExperienceBadge value={job.experienceBand} />
-                          <WorkStyleBadge value={job.workStyle} />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex shrink-0 flex-wrap items-center gap-2">
-                      <BookmarkButton job={job} />
-                      <Link
-                        href={`/jobs/${job.id}`}
-                        className="focus-ring rounded-full border border-[var(--line)] px-3 py-1.5 text-xs text-ink-soft"
-                      >
-                        Details
-                      </Link>
-                      <Link
-                        href={`/jobs/${job.id}`}
-                        className="focus-ring rounded-full border border-gold/40 bg-chartreuse/15 px-3 py-1.5 text-xs text-ink"
-                      >
-                        Applied?
-                      </Link>
-                      <a
-                        href={job.applyUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="focus-ring rounded-full bg-jade px-3 py-1.5 text-xs font-medium text-porcelain"
-                      >
-                        Apply
-                      </a>
-                    </div>
-                  </div>
-                </li>
-              ))
-            )}
-          </ul>
-
-          {filtered.length > featured.length ? (
-            <p className="mt-2 text-center text-xs text-ink-soft">
-              Showing top {featured.length} of {filtered.length} — scroll for
-              full board
-            </p>
-          ) : null}
-        </section>
-
         {/* Company watch — opt-in only; empty until user taps Watch */}
-        <section className="animate-pour stagger-3 mt-6">
+        <section className="animate-pour stagger-2 mt-5">
           <div className="mb-2 flex items-baseline justify-between px-0.5">
             <h2 className="brand-display text-2xl text-ink">Company watch</h2>
             <Link href="/watchlist" className="text-xs text-gold hover:underline">
@@ -551,6 +470,79 @@ export function DenseHome({
           )}
         </section>
 
+        {/* Open roles — full filtered list */}
+        <section id="open-roles" className="animate-pour stagger-3 mt-5 scroll-mt-4">
+          <div className="mb-2 flex items-baseline justify-between gap-2 px-0.5">
+            <h2 className="brand-display text-2xl text-ink sm:text-3xl">
+              Open roles
+            </h2>
+            <span className="text-xs text-ink-soft">
+              {filtered.length} matching
+            </span>
+          </div>
+
+          <ul className="tea-surface divide-y divide-[var(--line)] overflow-hidden rounded-[1.25rem]">
+            {filtered.length === 0 ? (
+              <li className="px-4 py-12 text-center text-sm text-ink-soft">
+                No matching roles — reset filters or refresh allowlist boards.
+              </li>
+            ) : (
+              filtered.map((job) => (
+                <li key={job.id} className="job-row">
+                  <div className="flex flex-col gap-2.5 px-3.5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                    <div className="flex min-w-0 items-start gap-3">
+                      <CompanyLogo companyName={job.companyName} />
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link
+                            href={`/jobs/${job.id}`}
+                            className="focus-ring text-[15px] font-medium text-ink hover:text-gold"
+                          >
+                            {job.title}
+                          </Link>
+                          <StatusBadge value={job.status} />
+                        </div>
+                        <p className="text-xs text-ink-soft sm:text-sm">
+                          {job.companyName}
+                          {job.locationText ? ` · ${job.locationText}` : ""}
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          <EligibilityBadge value={job.eligibility} />
+                          <ExperienceBadge value={job.experienceBand} />
+                          <WorkStyleBadge value={job.workStyle} />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 flex-wrap items-center gap-2">
+                      <BookmarkButton job={job} />
+                      <Link
+                        href={`/jobs/${job.id}`}
+                        className="focus-ring rounded-full border border-[var(--line)] px-3 py-1.5 text-xs text-ink-soft"
+                      >
+                        Details
+                      </Link>
+                      <Link
+                        href={`/jobs/${job.id}`}
+                        className="focus-ring rounded-full border border-gold/40 bg-chartreuse/15 px-3 py-1.5 text-xs text-ink"
+                      >
+                        Applied?
+                      </Link>
+                      <a
+                        href={job.applyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="focus-ring rounded-full bg-jade px-3 py-1.5 text-xs font-medium text-porcelain"
+                      >
+                        Apply
+                      </a>
+                    </div>
+                  </div>
+                </li>
+              ))
+            )}
+          </ul>
+        </section>
+
         {/* Tracker entry */}
         <Link
           href="/tracker"
@@ -569,54 +561,6 @@ export function DenseHome({
           </span>
           <span className="text-gold">→</span>
         </Link>
-
-        {/* Full board remainder */}
-        <section id="board" className="mt-8 scroll-mt-4">
-          <div className="mb-2 flex items-baseline justify-between px-0.5">
-            <h2 className="brand-display text-2xl text-ink sm:text-3xl">
-              Full board
-            </h2>
-            <span className="text-xs text-ink-soft">
-              {filtered.length} roles
-            </span>
-          </div>
-          <ul className="tea-surface divide-y divide-[var(--line)] overflow-hidden rounded-[1.25rem]">
-            {filtered.map((job) => (
-              <li key={`full-${job.id}`} className="job-row">
-                <div className="flex flex-col gap-2 px-3.5 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
-                  <div className="flex min-w-0 items-start gap-3">
-                    <CompanyLogo companyName={job.companyName} size="sm" />
-                    <div className="min-w-0">
-                      <Link
-                        href={`/jobs/${job.id}`}
-                        className="focus-ring text-sm font-medium text-ink hover:text-gold"
-                      >
-                        {job.title}
-                      </Link>
-                      <p className="text-xs text-ink-soft">
-                        {job.companyName}
-                        {job.locationText ? ` · ${job.locationText}` : ""}
-                        {" · "}
-                        verified {relativeTime(job.lastVerifiedAt)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <BookmarkButton job={job} />
-                    <a
-                      href={job.applyUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="focus-ring rounded-full bg-ink px-3 py-1.5 text-xs font-medium text-porcelain"
-                    >
-                      Apply
-                    </a>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
       </div>
     </div>
   );
