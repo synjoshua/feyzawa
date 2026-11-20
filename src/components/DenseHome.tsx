@@ -57,6 +57,7 @@ type QuickKey =
   | "all"
   | "intern"
   | "new_grad"
+  | "senior"
   | "california"
   | "remote";
 
@@ -64,9 +65,14 @@ const CATEGORY_CHIPS: { key: QuickKey; label: string }[] = [
   { key: "all", label: "All" },
   { key: "intern", label: "Intern" },
   { key: "new_grad", label: "New grad" },
+  { key: "senior", label: "Senior" },
   { key: "california", label: "California" },
   { key: "remote", label: "Remote" },
 ];
+
+function isSeniorBand(band: string): boolean {
+  return band === "senior" || band === "mid";
+}
 
 export function DenseHome({
   initialJobs,
@@ -166,6 +172,8 @@ export function DenseHome({
           return job.isInternship || job.experienceBand === "intern";
         case "new_grad":
           return job.experienceBand === "new_grad";
+        case "senior":
+          return isSeniorBand(job.experienceBand);
         case "california":
           return job.isCalifornia;
         case "remote":
@@ -206,6 +214,8 @@ export function DenseHome({
       case "new_grad":
         return visibleJobs.filter((j) => j.experienceBand === "new_grad")
           .length;
+      case "senior":
+        return visibleJobs.filter((j) => isSeniorBand(j.experienceBand)).length;
       case "california":
         return caCount;
       case "remote":

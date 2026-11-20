@@ -50,12 +50,30 @@ const INCLUDE_TITLE_PATTERNS: RegExp[] = [
   /\bux\s+intern(?:ship)?\b/i,
   /\bui\s+intern(?:ship)?\b/i,
   /\bcontent\s+design\s+intern(?:ship)?\b/i,
-  /\bfigma\b/i,
 ];
 
 /** Title looks design-related even if not an exact "X Designer" phrase. */
 const DESIGNISH_TITLE: RegExp =
-  /\b(design(?:er|ing)?|ux|ui|figma|prototyp(?:e|ing)|wirefram)/i;
+  /\b(design(?:er|ing)?|ux|ui|prototyp(?:e|ing)|wirefram)/i;
+
+/** Hard excludes — design-adjacent words in non-design jobs (esp. Figma product names). */
+const EXCLUDE_TITLE_PATTERNS: RegExp[] = [
+  /\baccount\s+executive\b/i,
+  /\bcustomer\s+success\b/i,
+  /\bsales\b/i,
+  /\brecruiter\b/i,
+  /\bsoftware\s+engineer(?:ing)?\b/i,
+  /\bfrontend\s+platform\s+engineer\b/i,
+  /\bproduct\s+manager\b/i,
+  /\bproduct\s+management\b/i,
+  /\bproduct\s+marketing\b/i,
+  /\bpeople\s+partner/i,
+  /\bengineering\s+manager\b/i,
+  /\bmanager,\s*software\b/i,
+  /\bmanager,\s*sales\b/i,
+  /\bmanager,\s*customer\b/i,
+  /\bmanager,\s*product\s+management\b/i,
+];
 
 /** Hard seniority excludes unless early-career signal also present. */
 const SENIORITY_EXCLUDE: RegExp[] = [
@@ -109,36 +127,25 @@ function hasEarlyCareerSignal(title: string, description = ""): boolean {
   return EARLY_CAREER_DESCRIPTION.some((p) => p.test(description));
 }
 
-function passesSeniorityGate(title: string, _description = ""): boolean {
-  const hasSeniority = SENIORITY_EXCLUDE.some((p) => p.test(title));
-  if (!hasSeniority) return true;
-  // Senior-titled roles only stay if the TITLE itself says early-career
-  // (e.g. "Senior Product Designer, New Grad"). Press blurbs in the JD
-  // must not keep them on an early-career board.
-  return EARLY_CAREER_TITLE.some((p) => p.test(title));
-}
-
 /**
  * Include a role when:
  * - Title matches a design pattern, or
  * - Title is design-ish and Figma is mentioned in the title or description, or
  * - Title itself mentions Figma
  *
- * Senior titles still need an early-career signal (title or description).
+ * Senior design titles are included (surfaced under the Senior tab).
  */
 export function isTargetDesignRole(
   title: string,
   description = "",
 ): boolean {
+  if (EXCLUDE_TITLE_PATTERNS.some((p) => p.test(title))) return false;
   const strongTitle = INCLUDE_TITLE_PATTERNS.some((p) => p.test(title));
   const designish = DESIGNISH_TITLE.test(title);
   const figmaHit = FIGMA.test(title) || FIGMA.test(description);
+  // Figma mention alone is not enough — title must already look design-related.
   const figmaDesignRole = designish && figmaHit;
-
-  if (!strongTitle && !figmaDesignRole) {
-    return false;
-  }
-  return passesSeniorityGate(title, description);
+  return strongTitle || figmaDesignRole;
 }
 
 /** @deprecated use isTargetDesignRole — kept for title-only discovery probes */
@@ -157,7 +164,8 @@ export function classifyExperienceBand(
   if (/\bjunior\b|\bentry[\s-]?level\b|\bearly\s*career\b/i.test(title))
     return "junior";
   if (/\bassociate\b/i.test(title)) return "associate";
-  if (SENIORITY_EXCLUDE.some((p) => p.test(title))) return "mid";
+  // Senior / staff / lead titles land on the Senior tab (not New grad).
+  if (SENIORITY_EXCLUDE.some((p) => p.test(title))) return "senior";
 
   if (/\bintern(?:ship)?\b|\bco-?op\b/i.test(description)) return "intern";
   if (
@@ -186,6 +194,7 @@ export function earlyCareerScore(
   if (band === "junior") score += 25;
   if (band === "associate") score += 15;
   if (band === "unknown") score += 8; // keep ambiguous; do not exclude
+  if (band === "mid" || band === "senior") score -= 20;
 
   if (/new\s*grad|recent\s*grad|class of\s*202[6-9]|university|campus/.test(text))
     score += 12;

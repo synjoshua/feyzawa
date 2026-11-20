@@ -21,6 +21,8 @@ export function experienceLabel(value: string): string {
       return "Associate";
     case "mid":
       return "Mid+";
+    case "senior":
+      return "Senior";
     default:
       return "Open";
   }

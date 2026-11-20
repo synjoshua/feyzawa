@@ -6,6 +6,7 @@ export type ExperienceBand =
   | "junior"
   | "associate"
   | "mid"
+  | "senior"
   | "unknown";
 
 export type WorkStyle = "remote" | "hybrid" | "in_person" | "unknown";

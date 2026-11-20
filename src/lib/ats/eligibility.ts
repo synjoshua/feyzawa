@@ -68,6 +68,104 @@ const RECENT_GRAD_ACCEPT = [
   /\bno\s+prior\s+experience\s+required/i,
 ];
 
+export interface YearsExperienceRequirement {
+  /** Human-readable note for eligibility reasons */
+  note: string;
+  /** Lower bound when parseable */
+  minYears: number | null;
+  /** Upper bound when parseable (inclusive) */
+  maxYears: number | null;
+}
+
+/**
+ * Pull stated years-of-experience from title + JD.
+ * Prefers explicit ranges like "3–5 years" / "5+ years of experience".
+ */
+export function extractYearsExperienceRequirement(
+  title: string,
+  descriptionText: string,
+): YearsExperienceRequirement {
+  const blob = `${title}\n${descriptionText}`;
+
+  const patterns: Array<{
+    re: RegExp;
+    read: (m: RegExpMatchArray) => YearsExperienceRequirement;
+  }> = [
+    {
+      re: /\b(\d{1,2})\s*[–—-]\s*(\d{1,2})\s*\+?\s*years?(?:\s+of)?(?:\s+(?:professional\s+|relevant\s+|industry\s+)?)?experience\b/i,
+      read: (m) => {
+        const a = Number(m[1]);
+        const b = Number(m[2]);
+        return {
+          minYears: Math.min(a, b),
+          maxYears: Math.max(a, b),
+          note: `JD asks for ${Math.min(a, b)}–${Math.max(a, b)} years of experience`,
+        };
+      },
+    },
+    {
+      re: /\b(\d{1,2})\s*\+\s*years?(?:\s+of)?(?:\s+(?:professional\s+|relevant\s+|industry\s+)?)?experience\b/i,
+      read: (m) => {
+        const n = Number(m[1]);
+        return {
+          minYears: n,
+          maxYears: null,
+          note: `JD asks for ${n}+ years of experience`,
+        };
+      },
+    },
+    {
+      re: /\b(?:at\s+least|minimum\s+of|min(?:imum)?\.?)\s+(\d{1,2})\s*\+?\s*years?(?:\s+of)?(?:\s+(?:professional\s+|relevant\s+|industry\s+)?)?experience\b/i,
+      read: (m) => {
+        const n = Number(m[1]);
+        return {
+          minYears: n,
+          maxYears: null,
+          note: `JD asks for at least ${n} years of experience`,
+        };
+      },
+    },
+    {
+      re: /\b(\d{1,2})\s*years?(?:\s+of)?(?:\s+(?:professional\s+|relevant\s+|industry\s+)?)?experience\b/i,
+      read: (m) => {
+        const n = Number(m[1]);
+        return {
+          minYears: n,
+          maxYears: n,
+          note: `JD asks for about ${n} years of experience`,
+        };
+      },
+    },
+  ];
+
+  for (const { re, read } of patterns) {
+    const m = blob.match(re);
+    if (!m) continue;
+    const parsed = read(m);
+    if (
+      parsed.minYears != null &&
+      (parsed.minYears < 0 || parsed.minYears > 40)
+    ) {
+      continue;
+    }
+    return parsed;
+  }
+
+  if (/\bno\s+(?:prior\s+)?experience\s+required\b/i.test(blob)) {
+    return {
+      note: "JD says no prior experience required",
+      minYears: 0,
+      maxYears: 0,
+    };
+  }
+
+  return {
+    note: "Years of experience not clearly stated in the JD",
+    minYears: null,
+    maxYears: null,
+  };
+}
+
 /**
  * Mark eligibility from JD + location text.
  * Priority targets:
@@ -85,7 +183,8 @@ export function assessEligibility(input: {
 }): EligibilityResult {
   const { title, locationText, descriptionText, experienceBand } = input;
   const blob = `${title}\n${locationText}\n${descriptionText}`;
-  const reasons: string[] = [];
+  const yoe = extractYearsExperienceRequirement(title, descriptionText);
+  const reasons: string[] = [yoe.note];
 
   const isCalifornia = CA_PATTERNS.some((p) => p.test(locationText)) ||
     (/\bcalifornia\b/i.test(blob) && !/\bexcept california\b/i.test(blob));
