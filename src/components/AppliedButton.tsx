@@ -5,6 +5,7 @@ import type { NormalizedJob } from "@/lib/ats/types";
 import {
   fetchApplications,
   patchApplication,
+  removeApplication,
   trackApplication,
 } from "@/lib/tracking/client";
 import type { ApplicationStatus } from "@/lib/tracking/types";
@@ -36,7 +37,8 @@ type Props = {
   /** Optional preloaded status from a parent fetch */
   initialStatus?: ApplicationStatus | null;
   initialId?: string | null;
-  onChange?: (status: ApplicationStatus, id: string) => void;
+  /** null status = cleared / removed from tracker */
+  onChange?: (status: ApplicationStatus | null, id: string | null) => void;
   className?: string;
 };
 
@@ -61,8 +63,6 @@ export function AppliedButton({
     (async () => {
       const { applications } = await fetchApplications();
       if (cancelled) return;
-      // Prefer pipeline status; otherwise keep any existing row (e.g. saved bookmark)
-      // so Mark applied can PATCH instead of creating a second entry.
       const pipeline = applications.find(
         (a) => a.job_id === job.id && PIPELINE.includes(a.status),
       );
@@ -71,6 +71,9 @@ export function AppliedButton({
       if (hit) {
         setStatus(hit.status);
         setAppId(hit.id);
+      } else {
+        setStatus(null);
+        setAppId(null);
       }
     })();
     return () => {
@@ -78,17 +81,33 @@ export function AppliedButton({
     };
   }, [job.id, initialStatus, initialId]);
 
-  async function markApplied() {
-    if (busy || (status && PIPELINE.includes(status))) return;
+  async function resolveId(): Promise<string | null> {
+    if (appId) return appId;
+    const { applications } = await fetchApplications();
+    return applications.find((a) => a.job_id === job.id)?.id ?? null;
+  }
+
+  async function clearApplied() {
     setBusy(true);
     try {
-      // Re-check for an existing saved/local row in case initial load raced.
-      let id = appId;
-      if (!id) {
-        const { applications } = await fetchApplications();
-        const hit = applications.find((a) => a.job_id === job.id);
-        if (hit) id = hit.id;
+      const id = await resolveId();
+      if (id) {
+        await removeApplication(id, job.id);
+      } else {
+        await removeApplication("", job.id);
       }
+      setStatus(null);
+      setAppId(null);
+      onChange?.(null, null);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function markApplied() {
+    setBusy(true);
+    try {
+      const id = await resolveId();
 
       if (id) {
         const result = await patchApplication(id, { status: "applied" });
@@ -116,21 +135,37 @@ export function AppliedButton({
     }
   }
 
+  async function toggle() {
+    if (busy) return;
+    if (status && PIPELINE.includes(status)) {
+      await clearApplied();
+      return;
+    }
+    await markApplied();
+  }
+
   const marked = status !== null && PIPELINE.includes(status);
 
   return (
     <button
       type="button"
-      onClick={markApplied}
-      disabled={busy || marked}
+      onClick={toggle}
+      disabled={busy}
       aria-pressed={marked}
-      className={`focus-ring rounded-full px-3 py-1.5 text-xs font-medium transition disabled:cursor-default ${
+      title={marked ? "Click to remove from tracker" : "Mark as applied"}
+      className={`focus-ring rounded-full px-3 py-1.5 text-xs font-medium transition disabled:opacity-60 ${
         marked
-          ? "border border-jade bg-jade text-porcelain"
+          ? "border border-jade bg-jade text-porcelain hover:border-clay hover:bg-clay hover:text-porcelain"
           : "border border-gold/40 bg-chartreuse/15 text-ink hover:border-gold hover:bg-chartreuse/25"
       } ${className}`}
     >
-      {busy ? "Saving…" : marked ? `${labelFor(status)} ✓` : "Mark applied"}
+      {busy
+        ? marked
+          ? "Removing…"
+          : "Saving…"
+        : marked
+          ? `${labelFor(status)} ✓`
+          : "Mark applied"}
     </button>
   );
 }

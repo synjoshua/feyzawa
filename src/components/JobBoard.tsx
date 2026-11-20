@@ -292,7 +292,8 @@ export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
                         onChange={(status, id) => {
                           setAppByJob((prev) => {
                             const next = new Map(prev);
-                            next.set(job.id, { id, status });
+                            if (!status || !id) next.delete(job.id);
+                            else next.set(job.id, { id, status });
                             return next;
                           });
                         }}

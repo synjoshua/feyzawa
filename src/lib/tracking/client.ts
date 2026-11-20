@@ -201,16 +201,31 @@ export async function patchApplication(
   return local ? { application: local, mode: "local" } : null;
 }
 
-export async function removeApplication(id: string): Promise<boolean> {
+export async function removeApplication(
+  id: string,
+  jobId?: string | null,
+): Promise<boolean> {
+  let remoteOk = false;
   try {
     const res = await fetch(`/api/applications?id=${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
-    if (res.ok) return true;
+    remoteOk = res.ok;
   } catch {
     // fall through
   }
-  return deleteLocalApplication(id);
+
+  // Always clear local mirrors (ids can differ between supabase + localStorage).
+  let localCleared = false;
+  const local = listLocalApplications();
+  for (const row of local) {
+    if ((id && row.id === id) || (jobId && row.job_id === jobId)) {
+      deleteLocalApplication(row.id);
+      localCleared = true;
+    }
+  }
+
+  return remoteOk || localCleared;
 }
 
 export async function fetchOutreach(): Promise<{
