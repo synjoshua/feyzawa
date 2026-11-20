@@ -11,8 +11,6 @@ export function relativeTime(iso: string | null | undefined): string {
 
 export function eligibilityLabel(value: string): string {
   switch (value) {
-    case "confirmed":
-      return "Confirmed";
     case "possible":
       return "Possible";
     default:

@@ -6,11 +6,9 @@ import {
 
 export function EligibilityBadge({ value }: { value: string }) {
   const styles =
-    value === "confirmed"
-      ? "bg-chartreuse/25 text-[#7a5a14] ring-gold/35"
-      : value === "possible"
-        ? "bg-leaf/15 text-[#8a5a18] ring-leaf/30"
-        : "bg-foam text-ink-soft ring-[var(--line)]";
+    value === "possible"
+      ? "bg-leaf/15 text-[#8a5a18] ring-leaf/30"
+      : "bg-foam text-ink-soft ring-[var(--line)]";
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide ring-1 ring-inset ${styles}`}

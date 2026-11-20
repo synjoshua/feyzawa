@@ -22,7 +22,7 @@ type Props = {
 
 const WORK = ["remote", "hybrid", "in_person"] as const;
 const EXPERIENCE = ["intern", "new_grad", "junior", "associate", "unknown"] as const;
-const ELIGIBILITY = ["confirmed", "possible", "unclear"] as const;
+const ELIGIBILITY = ["possible", "unclear"] as const;
 
 export function JobBoard({ initialJobs, updatedAt, source, companies }: Props) {
   const [q, setQ] = useState("");

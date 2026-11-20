@@ -105,8 +105,8 @@ export function sortJobs(jobs: NormalizedJob[]): NormalizedJob[] {
   return [...jobs].sort((a, b) => {
     // Active first
     if (a.status !== b.status) return a.status === "active" ? -1 : 1;
-    // Eligibility confirmed > possible > unclear
-    const el = { confirmed: 0, possible: 1, unclear: 2 } as const;
+    // Eligibility possible > unclear
+    const el = { possible: 0, unclear: 1 } as const;
     if (el[a.eligibility] !== el[b.eligibility]) {
       return el[a.eligibility] - el[b.eligibility];
     }

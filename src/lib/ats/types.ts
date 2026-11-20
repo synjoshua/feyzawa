@@ -10,7 +10,7 @@ export type ExperienceBand =
 
 export type WorkStyle = "remote" | "hybrid" | "in_person" | "unknown";
 
-export type EligibilityMark = "confirmed" | "possible" | "unclear";
+export type EligibilityMark = "possible" | "unclear";
 
 export type ListingStatus = "active" | "potentially_closed";
 

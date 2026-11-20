@@ -23,7 +23,7 @@ create table if not exists public.jobs (
   is_remote boolean default false,
   is_internship boolean default false,
   is_full_time boolean default true,
-  eligibility text not null check (eligibility in ('confirmed', 'possible', 'unclear')),
+  eligibility text not null check (eligibility in ('possible', 'unclear')),
   eligibility_reasons text[] default '{}',
   early_career_score integer default 0,
   posted_at timestamptz,

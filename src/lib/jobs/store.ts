@@ -64,7 +64,10 @@ function rowToJob(row: Record<string, unknown>): NormalizedJob {
     isRemote: Boolean(row.is_remote),
     isInternship: Boolean(row.is_internship),
     isFullTime: Boolean(row.is_full_time),
-    eligibility: row.eligibility as NormalizedJob["eligibility"],
+    eligibility:
+      row.eligibility === "unclear"
+        ? "unclear"
+        : ("possible" as NormalizedJob["eligibility"]),
     eligibilityReasons: (row.eligibility_reasons as string[]) ?? [],
     earlyCareerScore: Number(row.early_career_score ?? 0),
     postedAt: (row.posted_at as string) ?? null,

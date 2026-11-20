@@ -116,34 +116,27 @@ export function assessEligibility(input: {
 
   let eligibility: EligibilityMark = "unclear";
 
-  // Confirmed: CA full-time design role
+  // Possible: CA full-time design role
   if (isCalifornia && isFullTime && !isInternship) {
-    eligibility = "confirmed";
+    eligibility = "possible";
     reasons.push("California-based full-time location signal");
   }
 
-  // Confirmed: internship with nationwide/remote + recent-grad language
+  // Possible: internship with nationwide/remote + recent-grad language
   if (isInternship && (usNationwide || isRemote || isCalifornia)) {
     if (acceptsRecentGrad || mentions2027 || experienceBand === "intern") {
-      // Intern postings themselves are the eligibility signal for early career;
-      // still require geo fit for "confirmed"
-      if (acceptsRecentGrad || mentions2027) {
-        eligibility = "confirmed";
-        reasons.push(
-          "Internship with explicit recent-grad / class-year language",
-        );
-      } else if (eligibility !== "confirmed") {
-        eligibility = "possible";
-        reasons.push(
-          "Internship in CA / US / remote — recent-grad acceptance not explicit",
-        );
-      }
+      eligibility = "possible";
+      reasons.push(
+        acceptsRecentGrad || mentions2027
+          ? "Internship with explicit recent-grad / class-year language"
+          : "Internship in CA / US / remote — recent-grad acceptance not explicit",
+      );
     }
   }
 
-  // Confirmed remote when JD clearly opens to US/CA early career
+  // Possible: remote when JD clearly opens to US/CA early career
   if (isRemote && (isCalifornia || usNationwide) && acceptsRecentGrad) {
-    eligibility = "confirmed";
+    eligibility = "possible";
     reasons.push("Remote role with US/CA scope and recent-grad language");
   }
 
