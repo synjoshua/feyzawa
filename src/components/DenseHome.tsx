@@ -465,7 +465,7 @@ export function DenseHome({
           ) : null}
         </section>
 
-        {/* Company watch */}
+        {/* Company watch — opt-in only; empty until user taps Watch */}
         <section className="animate-pour stagger-3 mt-6">
           <div className="mb-2 flex items-baseline justify-between px-0.5">
             <h2 className="brand-display text-2xl text-ink">Company watch</h2>
@@ -473,38 +473,59 @@ export function DenseHome({
               Manage →
             </Link>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {watchedCompanies.map((name) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => {
-                  startTransition(() => {
-                    setCompany(name);
-                    setChip("all");
-                  });
-                  document
-                    .getElementById("open-roles")
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className={`focus-ring flex shrink-0 items-center gap-2.5 rounded-2xl border px-3 py-2 text-left transition ${
-                  company === name
-                    ? "border-jade bg-jade text-porcelain"
-                    : "border-[var(--line)] bg-porcelain hover:border-gold/50"
-                }`}
-              >
-                <CompanyLogo companyName={name} size="sm" />
-                <span>
-                  <p className="text-sm font-medium">{name}</p>
-                  <p
-                    className={`text-[11px] ${company === name ? "text-porcelain/80" : "text-ink-soft"}`}
-                  >
-                    {companyCounts.get(name) ?? 0} open
-                  </p>
-                </span>
-              </button>
-            ))}
-          </div>
+          {watchedCompanies.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-[var(--line)] bg-porcelain/60 px-4 py-5 text-sm text-ink-soft">
+              {signedIn ? (
+                <>
+                  Nothing watched yet.{" "}
+                  <Link href="/watchlist" className="text-gold hover:underline">
+                    Pick companies
+                  </Link>{" "}
+                  to pin them here.
+                </>
+              ) : (
+                <>
+                  <Link href="/login" className="text-gold hover:underline">
+                    Sign in
+                  </Link>{" "}
+                  and watch companies to pin them here.
+                </>
+              )}
+            </p>
+          ) : (
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {watchedCompanies.map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => {
+                    startTransition(() => {
+                      setCompany(name);
+                      setChip("all");
+                    });
+                    document
+                      .getElementById("open-roles")
+                      ?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className={`focus-ring flex shrink-0 items-center gap-2.5 rounded-2xl border px-3 py-2 text-left transition ${
+                    company === name
+                      ? "border-jade bg-jade text-porcelain"
+                      : "border-[var(--line)] bg-porcelain hover:border-gold/50"
+                  }`}
+                >
+                  <CompanyLogo companyName={name} size="sm" />
+                  <span>
+                    <p className="text-sm font-medium">{name}</p>
+                    <p
+                      className={`text-[11px] ${company === name ? "text-porcelain/80" : "text-ink-soft"}`}
+                    >
+                      {companyCounts.get(name) ?? 0} open
+                    </p>
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Tracker entry */}

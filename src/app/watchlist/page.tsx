@@ -12,18 +12,13 @@ export default async function WatchlistPage() {
   const configured = isSupabaseAuthConfigured();
   const user = await getCurrentUser();
 
+  // Opt-in only — never pre-select defaults
   let initial: Array<{
     id?: string;
     company_name: string;
     provider?: string | null;
     board_token?: string | null;
-  }> = allowlist
-    .filter((c) => c.watchedByDefault)
-    .map((c) => ({
-      company_name: c.name,
-      provider: c.provider,
-      board_token: c.boardToken,
-    }));
+  }> = [];
 
   if (configured && user) {
     const { items } = await loadUserWatchlist(user.id);
@@ -35,7 +30,7 @@ export default async function WatchlistPage() {
       active="/watchlist"
       eyebrow="Companies"
       title="Watchlist"
-      description="Companies you follow. Sign in once — Watch / Unwatch saves to your account."
+      description="Nothing is watched by default. Tap Watch on companies you care about — that list shows up under Company watch on home."
     >
       <WatchlistPanel
         initial={initial}
