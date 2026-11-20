@@ -5022,6 +5022,391 @@
       "provider": "lever",
       "boardToken": "scaleai",
       "careersUrl": "https://scale.com/careers"
+    },
+    {
+      "name": "Sierra",
+      "provider": "ashby",
+      "boardToken": "sierra",
+      "careersUrl": "https://sierra.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Decagon",
+      "provider": "ashby",
+      "boardToken": "decagon",
+      "careersUrl": "https://decagon.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Cognition",
+      "provider": "ashby",
+      "boardToken": "cognition",
+      "careersUrl": "https://cognition.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Figure AI",
+      "provider": "greenhouse",
+      "boardToken": "figureai",
+      "careersUrl": "https://www.figure.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Lovable",
+      "provider": "ashby",
+      "boardToken": "lovable",
+      "careersUrl": "https://lovable.dev/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Writer",
+      "provider": "ashby",
+      "boardToken": "writer",
+      "careersUrl": "https://writer.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Modal",
+      "provider": "ashby",
+      "boardToken": "modal",
+      "careersUrl": "https://modal.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Abridge",
+      "provider": "ashby",
+      "boardToken": "abridge",
+      "careersUrl": "https://www.abridge.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "xAI",
+      "provider": "greenhouse",
+      "boardToken": "xai",
+      "careersUrl": "https://x.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Together AI",
+      "provider": "greenhouse",
+      "boardToken": "togetherai",
+      "careersUrl": "https://www.together.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Fireworks AI",
+      "provider": "ashby",
+      "boardToken": "fireworks",
+      "careersUrl": "https://fireworks.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Anyscale",
+      "provider": "ashby",
+      "boardToken": "anyscale",
+      "careersUrl": "https://www.anyscale.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Pinecone",
+      "provider": "ashby",
+      "boardToken": "pinecone",
+      "careersUrl": "https://www.pinecone.io/careers/",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "LangChain",
+      "provider": "ashby",
+      "boardToken": "langchain",
+      "careersUrl": "https://www.langchain.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Deepgram",
+      "provider": "ashby",
+      "boardToken": "deepgram",
+      "careersUrl": "https://deepgram.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "AssemblyAI",
+      "provider": "ashby",
+      "boardToken": "assembly",
+      "careersUrl": "https://www.assemblyai.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "HeyGen",
+      "provider": "greenhouse",
+      "boardToken": "heygen",
+      "careersUrl": "https://www.heygen.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Synthesia",
+      "provider": "ashby",
+      "boardToken": "synthesia",
+      "careersUrl": "https://www.synthesia.io/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Suno",
+      "provider": "ashby",
+      "boardToken": "suno",
+      "careersUrl": "https://suno.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Descript",
+      "provider": "greenhouse",
+      "boardToken": "descript",
+      "careersUrl": "https://www.descript.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Cerebras",
+      "provider": "ashby",
+      "boardToken": "cerebras",
+      "careersUrl": "https://www.cerebras.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Ideogram",
+      "provider": "ashby",
+      "boardToken": "ideogram",
+      "careersUrl": "https://ideogram.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Cresta",
+      "provider": "greenhouse",
+      "boardToken": "cresta",
+      "careersUrl": "https://cresta.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Ambience Healthcare",
+      "provider": "ashby",
+      "boardToken": "ambiencehealthcare",
+      "careersUrl": "https://www.ambiencehealthcare.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Poolside",
+      "provider": "ashby",
+      "boardToken": "poolside",
+      "careersUrl": "https://poolside.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Magic",
+      "provider": "ashby",
+      "boardToken": "magic",
+      "careersUrl": "https://magic.dev/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Factory",
+      "provider": "ashby",
+      "boardToken": "factory",
+      "careersUrl": "https://factory.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Reflection AI",
+      "provider": "ashby",
+      "boardToken": "reflectionai",
+      "careersUrl": "https://reflection.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Imbue",
+      "provider": "greenhouse",
+      "boardToken": "imbue",
+      "careersUrl": "https://imbue.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Weaviate",
+      "provider": "ashby",
+      "boardToken": "weaviate",
+      "careersUrl": "https://weaviate.io/company/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Chroma",
+      "provider": "ashby",
+      "boardToken": "trychroma",
+      "careersUrl": "https://www.trychroma.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Cartesia",
+      "provider": "ashby",
+      "boardToken": "cartesia",
+      "careersUrl": "https://cartesia.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Vapi",
+      "provider": "ashby",
+      "boardToken": "vapi",
+      "careersUrl": "https://vapi.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Speak",
+      "provider": "ashby",
+      "boardToken": "speak",
+      "careersUrl": "https://www.speak.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Photoroom",
+      "provider": "ashby",
+      "boardToken": "photoroom",
+      "careersUrl": "https://www.photoroom.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Gamma",
+      "provider": "ashby",
+      "boardToken": "gamma",
+      "careersUrl": "https://gamma.app/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "n8n",
+      "provider": "ashby",
+      "boardToken": "n8n",
+      "careersUrl": "https://n8n.io/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "LlamaIndex",
+      "provider": "ashby",
+      "boardToken": "llamaindex",
+      "careersUrl": "https://www.llamaindex.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Thinking Machines Lab",
+      "provider": "ashby",
+      "boardToken": "thinkingmachines",
+      "careersUrl": "https://thinkingmachines.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Legora",
+      "provider": "ashby",
+      "boardToken": "legora",
+      "careersUrl": "https://legora.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Mercor",
+      "provider": "ashby",
+      "boardToken": "mercor",
+      "careersUrl": "https://www.mercor.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "fal",
+      "provider": "ashby",
+      "boardToken": "fal-ai",
+      "careersUrl": "https://fal.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Black Forest Labs",
+      "provider": "ashby",
+      "boardToken": "black-forest-labs",
+      "careersUrl": "https://bfl.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Luma AI",
+      "provider": "ashby",
+      "boardToken": "lumaai",
+      "careersUrl": "https://lumalabs.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Otter.ai",
+      "provider": "greenhouse",
+      "boardToken": "otterai",
+      "careersUrl": "https://otter.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Stability AI",
+      "provider": "greenhouse",
+      "boardToken": "stabilityai",
+      "careersUrl": "https://stability.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Retell AI",
+      "provider": "ashby",
+      "boardToken": "retell-ai",
+      "careersUrl": "https://www.retellai.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "SambaNova",
+      "provider": "greenhouse",
+      "boardToken": "sambanovasystems",
+      "careersUrl": "https://sambanova.ai/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "EliseAI",
+      "provider": "ashby",
+      "boardToken": "eliseai",
+      "careersUrl": "https://eliseai.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Applied Intuition",
+      "provider": "ashby",
+      "boardToken": "applied",
+      "careersUrl": "https://www.appliedintuition.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Hebbia",
+      "provider": "ashby",
+      "boardToken": "hebbia-ai",
+      "careersUrl": "https://www.hebbia.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Sourcegraph",
+      "provider": "greenhouse",
+      "boardToken": "sourcegraph91",
+      "careersUrl": "https://sourcegraph.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Browserbase",
+      "provider": "greenhouse",
+      "boardToken": "browserbaseinc",
+      "careersUrl": "https://www.browserbase.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Nebius",
+      "provider": "greenhouse",
+      "boardToken": "nebius",
+      "careersUrl": "https://nebius.com/careers",
+      "source": "manual-ai-expansion"
+    },
+    {
+      "name": "Baseten",
+      "provider": "ashby",
+      "boardToken": "baseten",
+      "careersUrl": "https://www.baseten.co/careers/",
+      "source": "manual-ai-expansion"
     }
   ]
 }

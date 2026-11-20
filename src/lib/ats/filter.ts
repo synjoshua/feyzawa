@@ -22,6 +22,10 @@ const INCLUDE_TITLE_PATTERNS: RegExp[] = [
   /\bexperience\s*designer\b/i,
   /\buser\s+experience\s+design(?:er)?\b/i,
   /\buser\s+interface\s+design(?:er)?\b/i,
+  // AI product / agent UX titles
+  /\bconversation(?:al)?\s*designer\b/i,
+  /\bagent\s+(?:ux|experience)\s*designer\b/i,
+  /\bfounding\s+designer\b/i,
 
   // Content / systems / visual
   /\bcontent\s*designer\b/i,
