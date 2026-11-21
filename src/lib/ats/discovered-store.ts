@@ -40,14 +40,25 @@ async function readFileStore(): Promise<DiscoveredFile> {
   }
 }
 
-async function writeFileStore(boards: DiscoveredBoardRecord[]): Promise<void> {
-  const payload: DiscoveredFile = {
-    version: 1,
-    updatedAt: new Date().toISOString(),
-    boards,
-  };
-  await fs.mkdir(path.dirname(FILE_PATH), { recursive: true });
-  await fs.writeFile(FILE_PATH, JSON.stringify(payload, null, 2), "utf8");
+async function writeFileStore(boards: DiscoveredBoardRecord[]): Promise<boolean> {
+  // Vercel / Lambda ship a read-only filesystem under /var/task — never fail
+  // the refresh because we can't write a local JSON cache there.
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    return false;
+  }
+  try {
+    const payload: DiscoveredFile = {
+      version: 1,
+      updatedAt: new Date().toISOString(),
+      boards,
+    };
+    await fs.mkdir(path.dirname(FILE_PATH), { recursive: true });
+    await fs.writeFile(FILE_PATH, JSON.stringify(payload, null, 2), "utf8");
+    return true;
+  } catch (err) {
+    console.warn("[discovered] file write skipped:", err);
+    return false;
+  }
 }
 
 function rowToRecord(row: Record<string, unknown>): DiscoveredBoardRecord {
@@ -127,9 +138,14 @@ export async function loadDiscoveredBoards(): Promise<DiscoveredBoardRecord[]> {
 export async function saveDiscoveredBoards(
   boards: DiscoveredBoardRecord[],
 ): Promise<void> {
-  await writeFileStore(boards);
-  if (isSupabaseConfigured()) {
-    await upsertSupabaseStore(boards);
+  const remoteOk = isSupabaseConfigured()
+    ? await upsertSupabaseStore(boards)
+    : false;
+  const fileOk = await writeFileStore(boards);
+  if (!remoteOk && !fileOk) {
+    console.warn(
+      "[discovered] could not persist boards (no writable store); continuing with in-memory allowlist",
+    );
   }
 }
 

@@ -154,7 +154,13 @@ export async function discoverNewBoards(options?: {
   }
 
   if (batch.length > 0) {
-    await saveDiscoveredBoards(nextRecords);
+    try {
+      await saveDiscoveredBoards(nextRecords);
+    } catch (err) {
+      // Never abort the job refresh because discovery persistence failed
+      // (e.g. read-only FS on Vercel). In-memory allowlist still applies.
+      console.warn("[discover] saveDiscoveredBoards failed:", err);
+    }
   }
 
   const allowlist = mergeAllowlist(seed, activeDiscoveredEntries(nextRecords));

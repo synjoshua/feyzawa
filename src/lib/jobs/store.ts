@@ -34,6 +34,10 @@ export async function writeJobsToFile(
   jobs: NormalizedJob[],
   summary: RefreshSummary | null,
 ): Promise<void> {
+  // Serverless runtimes mount the app as read-only; skip local cache writes.
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    return;
+  }
   const payload: JobsCacheFile = {
     version: 1,
     updatedAt: new Date().toISOString(),
